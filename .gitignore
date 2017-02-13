@@ -1,0 +1,14 @@
+.clover/
+*.class
+target/
+.project
+.classpath
+.settings/
+.idea/
+.patch
+.surefire-*
+*.iml
+*.ipr
+*.iws
+.DS_Store
+.directory
