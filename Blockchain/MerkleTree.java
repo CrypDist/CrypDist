@@ -20,7 +20,7 @@ public class MerkleTree
 	private List<String> leafSigs;
 	private Node root;
 	private int depth;
-	private int nrNodes;
+	private int nrNodes;	// the number of nodes in the tree
 	
 	public MerkleTree(List<String> leafSigs)
 	{
@@ -31,10 +31,13 @@ public class MerkleTree
 	{
 		this.leafSigs = leafSigs;
 		nrNodes = leafSigs.size();
+		
+		// creates the parents of leaf nodes
 		List<Node> parents = bottomLevel(leafSigs);
 		nrNodes += parents.size();
 		depth = 1;
 		
+		// creates the parents of internal nodes from bottom up
 		while (parents.size() > 1)
 		{
 			parents = internalLevel(parents);
@@ -45,6 +48,7 @@ public class MerkleTree
 		root = parents.get(0);
 	}
 	
+	/* creates parents from internal respective children*/
 	public List<Node> internalLevel(List<Node> children)
 	{
 		List<Node> parents = new ArrayList<Node>();
@@ -67,6 +71,7 @@ public class MerkleTree
 		return parents;
 	}
 	
+	/* creates parents of the leaf nodes */
 	public List<Node> bottomLevel(List<String> leafSigs)
 	{
 		List<Node> parents = new ArrayList<Node>();
@@ -88,7 +93,8 @@ public class MerkleTree
 		
 		return parents;
 	}
-	
+
+	/* initializing the internal nodes with double hashing */
 	private Node constructInternalNode(Node child1, Node child2)
 	{
 		Node parent = new Node();
@@ -103,11 +109,13 @@ public class MerkleTree
 		parent.right = child2;
 		return parent;
 	}
-	
+
+	/* initializing the leaf nodes with double hashing */
 	private Node constructLeafNode(String signature)
 	{
 		Node leaf = new Node();
 		leaf.type = LEAF_SIG_TYPE;
+		signature = SHA512(signature);
 		signature = SHA512(signature);
 		leaf.signature = signature.getBytes(StandardCharsets.UTF_8);
 		return leaf;
@@ -117,6 +125,7 @@ public class MerkleTree
 	private byte[] internalHash(String leftChildSignature, String rightChildSignature)
 	{
 		String hash = SHA512(leftChildSignature + rightChildSignature);
+		hash = SHA512(hash);
 		return hash.getBytes(StandardCharsets.UTF_8);
 	}
 	
@@ -127,7 +136,7 @@ public class MerkleTree
 	
 	public String getRoot()
 	{
-		return root.signatureToString();
+		return root.signatureToByteString();
 	}
 	
 	private String SHA512(String data)
@@ -135,15 +144,6 @@ public class MerkleTree
 		String signature = null;
 		try
 		{	
-//			String alphabet = "abcdefghijklmnopqrstuvyz123456789";
-//			String salt = "";
-//			Random rand = new Random();
-//			for (int i = 0; i < 10; i++)
-//			{
-//				int index = rand.nextInt(alphabet.length());
-//				salt += alphabet.charAt(index);
-//			}
-			
 			MessageDigest md = MessageDigest.getInstance("SHA-512");
 			md.update(data.getBytes("UTF-8"));
 			byte[] bytes = md.digest(data.getBytes("UTF-8"));
@@ -175,6 +175,11 @@ public class MerkleTree
 				sb.append(signature[i]).append(' ');
 			sb.insert(sb.length() - 1, ']');
 			return sb.toString();
+		}
+		
+		public String signatureToByteString()
+		{
+			return new String(signature, StandardCharsets.UTF_8);
 		}
 	}
 }
