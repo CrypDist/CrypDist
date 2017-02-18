@@ -12,6 +12,7 @@ public class Blockchain implements Serializable
     private ArrayList<ArrayList<String>> chains;
     // Valid blockchain according to the longest chain rule
     private ArrayList<String> longestChain;
+    private ArrayList<Long> difficulties;
     private boolean gotGenesisBlock;
 
     public Blockchain()
@@ -24,12 +25,12 @@ public class Blockchain implements Serializable
 
     private void updateLongestChain()
     {
-        int longest = 0;
-        for (int i = 0; i < chains.size(); i++)
+        long largestDiff = 0;
+        for (int i = 0; i < difficulties.size(); i++)
         {
-            if (chains.get(i).size() > longest)
+            if (difficulties.get(i) > largestDiff)
             {
-                longest = chains.get(i).size();
+                largestDiff = difficulties.get(i);
                 longestChain = chains.get(i);
             }
         }
@@ -53,7 +54,7 @@ public class Blockchain implements Serializable
     public long getDifficulty()
     {
         Block lastBlock = blockMap.get(longestChain.get(longestChain.size() - 1));
-        return lastBlock.computeDifficulty();
+        return lastBlock.getDifficulty();
     }
 
     public boolean addBlock(Block block)
@@ -65,6 +66,7 @@ public class Blockchain implements Serializable
             if (chains.get(i).size() < largestLength - 10)
             {
                 chains.remove(i);
+                difficulties.remove(i);
                 i--;
             }
         }
@@ -78,6 +80,7 @@ public class Blockchain implements Serializable
             gotGenesisBlock = true;
             chains.add(new ArrayList<String>());
             chains.get(0).add(block.getHash());
+            difficulties.add(block.getDifficulty());
             blockMap.put(block.getHash(), block);
             longestChain = chains.get(0);
             return true;
@@ -98,6 +101,8 @@ public class Blockchain implements Serializable
             if (lastBlockHash.equals(block.getPreviousHash()))
             {
                 chains.get(i).add(block.getHash());
+                difficulties.remove(i);
+                difficulties.add(i, block.getDifficulty());
                 blockMap.put(block.getHash(), block);
                 updateLongestChain();
                 return true;
@@ -121,6 +126,7 @@ public class Blockchain implements Serializable
                     for (int k = 0; k <= j; k++)
                         newChain.add(tmpChain.get(k));
                     newChain.add(block.getHash());
+                    difficulties.add(block.getDifficulty());
                     blockMap.put(block.getHash(), block);
                     updateLongestChain();
                     return true;
