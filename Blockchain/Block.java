@@ -1,11 +1,11 @@
+package BlockChain;
+
+import javax.xml.bind.DatatypeConverter;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
-import java.lang.reflect.Array;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
-
-import javax.xml.bind.DatatypeConverter;
 
 /**
  * A block in the chain

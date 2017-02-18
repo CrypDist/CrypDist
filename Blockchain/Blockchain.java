@@ -1,7 +1,10 @@
+package BlockChain;
+
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class Blockchain
+public class Blockchain implements Serializable
 {
     // Maps the hashes to blocks
     private HashMap<String, Block> blockMap;
@@ -32,9 +35,14 @@ public class Blockchain
         }
     }
 
-    public int getBlockChainLength()
+    public ArrayList<String> getBlockchain()
     {
-        return longestChain.size();
+        return longestChain;
+    }
+
+    public Block getBlock(String hash)
+    {
+        return blockMap.get(hash);
     }
 
     public Block getLatestBlock()
@@ -51,7 +59,7 @@ public class Blockchain
     public boolean addBlock(Block block)
     {
         // Remove chains with more than 10 block back
-        int largestLength = getBlockChainLength();
+        int largestLength = longestChain.size();
         for (int i = 0; i < chains.size(); i++)
         {
             if (chains.get(i).size() < largestLength - 10)
