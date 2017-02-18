@@ -9,7 +9,7 @@ public class Main {
 
     public static void main (String[] args) {
         try {
-            Thread t = new Server(4142);
+            Thread t = new Server(4142, 4243);
             t.start();
         } catch(IOException e) {
             e.printStackTrace();
