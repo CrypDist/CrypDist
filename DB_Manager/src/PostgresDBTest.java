@@ -5,22 +5,23 @@ import static org.junit.Assert.*;
  */
 public class PostgresDBTest {
     private PostgresDB db = new PostgresDB("blockchain_test", "furkansahin", "", true);
+    String hash_to_test = "00000000126748912643A126482:TEST";
+    String new_hash_to_test = "00000000126748912643A12648:TEST2";
+    String data_to_test = "{\"prev_hash\": \"00000000126748912643A1_PREV:TEST\", \"description\": \"Furkan''IN kol geni\", \"nonce\": 123}";
+    String data_expected = "{\"prev_hash\": \"00000000126748912643A1_PREV:TEST\", \"description\": \"Furkan'IN kol geni\", \"nonce\": 123}";
 
     @org.junit.Before
     public void setUp() throws Exception {
-        db = new PostgresDB("blockchain_test", "furkansahin", "", true);
+        db = new PostgresDB("blockchain_test", "furkansahin", "", false);
         assertNotEquals(null, db);
     }
 
     @org.junit.Test
     public void addBlock() throws Exception {
-        String hash_to_test = "00000000126748912643A126482:TEST";
-        String data_to_test = "{\"prev_hash\": \"00000000126748912643A1_PREV:TEST\", \"description\": \"Furkan''IN kol geni\", \"nonce\": 123}";
         db.addBlock(hash_to_test, data_to_test);
 
         String result = db.getData(hash_to_test);
 
-        String data_expected = "{\"prev_hash\": \"00000000126748912643A1_PREV:TEST\", \"description\": \"Furkan'IN kol geni\", \"nonce\": 123}";
         assertEquals(data_expected,result);
     }
 
@@ -35,7 +36,18 @@ public class PostgresDBTest {
 
     @org.junit.Test
     public void newHashForBlock() throws Exception {
+        addBlock();
+        String res_old = db.getData(hash_to_test);
 
+        db.newHashForBlock(hash_to_test, new_hash_to_test);
+
+        String res_new_emp = db.getData(hash_to_test);
+        String res_new = db.getData(new_hash_to_test);
+
+        assertEquals("", res_new_emp);
+        assertEquals(res_old, res_new);
+
+        db.newHashForBlock(new_hash_to_test, hash_to_test);
     }
 
     @org.junit.Test

@@ -62,10 +62,14 @@ public class PostgresDB {
 
         st = conn.createStatement();
 
-        query = "CREATE TABLE "+ TABLE_NAME + " (hash CHAR(32) UNIQUE PRIMARY KEY NOT NULL, data TEXT);";
+
+        query = "CREATE TABLE IF NOT EXISTS "+ TABLE_NAME + " (hash CHAR(32) UNIQUE PRIMARY KEY NOT NULL, data TEXT);";
+
         st.executeUpdate(query);
+
+        deleteAllTable();
         st.close();
-        System.out.println("blocks table is created!");
+        //System.out.println("blocks table is created!");
     }
 
     public boolean addBlock(String hash, String data)
