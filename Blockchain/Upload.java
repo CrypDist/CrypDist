@@ -7,6 +7,11 @@ import java.io.File;
  */
 public class Upload extends Transaction
 {
+    public Upload(String stringFormat)
+    {
+        this.stringFormat = stringFormat;
+    }
+
     public void execute()
     {
 
@@ -14,9 +19,9 @@ public class Upload extends Transaction
 
     public boolean validate()
     {
-        // Transaction format: UPLOAD filename link
+        // Transaction format: UPLOAD filename source link
         String parts[] = stringFormat.split(" ");
-        if (parts.length != 3)
+        if (parts.length != 4)
             return false;
         if (!parts[0].equals("UPLOAD"))
             return false;
@@ -25,6 +30,7 @@ public class Upload extends Transaction
         if (!file.exists())
             return false;
 
+        // TODO check if the source exists
         // TODO check if the link is valid
         return true;
     }

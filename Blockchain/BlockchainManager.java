@@ -17,12 +17,22 @@ public class BlockchainManager
         blockchain = new Blockchain();
     }
 
+    public Blockchain getBlockchain()
+    {
+        return blockchain;
+    }
+
     public boolean addBlockToBlockchain(Block block)
     {
         return blockchain.addBlock(block);
     }
 
-    public ArrayList<Block> getBlockchain()
+    public int getBlockchainLength()
+    {
+        return blockchain.getLength();
+    }
+
+    public ArrayList<Block> getLongestChain()
     {
         ArrayList<String> hashChain = blockchain.getBlockchain();
         ArrayList<Block> blocks = new ArrayList<Block>();
@@ -32,13 +42,12 @@ public class BlockchainManager
         return blocks;
     }
 
-    public String mineBlock(String prevHash, long timestamp, int maxNonce,
-                            ArrayList<String> transactions)
+    public String mineBlock(String prevHash, long timestamp, long maxNonce,
+                            ArrayList<Transaction> transactions)
     {
         BlockMiner miner = new BlockMiner(prevHash, timestamp, maxNonce, transactions);
         return miner.mineBlock();
     }
-
 
     /**
      * This class is used for mining a block which means finding a
@@ -53,15 +62,19 @@ public class BlockchainManager
         private MerkleTree data;
         private String prevHash;
         private long timestamp;
-        private int maxNonce;
+        private long maxNonce;
 
-        public BlockMiner(String prevHash, long timestamp, int maxNonce,
-                          ArrayList<String> transactions)
+        public BlockMiner(String prevHash, long timestamp, long maxNonce,
+                          ArrayList<Transaction> transactions)
         {
             this.prevHash = prevHash;
             this.timestamp = timestamp;
             this.maxNonce = maxNonce;
-            data = new MerkleTree(transactions);
+
+            ArrayList<String> stringTransactions = new ArrayList<String>();
+            for (int i = 0; i < transactions.size(); i++)
+                stringTransactions.add(transactions.get(i).getStringFormat());
+            data = new MerkleTree(stringTransactions);
         }
 
         public String mineBlock()
@@ -79,15 +92,19 @@ public class BlockchainManager
                 {
                     String dataWithNonce = blockData + ":" + i + "}";
                     byte[] hash = md.digest(dataWithNonce.getBytes("UTF-8"));
-                    // Check if most significant 8 digits are zero
+
                     long tempScore = 0L;
                     for (int j = 0; j < 8; j++)
                         tempScore = (hash[j] & 0xff) + (tempScore << 8);
 
                     if (tempScore < score && tempScore > 0)
-                    {
                         score = tempScore;
+
+                    // Check if most significant 8 digits are zero
+                    if ((hash[0] & 0xff) == 0x00)
+                    {
                         bestNonce = i;
+                        break;
                     }
                 }
             }
