@@ -1,8 +1,4 @@
-package client;
 
-import server.Server;
-
-import javax.imageio.IIOException;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -32,7 +28,6 @@ public class Client extends Thread {
         this.swAdr = swAdr;
         this.swPort = swPort;
 
-
         System.out.println("HB is opening from " + heartBeatPort);
         heartBeatSocket = new ServerSocket(heartBeatPort);
         Socket serverConnection = new Socket(swAdr,swPort);
@@ -48,7 +43,6 @@ public class Client extends Thread {
 
         while (true) {
             try {
-
                 Socket hb = heartBeatSocket.accept();
 
                 DataInputStream in = new DataInputStream(hb.getInputStream());
@@ -63,7 +57,7 @@ public class Client extends Thread {
                 System.out.println("Sending to " + swAdr + " " + port);
                 DataOutputStream out = new DataOutputStream(serverConnection.getOutputStream());
                 out.writeInt(0);
-                out.writeUTF(InetAddress.getLocalHost().getHostAddress());
+                out.writeUTF(InetAddress.getLoopbackAddress().getHostAddress());
                 out.flush();
                 serverConnection.close();
             }

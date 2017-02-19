@@ -1,19 +1,15 @@
-package server;
-
-import java.io.IOException;
 
 /**
  * Created by od on 16.02.2017.
  */
-public class Main {
+public class MainClass {
 
     public static void main (String[] args) {
         try {
-            Thread t = new Server(4142, 4243);
+            Thread t = new Client("localhost", 4142, 4544, 4545);
             t.start();
-        } catch(IOException e) {
+        } catch(Exception e) {
             e.printStackTrace();
         }
     }
-
 }

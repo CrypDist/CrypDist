@@ -1,12 +1,13 @@
-package server;
-
-import javax.imageio.IIOException;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.InterruptedIOException;
-import java.net.*;
-import java.util.*;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.net.SocketTimeoutException;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -42,8 +43,6 @@ public class Server extends Thread {
             if (peerList.size() == 0)
                 return -1;
 
-            System.out.println("HB is opening from server, " + heartBeatPort + " size " + peerList.size());
-
             //Send heartbeats to each peer and remove the ones doesnt responding
             try {
                 heartBeatSocket = new ServerSocket(heartBeatPort);
@@ -57,7 +56,6 @@ public class Server extends Thread {
 
             HashSet<String> newList = new HashSet<String>();
             CountDownLatch latch = new CountDownLatch(1 + peerList.size());
-            System.out.println("Latch is " + latch.getCount());
             new Thread(() -> {
                 try {
                     long t = System.currentTimeMillis();
@@ -66,7 +64,6 @@ public class Server extends Thread {
                     while (System.currentTimeMillis() < end) {
                         System.out.println(System.currentTimeMillis() + " : " + end );
                         Socket conn = heartBeatSocket.accept();
-                        System.out.println("CCConnected to " + conn.getRemoteSocketAddress());
 
                         DataInputStream in = new DataInputStream(conn.getInputStream());
                         int x = in.readInt();
@@ -108,13 +105,19 @@ public class Server extends Thread {
                 System.out.println("Latch is interrupted before release.");
             }
 
-            System.out.println("Counting...");
+            Iterator<String> it = newList.iterator();
+
+            while (it.hasNext())
+                System.out.println("New" + it.next());
+
             int count = 0;
 
             for (Client client : peerList) {
-                if (!newList.contains(client.getAddress().toString()))
+                System.out.println("C:" + client.getAddress().toString().replace("/",""));
+                if (!newList.contains(client.getAddress().toString().replace("/",""))) {
                     count++;
-                peerList.remove(client);
+                    peerList.remove(client);
+                }
             }
 
             try {
@@ -142,8 +145,6 @@ public class Server extends Thread {
                 DataInputStream in = new DataInputStream(server.getInputStream());
                 int port = in.readInt();
                 int port2 = in.readInt();
-                System.out.println("Connected to " + server.getRemoteSocketAddress());
-                System.out.println("Server port of the client is: "  + port);
 
                 peerList.add( new Client(server.getInetAddress(),port,port2 ));
             }
@@ -161,7 +162,7 @@ public class Server extends Thread {
         public void run() {
 
             int x = refreshList();
-            System.out.println("List refreshed, " + x + "clients disconnected.");
+            System.out.println("List refreshed, " + x + " clients disconnected.");
         }
     }
 }

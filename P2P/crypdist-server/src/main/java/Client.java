@@ -1,5 +1,3 @@
-package server;
-
 import java.net.InetAddress;
 
 /**
