@@ -1,7 +1,10 @@
+package BlockChain;
+
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class Blockchain
+public class Blockchain implements Serializable
 {
     // Maps the hashes to blocks
     private HashMap<String, Block> blockMap;
@@ -9,6 +12,7 @@ public class Blockchain
     private ArrayList<ArrayList<String>> chains;
     // Valid blockchain according to the longest chain rule
     private ArrayList<String> longestChain;
+    private ArrayList<Long> difficulties;
     private boolean gotGenesisBlock;
 
     public Blockchain()
@@ -21,20 +25,25 @@ public class Blockchain
 
     private void updateLongestChain()
     {
-        int longest = 0;
-        for (int i = 0; i < chains.size(); i++)
+        long largestDiff = 0;
+        for (int i = 0; i < difficulties.size(); i++)
         {
-            if (chains.get(i).size() > longest)
+            if (difficulties.get(i) > largestDiff)
             {
-                longest = chains.get(i).size();
+                largestDiff = difficulties.get(i);
                 longestChain = chains.get(i);
             }
         }
     }
 
-    public int getBlockChainLength()
+    public ArrayList<String> getBlockchain()
     {
-        return longestChain.size();
+        return longestChain;
+    }
+
+    public Block getBlock(String hash)
+    {
+        return blockMap.get(hash);
     }
 
     public Block getLatestBlock()
@@ -45,18 +54,19 @@ public class Blockchain
     public long getDifficulty()
     {
         Block lastBlock = blockMap.get(longestChain.get(longestChain.size() - 1));
-        return lastBlock.computeDifficulty();
+        return lastBlock.getDifficulty();
     }
 
     public boolean addBlock(Block block)
     {
         // Remove chains with more than 10 block back
-        int largestLength = getBlockChainLength();
+        int largestLength = longestChain.size();
         for (int i = 0; i < chains.size(); i++)
         {
             if (chains.get(i).size() < largestLength - 10)
             {
                 chains.remove(i);
+                difficulties.remove(i);
                 i--;
             }
         }
@@ -70,6 +80,7 @@ public class Blockchain
             gotGenesisBlock = true;
             chains.add(new ArrayList<String>());
             chains.get(0).add(block.getHash());
+            difficulties.add(block.getDifficulty());
             blockMap.put(block.getHash(), block);
             longestChain = chains.get(0);
             return true;
@@ -90,6 +101,8 @@ public class Blockchain
             if (lastBlockHash.equals(block.getPreviousHash()))
             {
                 chains.get(i).add(block.getHash());
+                difficulties.remove(i);
+                difficulties.add(i, block.getDifficulty());
                 blockMap.put(block.getHash(), block);
                 updateLongestChain();
                 return true;
@@ -113,6 +126,7 @@ public class Blockchain
                     for (int k = 0; k <= j; k++)
                         newChain.add(tmpChain.get(k));
                     newChain.add(block.getHash());
+                    difficulties.add(block.getDifficulty());
                     blockMap.put(block.getHash(), block);
                     updateLongestChain();
                     return true;

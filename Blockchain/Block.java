@@ -1,11 +1,11 @@
+package BlockChain;
+
+import javax.xml.bind.DatatypeConverter;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
-import java.lang.reflect.Array;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
-
-import javax.xml.bind.DatatypeConverter;
 
 /**
  * A block in the chain
@@ -31,9 +31,9 @@ public class Block implements Serializable
     private String merkleRoot;
     private long timestamp;
     private int nonce;
-    private long targetDifficulty;
+    private byte[] targetDifficulty;
 
-    public Block(long id, String prevHash, long timestamp, int nonce, long targetDifficulty,
+    public Block(long id, String prevHash, long timestamp, int nonce, byte[] targetDifficulty,
                  ArrayList<String> transactions) throws NoSuchAlgorithmException,
             UnsupportedEncodingException
     {
@@ -66,16 +66,15 @@ public class Block implements Serializable
         return DatatypeConverter.printHexBinary(md.digest(blockData.getBytes("UTF-8")));
     }
 
-    public long computeDifficulty()
+    public long getDifficulty()
     {
-        if (timestamp < targetDifficulty)
-            return targetDifficulty;
-        return timestamp;
-    }
+        int exponent = targetDifficulty[3];
+        int coefficient = targetDifficulty[2] * 256 + targetDifficulty[1] * 16 + targetDifficulty[0];
+        long target = coefficient * (int) Math.pow(2, 8 * (exponent - 3));
 
-    public long getTargetDifficulty()
-    {
-        return targetDifficulty;
+        if (timestamp < target)
+            return target;
+        return timestamp;
     }
 
     public String getHash()
