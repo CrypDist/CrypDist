@@ -1,78 +1,45 @@
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
+import java.io.*;
+import java.net.InetAddress;
 import java.net.Socket;
 
 /**
  * Created by od on 16.02.2017.
  */
-public class Peer {
-    private String address;
-    private int port;
-    private Socket socket;
+public class Peer implements Serializable {
+    private InetAddress address;
+    private int peerServerPort;
+    private int peerHeartBeatPort;
 
-
-    public Peer(String address, int port) {
+    public Peer(InetAddress address, int peerServerPort, int peerHeartBeatPort) {
         this.address = address;
-        this.port = port;
-
-        try {
-            socket = new Socket(address,port);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        this.peerServerPort = peerServerPort;
+        this.peerHeartBeatPort = peerHeartBeatPort;
     }
 
-    public void sendMessage(String message) {
-        try {
-            DataOutputStream out = new DataOutputStream(socket.getOutputStream());
-            out.writeUTF(message);
-            out.flush();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-    }
-    public void sendMessage(int message) {
-        try {
-            DataOutputStream out = new DataOutputStream(socket.getOutputStream());
-            out.writeInt(message);
-            out.flush();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
+    public InetAddress getAddress() {
+        return address;
     }
 
-    public String receiveMessage() {
-        try {
-            DataInputStream in = new DataInputStream(socket.getInputStream());
-            return in.readUTF();
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        return "None.";
+    public int getPeerServerPort() {
+        return peerServerPort;
     }
 
-    public int receiveMessage2() {
-        try {
-            DataInputStream in = new DataInputStream(socket.getInputStream());
-            return in.readInt();
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        return -1;
-    }
-    public void close () {
-        try {
-            socket.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    public int getPeerHeartBeatPort() {
+        return peerHeartBeatPort;
     }
 
+    public void writeObject(ObjectOutputStream out) throws IOException{
+        out.writeObject(address);
+        out.writeInt(peerServerPort);
+        out.writeInt(peerHeartBeatPort);
+        out.flush();
+    }
+
+    public static Peer readObject(ObjectInputStream in) throws IOException,ClassNotFoundException {
+        InetAddress adr = (InetAddress)in.readObject();
+        int port1 = in.readInt();
+        int port2 = in.readInt();
+
+        return new Peer(adr,port1,port2);
+    }
 }

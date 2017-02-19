@@ -1,9 +1,13 @@
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.net.InetAddress;
 
 /**
  * Created by od on 17.02.2017.
  */
-public class Client {
+public class Client implements Serializable {
     private InetAddress address;
     private int heartBeatPort;
     private int dataPort;
@@ -36,5 +40,20 @@ public class Client {
 
     public void setDataPort(int dataPort) {
         this.dataPort = dataPort;
+    }
+
+    public void writeObject(ObjectOutputStream out) throws IOException{
+        out.writeObject(address);
+        out.writeInt(dataPort);
+        out.writeInt(heartBeatPort);
+        out.flush();
+    }
+
+    public Client readObject(ObjectInputStream in) throws IOException,ClassNotFoundException {
+        InetAddress adr = (InetAddress)in.readObject();
+        int port1 = in.readInt();
+        int port2 = in.readInt();
+
+        return new Client(adr,port1,port2);
     }
 }
