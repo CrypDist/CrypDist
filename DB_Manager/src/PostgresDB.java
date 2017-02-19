@@ -67,7 +67,9 @@ public class PostgresDB {
 
         st.executeUpdate(query);
 
-        deleteAllTable();
+        if (reset)
+            deleteAllTable();
+
         st.close();
         //System.out.println("blocks table is created!");
     }
@@ -130,6 +132,14 @@ public class PostgresDB {
         String query = "SELECT data FROM " + TABLE_NAME + ";";
 
         return dataFetcher(query);
+    }
+    public int getSize()
+    {
+        String query = "SELECT count(*) FROM " + TABLE_NAME + ";";
+
+        String output = dataFetcher(query);
+
+        return Integer.parseInt(output);
     }
 
     private String dataFetcher(String query)
