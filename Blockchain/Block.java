@@ -21,8 +21,9 @@ import java.util.ArrayList;
 public class Block implements Serializable
 {
     private static final long serialVersionUID = 1L;
+    private Blockchain blockchain;
     private long id;
-    private ArrayList<String> transactions;
+    private ArrayList<Transaction> transactions;
     private MerkleTree data;
 
     // header information
@@ -33,19 +34,25 @@ public class Block implements Serializable
     private int nonce;
     private byte[] targetDifficulty;
 
-    public Block(long id, String prevHash, long timestamp, int nonce, byte[] targetDifficulty,
-                 ArrayList<String> transactions) throws NoSuchAlgorithmException,
+    public Block(String prevHash, long timestamp, int nonce, byte[] targetDifficulty,
+                 ArrayList<Transaction> transactions, Blockchain blockchain) throws NoSuchAlgorithmException,
             UnsupportedEncodingException
     {
-        this.id = id;
+        this.id = blockchain.getBlock(prevHash).id + 1;
         this.prevHash = prevHash;
         this.timestamp = timestamp;
         this.nonce = nonce;
         this.targetDifficulty = targetDifficulty;
         this.transactions = transactions;
-        data = new MerkleTree(transactions);
+
+        ArrayList<String> stringTransactions = new ArrayList<String>();
+        for (int i = 0; i < transactions.size(); i++)
+            stringTransactions.add(transactions.get(i).getStringFormat());
+
+        data = new MerkleTree(stringTransactions);
         merkleRoot = data.getRoot();
         hash = computeHash();
+        this.blockchain = blockchain;
     }
 
     public long getTimestamp()
@@ -121,10 +128,17 @@ public class Block implements Serializable
                 return false;
 
             // Restructure merkle tree and compare the root with the previous one
-            MerkleTree testTree = new MerkleTree(transactions);
+            ArrayList<String> stringTransactions = new ArrayList<String>();
+            for (int i = 0; i < transactions.size(); i++)
+                stringTransactions.add(transactions.get(i).getStringFormat());
+            MerkleTree testTree = new MerkleTree(stringTransactions);
             String root = testTree.getRoot();
             if (merkleRoot != root)
                 return false;
+
+            for (int i = 0; i < transactions.size(); i++)
+                if (!transactions.get(i).validate())
+                    return false;
         }
         catch (NoSuchAlgorithmException | UnsupportedEncodingException e) {}
         return true;
