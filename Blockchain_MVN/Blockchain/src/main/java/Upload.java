@@ -1,4 +1,3 @@
-package BlockChain;
 
 import java.io.File;
 

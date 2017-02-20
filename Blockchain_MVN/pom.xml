@@ -13,6 +13,7 @@
     <modules>
         <module>db_manager</module>
         <module>Blockchain</module>
+        <module>BlockchainManager</module>
     </modules>
 
 </project>

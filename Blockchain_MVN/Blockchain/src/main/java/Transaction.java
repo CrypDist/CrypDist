@@ -1,4 +1,3 @@
-package BlockChain;
 
 /**
  * Created by Kaan on 19-Feb-17.

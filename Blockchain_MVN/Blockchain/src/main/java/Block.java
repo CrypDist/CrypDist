@@ -1,4 +1,3 @@
-package BlockChain;
 
 import javax.xml.bind.DatatypeConverter;
 import java.io.Serializable;
