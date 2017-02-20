@@ -1,7 +1,6 @@
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
+import javax.xml.crypto.Data;
+import java.io.*;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
@@ -47,6 +46,26 @@ public class Client extends Thread {
 
         for(int i = 0; i < peerSize ; i++) {
             Peer p =Peer.readObject(new ObjectInputStream(in));
+
+            new Thread(() -> {
+                try {
+                    Socket clientSocket = new Socket(p.getAddress(),p.getPeerServerPort());
+                    DataOutputStream out = new DataOutputStream(clientSocket.getOutputStream());
+                    out.writeInt(2);  //2 for new cons
+                    new Peer(InetAddress.getLoopbackAddress(),serverPort,heartBeatPort).writeObject(new ObjectOutputStream(out));
+                    out.flush();
+
+                    DataInputStream in2 = new DataInputStream(clientSocket.getInputStream());
+                    int result = in2.readInt();
+
+                    if(result != 1)
+                        System.out.println("Error that should be handled");
+
+                    clientSocket.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }).start();
             peerList.add(p);
         }
 
@@ -66,41 +85,115 @@ public class Client extends Thread {
 
     }
 
+    private class HeartBeatTask implements Runnable {
+
+        private ServerSocket heartBeatSocket;
+
+        public HeartBeatTask(ServerSocket heartBeatSocket) {
+            this.heartBeatSocket = heartBeatSocket;
+        }
+        public void run() {
+            while (true) {
+                try {
+                    Socket hb = heartBeatSocket.accept();
+                    System.out.println("Hb recieved.");
+                    new Thread(() -> {
+                        try {
+                            DataInputStream in = new DataInputStream(hb.getInputStream());
+                            int flag = in.readInt();
+                            System.out.println("Flag: " + flag);
+
+                            if(flag == 0) {
+                                DataOutputStream out = new DataOutputStream(hb.getOutputStream());
+                                out.writeInt(1);
+                                out.flush();
+                            }
+
+                            hb.close();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }).start();
+                }
+                catch (SocketTimeoutException s) {
+                    System.out.println("Socket timed out!");
+                    break;
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    break;
+                }
+            }
+        }
+    }
+
+    private class ServerTask implements Runnable {
+
+        private ServerSocket serverSocket;
+
+        public ServerTask(ServerSocket serverSocket) {
+            this.serverSocket = serverSocket;
+        }
+
+        public void run() {
+            System.out.println("Accepting server..");
+            while (true) {
+                try {
+                    Socket incomingRequest = serverSocket.accept();
+
+                    System.out.println("Accepted:" + incomingRequest.getInetAddress().getCanonicalHostName());
+                    new Thread(() -> {
+                        try {
+                            DataInputStream in = new DataInputStream(incomingRequest.getInputStream());
+                            int flag = in.readInt();
+
+                            System.out.println("Fflag:" + flag);
+
+                            DataOutputStream out = new DataOutputStream(incomingRequest.getOutputStream());
+                            switch (flag){
+                                case 1:
+                                    out.writeInt(0);
+                                    break;
+                                case 2:
+                                    Peer p = Peer.readObject(new ObjectInputStream(in));
+                                    out.writeInt(1);
+                                    peerList.add(p);
+                                    break;
+                                case 3:
+                                    break;
+                                case 4:
+                                    break;
+                            }
+
+                            out.flush();
+
+                            incomingRequest.close();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        } catch (ClassNotFoundException e) {
+                            e.printStackTrace();
+                        }
+                    }).start();
+                }
+                catch (SocketTimeoutException s) {
+                    System.out.println("Socket timed out!");
+                    break;
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    break;
+                }
+            }
+        }
+    }
     public void run() {
 
         Timer timer = new Timer();
         timer.schedule(new runWithTime(), 0, 10 * 1000);
 
-        while (true) {
-            try {
-                Socket hb = heartBeatSocket.accept();
-                System.out.println("Hb recieved.");
-                new Thread(() -> {
-                    try {
-                        DataInputStream in = new DataInputStream(hb.getInputStream());
-                        int flag = in.readInt();
-                        System.out.println("Flag: " + flag);
+        Thread t1 = new Thread(new HeartBeatTask(heartBeatSocket));
+        Thread t2 = new Thread(new ServerTask(serverSocket));
 
-                        if(flag == 0) {
-                            DataOutputStream out = new DataOutputStream(hb.getOutputStream());
-                            out.writeInt(1);
-                            out.flush();
-                        }
-
-                        hb.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }).start();
-            }
-            catch (SocketTimeoutException s) {
-                System.out.println("Socket timed out!");
-                break;
-            } catch (IOException e) {
-                e.printStackTrace();
-                break;
-            }
-        }
+        t1.start();
+        t2.start();
     }
     public class runWithTime extends TimerTask {
         private class SendHeartBeat implements Callable<Peer> {
