@@ -1,0 +1,5 @@
+<root>
+    <item name='java.nio.charset.StandardCharsets UTF_8'>
+        <annotation name='java.lang.Deprecated'/>
+    </item>
+</root>

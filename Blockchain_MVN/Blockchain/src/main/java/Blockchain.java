@@ -1,3 +1,4 @@
+package BlockChain;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -19,7 +20,13 @@ public class Blockchain implements Serializable
         blockMap = new HashMap<String, Block>();
         chains = new ArrayList<ArrayList<String>>();
         longestChain = new ArrayList<String>();
+        difficulties = new ArrayList<Long>();
         gotGenesisBlock = false;
+    }
+
+    public int getLength()
+    {
+        return longestChain.size();
     }
 
     private void updateLongestChain()
@@ -70,7 +77,7 @@ public class Blockchain implements Serializable
             }
         }
 
-        if (!block.validateBlock())
+        if (!block.isGenesis() && !block.validateBlock())
             return false;
 
         // Add first block
