@@ -5,6 +5,8 @@ import java.io.Serializable;
 import java.net.InetAddress;
 
 /**
+ * Client class for Server to hold Client related data, which are address, dataPort and heartBeatPort.
+ *
  * Created by od on 17.02.2017.
  */
 public class Client implements Serializable {
@@ -42,6 +44,7 @@ public class Client implements Serializable {
         this.dataPort = dataPort;
     }
 
+    //Serialization
     public void writeObject(ObjectOutputStream out) throws IOException{
         out.writeObject(address);
         out.writeInt(dataPort);
@@ -49,6 +52,7 @@ public class Client implements Serializable {
         out.flush();
     }
 
+    //Deserialization
     public Client readObject(ObjectInputStream in) throws IOException,ClassNotFoundException {
         InetAddress adr = (InetAddress)in.readObject();
         int port1 = in.readInt();

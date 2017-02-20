@@ -1,10 +1,16 @@
-import java.io.*;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.net.InetAddress;
-import java.net.Socket;
 
 /**
+ * Peer class for Peers to hold peer related data, which are address, serverPort(dataPort) and heartBeatPort.
+ * It is the corresponding class of Client class on the server side.
+ *
  * Created by od on 16.02.2017.
  */
+
 public class Peer implements Serializable {
     private InetAddress address;
     private int peerServerPort;
@@ -28,6 +34,7 @@ public class Peer implements Serializable {
         return peerHeartBeatPort;
     }
 
+    //Serialization
     public void writeObject(ObjectOutputStream out) throws IOException{
         out.writeObject(address);
         out.writeInt(peerServerPort);
@@ -35,6 +42,7 @@ public class Peer implements Serializable {
         out.flush();
     }
 
+    //Deserialization
     public static Peer readObject(ObjectInputStream in) throws IOException,ClassNotFoundException {
         InetAddress adr = (InetAddress)in.readObject();
         int port1 = in.readInt();
