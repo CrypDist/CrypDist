@@ -1,10 +1,18 @@
 
+import com.sun.deploy.util.SystemUtils;
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+import org.apache.log4j.Level;
+
 import javax.xml.bind.DatatypeConverter;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.List;
+
+import static org.apache.log4j.Logger.*;
 
 /**
  * A block in the chain
@@ -43,6 +51,7 @@ public class Block implements Serializable
         targetDifficulty[1] = 0;
         targetDifficulty[2] = 0;
         targetDifficulty[3] = 0;
+
     }
 
     public Block(String prevHash, long timestamp, long nonce, byte[] targetDifficulty,
@@ -73,6 +82,11 @@ public class Block implements Serializable
     public long getTimestamp()
     {
         return timestamp;
+    }
+
+    public long getNonce()
+    {
+        return nonce;
     }
 
     private String computeHash() throws NoSuchAlgorithmException, UnsupportedEncodingException
@@ -119,6 +133,16 @@ public class Block implements Serializable
         return (length == 0);
     }
 
+    public ArrayList<Transaction> getTransactions()
+    {
+        return transactions;
+    }
+
+    public long getSerialVersionUID()
+    {
+        return serialVersionUID;
+    }
+
     // Check if block structure is valid
     public boolean validateBlock()
     {
@@ -151,4 +175,30 @@ public class Block implements Serializable
         catch (NoSuchAlgorithmException | UnsupportedEncodingException e) {}
         return true;
     }
+
+    // Transform the block to JSON String Notation
+    public String serializeBlock() {
+        getRootLogger().setLevel(Level.OFF);
+        JSONObject jsonObject = JSONObject.fromObject(this);
+        return jsonObject.toString();
+    }
+
+    // Transform JSON String Notation to JSONObject
+    public JSONObject StringToJsonObject(String json) {
+        /*
+        jsonObject.getLong("difficulty");
+        jsonObject.getBoolean("genesis");
+        jsonObject.getString("hash");
+        jsonObject.getInt("length");
+        jsonObject.getString("merkleRoot");
+        jsonObject.getLong("nonce");
+        jsonObject.getString("previousHash");
+        jsonObject.getLong("serialVersionUID");
+        jsonObject.getLong("timestamp");
+        jsonObject.getJSONArray("transactions");
+        */
+        JSONObject jsonObject = JSONObject.fromObject(json);
+        return jsonObject;
+    }
+
 }
