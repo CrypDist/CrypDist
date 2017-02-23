@@ -1,3 +1,9 @@
+package Blockchain_MVN.BlockchainManager.src.main.java;
+
+import Blockchain_MVN.Blockchain.src.main.java.Block;
+import Blockchain_MVN.Blockchain.src.main.java.Blockchain;
+import Blockchain_MVN.Blockchain.src.main.java.MerkleTree;
+import Blockchain_MVN.Blockchain.src.main.java.Transaction;
 
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
@@ -11,9 +17,9 @@ public class BlockchainManager
 {
     private Blockchain blockchain;
 
-    public BlockchainManager()
+    public BlockchainManager(Block genesis)
     {
-        blockchain = new Blockchain();
+        blockchain = new Blockchain(genesis);
     }
 
     public Blockchain getBlockchain()
@@ -31,15 +37,15 @@ public class BlockchainManager
         return blockchain.getLength();
     }
 
-    public ArrayList<Block> getLongestChain()
-    {
-        ArrayList<String> hashChain = blockchain.getBlockchain();
-        ArrayList<Block> blocks = new ArrayList<Block>();
-
-        for (int i = 0; i < hashChain.size(); i++)
-            blocks.add(blockchain.getBlock(hashChain.get(i)));
-        return blocks;
-    }
+//    public ArrayList<Block> getLongestChain()
+//    {
+//        ArrayList<String> hashChain = blockchain.getBlockchain();
+//        ArrayList<Block> blocks = new ArrayList<Block>();
+//
+//        for (int i = 0; i < hashChain.size(); i++)
+//            blocks.add(blockchain.getBlock(hashChain.get(i)));
+//        return blocks;
+//    }
 
     public String mineBlock(String prevHash, long timestamp, long maxNonce,
                             ArrayList<Transaction> transactions)
@@ -83,8 +89,8 @@ public class BlockchainManager
             try
             {
                 MessageDigest md = MessageDigest.getInstance("SHA-256");
-                String blockData = "{" + timestamp + ":" + blockId + ":" + prevHash + ":" +
-                        data.getRoot();
+                String blockData = "{" + timestamp + ":" + prevHash + ":" +
+                                    data.getRoot();
 
                 // Try all values as brute-force
                 for (int i = 0; i < maxNonce; i++)
