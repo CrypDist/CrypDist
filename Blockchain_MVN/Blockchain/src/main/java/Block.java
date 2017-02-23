@@ -1,3 +1,4 @@
+package Blockchain_MVN.Blockchain.src.main.java;
 
 import javax.xml.bind.DatatypeConverter;
 import java.io.Serializable;
@@ -20,22 +21,22 @@ import java.util.ArrayList;
 public class Block implements Serializable
 {
     private static final long serialVersionUID = 1L;
-    private long id;
     private ArrayList<Transaction> transactions;
     private MerkleTree data;
+    private byte[] targetDifficulty;
+    private String hash;
+    private int length;
 
     // header information
-    private String hash;
     private String prevHash;
     private String merkleRoot;
     private long timestamp;
     private long nonce;
-    private byte[] targetDifficulty;
 
     // genesis block
-    public Block(ArrayList<Transaction> transactions)
+    public Block()
     {
-        id = 0;
+        length = 0;
         hash = "0x0";
         timestamp = 0L;
         targetDifficulty = new byte[4];
@@ -43,20 +44,13 @@ public class Block implements Serializable
         targetDifficulty[1] = 0;
         targetDifficulty[2] = 0;
         targetDifficulty[3] = 0;
-
-        this.transactions = transactions;
-        ArrayList<String> stringTransactions = new ArrayList<String>();
-        for (int i = 0; i < transactions.size(); i++)
-            stringTransactions.add(transactions.get(i).getStringFormat());
-        data = new MerkleTree(stringTransactions);
-        merkleRoot = data.getRoot();
     }
 
     public Block(String prevHash, long timestamp, long nonce, byte[] targetDifficulty,
                  ArrayList<Transaction> transactions, Blockchain blockchain) throws NoSuchAlgorithmException,
             UnsupportedEncodingException
     {
-        this.id = blockchain.getBlock(prevHash).id + 1;
+        length = blockchain.getBlock(prevHash).getLength() + 1;
         this.prevHash = prevHash;
         this.timestamp = timestamp;
         this.nonce = nonce;
@@ -72,20 +66,20 @@ public class Block implements Serializable
         hash = computeHash();
     }
 
+    public int getLength()
+    {
+        return length;
+    }
+
     public long getTimestamp()
     {
         return timestamp;
     }
 
-    public long getId()
-    {
-        return id;
-    }
-
     private String computeHash() throws NoSuchAlgorithmException, UnsupportedEncodingException
     {
         MessageDigest md = MessageDigest.getInstance("SHA-256");
-        String blockData = "{" + timestamp + ":" + id + ":" + prevHash + ":" + data.getRoot()
+        String blockData = "{" + timestamp + ":" + prevHash + ":" + data.getRoot()
                             + ":" + nonce + "}";
         return DatatypeConverter.printHexBinary(md.digest(blockData.getBytes("UTF-8")));
     }
@@ -123,37 +117,39 @@ public class Block implements Serializable
 
     public boolean isGenesis()
     {
-        return (id == 0);
+        return (length == 0);
     }
 
     // Check if block structure is valid
     public boolean validateBlock()
     {
-//        try
-//        {
-//            // Recalculate block hash and compare with the previous one
-//            MessageDigest md = MessageDigest.getInstance("SHA-256");
-//            String blockData = "{" + timestamp + ":" + id + ":" + prevHash + ":" + data.getRoot()
-//                                + ":" + nonce + "}";
-//            String blockHash = DatatypeConverter.printHexBinary(md.digest(
-//                                        blockData.getBytes("UTF-8")));
-//            if (!hash.equals(blockHash))
-//                return false;
-//
-//            // Restructure merkle tree and compare the root with the previous one
-//            ArrayList<String> stringTransactions = new ArrayList<String>();
-//            for (int i = 0; i < transactions.size(); i++)
-//                stringTransactions.add(transactions.get(i).getStringFormat());
-//            MerkleTree testTree = new MerkleTree(stringTransactions);
-//            String root = testTree.getRoot();
-//            if (!merkleRoot.equals(root))
-//                return false;
-//
-//            for (int i = 0; i < transactions.size(); i++)
-//                if (!transactions.get(i).validate())
-//                    return false;
-//        }
-//        catch (NoSuchAlgorithmException | UnsupportedEncodingException e) {}
+        try
+        {
+            // Recalculate block hash and compare with the previous one
+            MessageDigest md = MessageDigest.getInstance("SHA-256");
+            String blockData = "{" + timestamp + ":" + prevHash + ":" + data.getRoot()
+                                + ":" + nonce + "}";
+            String blockHash = DatatypeConverter.printHexBinary(md.digest(
+                                        blockData.getBytes("UTF-8")));
+            if (!hash.equals(blockHash))
+                return false;
+
+            // Restructure merkle tree and compare the root with the previous one
+            ArrayList<String> stringTransactions = new ArrayList<String>();
+            for (int i = 0; i < transactions.size(); i++)
+                stringTransactions.add(transactions.get(i).getStringFormat());
+            MerkleTree testTree = new MerkleTree(stringTransactions);
+            String root = testTree.getRoot();
+            if (!merkleRoot.equals(root))
+                return false;
+
+            // TODO check timestamp
+
+            for (int i = 0; i < transactions.size(); i++)
+                if (!transactions.get(i).validate())
+                    return false;
+        }
+        catch (NoSuchAlgorithmException | UnsupportedEncodingException e) {}
         return true;
     }
 }
