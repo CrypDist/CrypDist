@@ -1,4 +1,3 @@
-package Blockchain_MVN.Blockchain.src.main.java;
 
 import javax.xml.bind.DatatypeConverter;
 import java.io.Serializable;

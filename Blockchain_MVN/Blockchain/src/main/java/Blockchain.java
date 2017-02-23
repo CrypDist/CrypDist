@@ -1,4 +1,3 @@
-package Blockchain_MVN.Blockchain.src.main.java;
 
 import java.io.Serializable;
 import java.util.ArrayList;

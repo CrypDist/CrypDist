@@ -1,9 +1,3 @@
-package Blockchain_MVN.BlockchainManager.src.main.java;
-
-import Blockchain_MVN.Blockchain.src.main.java.Block;
-import Blockchain_MVN.Blockchain.src.main.java.Blockchain;
-import Blockchain_MVN.Blockchain.src.main.java.MerkleTree;
-import Blockchain_MVN.Blockchain.src.main.java.Transaction;
 
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
@@ -16,9 +10,11 @@ import java.util.ArrayList;
 public class BlockchainManager
 {
     private Blockchain blockchain;
+    private PostgresDB dbManager;
 
     public BlockchainManager(Block genesis)
     {
+        dbManager = new PostgresDB("blockchain", "furkansahin", "", false);
         blockchain = new Blockchain(genesis);
     }
 
@@ -27,9 +23,17 @@ public class BlockchainManager
         return blockchain;
     }
 
-    public boolean addBlockToBlockchain(Block block)
-    {
-        return blockchain.addBlock(block);
+    public boolean addBlockToBlockchain(Block block) throws Exception {
+        if (blockchain.addBlock(block))
+            if (dbManager.addBlock(block.getHash(), block.toString()))
+                return true;
+
+        try {
+            throw new Exception("The block is added to the blockchain but the db could not be updated!");
+        }
+        catch (Exception ignored){}
+
+        return false;
     }
 
     public int getBlockchainLength()

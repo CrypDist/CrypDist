@@ -5,7 +5,7 @@ import static org.junit.Assert.*;
  * Created by furkansahin on 18/02/2017.
  */
 public class PostgresDBTest {
-    private static PostgresDB db = new PostgresDB("blockchain_test", "furkansahin", "", true);
+    private static PostgresDB db = new PostgresDB("blockchain_test", "postgres", "", true);
     String hash_to_test = "00000000126748912643A126482:TEST";
     String new_hash_to_test = "00000000126748912643A12648:TEST2";
     String data_to_test = "{\"prev_hash\": \"00000000126748912643A1_PREV:TEST\", \"description\": \"Furkan''IN kol geni\", \"nonce\": 123}";
@@ -15,7 +15,7 @@ public class PostgresDBTest {
 
     @org.junit.BeforeClass
     public static void setUpClass() throws Exception {
-        db = new PostgresDB("blockchain_test", "furkansahin", "", true);
+        db = new PostgresDB("blockchain_test", "postgres", "", true);
 
         assertNotEquals(null, db);
     }
@@ -86,7 +86,7 @@ public class PostgresDBTest {
 
     @org.junit.Test
     public void getAllData() throws Exception {
-        db = new PostgresDB("blockchain_test", "furkansahin", "", true);
+        db = new PostgresDB("blockchain_test", "postgres", "", true);
         db.addBlock(hash_to_test, data_to_test);
         db.addBlock(new_hash_to_test, data_to_test_2);
 
@@ -109,7 +109,7 @@ public class PostgresDBTest {
 
     @org.junit.AfterClass
     public static void tearDown() {
-        db = new PostgresDB("blockchain_test", "furkansahin", "", true);
+        db = new PostgresDB("blockchain_test", "postgres", "", true);
         assertNotEquals(null, db);
     }
 
