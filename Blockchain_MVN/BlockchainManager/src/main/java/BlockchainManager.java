@@ -14,7 +14,7 @@ public class BlockchainManager
 
     public BlockchainManager(Block genesis)
     {
-        dbManager = new PostgresDB("blockchain", "furkansahin", "", false);
+        dbManager = new PostgresDB("blockchain", "postgres", "", false);
         blockchain = new Blockchain(genesis);
     }
 
