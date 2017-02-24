@@ -33,6 +33,26 @@ public class Blockchain implements Serializable
         }
     }
 
+    public void removeOldBlocks()
+    {
+        for (int i = 0; i < sinkBlocks.size(); i++)
+        {
+            Block sink = getBlock(sinkBlocks.get(i));
+            if (sink != validBlock && sink.getLength() <= validBlock.getLength() / 2)
+            {
+                Block curr = sink;
+                while (curr.getIndegree() == 0)
+                {
+                    Block prev = getBlock(sink.getPreviousHash());
+                    prev.decrementIndegree();
+                    blockMap.remove(curr.getHash());
+                    sinkBlocks.remove(curr);
+                    curr = prev;
+                }
+            }
+        }
+    }
+
     public int getLength()
     {
         return validBlock.getLength();
@@ -59,7 +79,9 @@ public class Blockchain implements Serializable
                 blockMap.put(block.getHash(), block);
                 sinkBlocks.remove(tmpBlock);
                 sinkBlocks.add(block.getHash());
+                tmpBlock.incrementIndegree();
                 updateConsensus();
+                removeOldBlocks();
                 return true;
             }
         }

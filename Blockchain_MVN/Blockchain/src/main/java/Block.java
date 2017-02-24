@@ -33,6 +33,7 @@ public class Block implements Serializable
     private byte[] targetDifficulty;
     private String hash;
     private int length;
+    private int indegree;
 
     // header information
     private String prevHash;
@@ -44,6 +45,7 @@ public class Block implements Serializable
     public Block()
     {
         length = 0;
+        indegree = 0;
         hash = "0x0";
         timestamp = 0L;
         targetDifficulty = new byte[4];
@@ -59,6 +61,7 @@ public class Block implements Serializable
             UnsupportedEncodingException
     {
         length = blockchain.getBlock(prevHash).getLength() + 1;
+        indegree = 0;
         this.prevHash = prevHash;
         this.timestamp = timestamp;
         this.nonce = nonce;
@@ -77,6 +80,21 @@ public class Block implements Serializable
     public int getLength()
     {
         return length;
+    }
+
+    public int getIndegree()
+    {
+        return indegree;
+    }
+
+    public void incrementIndegree()
+    {
+        indegree++;
+    }
+
+    public void decrementIndegree()
+    {
+        indegree--;
     }
 
     public long getTimestamp()
