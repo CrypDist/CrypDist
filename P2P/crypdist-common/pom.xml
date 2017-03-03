@@ -10,8 +10,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>crypdist-server</artifactId>
-
+    <artifactId>crypdist-common</artifactId>
     <build>
         <plugins>
             <plugin>
@@ -24,15 +23,6 @@
             </plugin>
         </plugins>
     </build>
-
-    <dependencies>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>crypdist-common</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-    </dependencies>
-
 
 
 </project>

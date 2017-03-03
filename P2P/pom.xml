@@ -5,13 +5,27 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.crypdist</groupId>
-    <artifactId>com.crypdist.p2p</artifactId>
+    <artifactId>crypdist-p2p</artifactId>
     <version>1.0-SNAPSHOT</version>
 
     <packaging>pom</packaging>
-
     <modules>
+        <module>crypdist-common</module>
         <module>crypdist-server</module>
         <module>crypdist-client</module>
     </modules>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
 </project>
