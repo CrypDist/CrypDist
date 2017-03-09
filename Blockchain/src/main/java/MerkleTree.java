@@ -1,4 +1,5 @@
 
+import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -13,7 +14,7 @@ import java.util.List;
  * Signature of the root is kept in the block to verify the transactions
  */
 
-public class MerkleTree
+public class MerkleTree implements Serializable
 {
     public static final int LEAF_SIG_TYPE = 0x0;
     public static final int INTERNAL_SIG_TYPE = 0x01;
@@ -158,7 +159,7 @@ public class MerkleTree
         return signature;
     }
 
-    private class Node
+    private class Node implements Serializable
     {
         public byte type;
         public byte[] signature;

@@ -1,18 +1,10 @@
-
-import com.sun.deploy.util.SystemUtils;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-import org.apache.log4j.Level;
-
 import javax.xml.bind.DatatypeConverter;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
-import java.util.List;
 
-import static org.apache.log4j.Logger.*;
 
 /**
  * A block in the chain
@@ -194,6 +186,7 @@ public class Block implements Serializable
         return true;
     }
 
+    /*
     // Transform the block to JSON String Notation
     public String serializeBlock() {
         getRootLogger().setLevel(Level.OFF);
@@ -202,7 +195,7 @@ public class Block implements Serializable
     }
 
     // Transform JSON String Notation to JSONObject
-    public JSONObject StringToJsonObject(String json) {
+    public static Block deserializeBlock(String json) {
         /*
         jsonObject.getLong("difficulty");
         jsonObject.getBoolean("genesis");
@@ -214,9 +207,9 @@ public class Block implements Serializable
         jsonObject.getLong("serialVersionUID");
         jsonObject.getLong("timestamp");
         jsonObject.getJSONArray("transactions");
-        */
+
         JSONObject jsonObject = JSONObject.fromObject(json);
         return jsonObject;
-    }
+    }*/
 
 }
