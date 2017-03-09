@@ -4,7 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
         <groupId>com.crypdist</groupId>
-        <artifactId>crypdist-p2p</artifactId>
+        <artifactId>Crypdist-p2p</artifactId>
         <version>1.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
@@ -26,10 +26,16 @@
 
     <dependencies>
         <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>crypdist-common</artifactId>
-            <version>${project.version}</version>
+            <groupId>com.crypdist</groupId>
+            <artifactId>BlockchainManager</artifactId>
+            <version>1.0-SNAPSHOT</version>
         </dependency>
+        <dependency>
+            <groupId>com.crypdist</groupId>
+            <artifactId>crypdist-common</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+
     </dependencies>
 
 

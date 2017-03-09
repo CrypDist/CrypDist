@@ -1,6 +1,5 @@
 
 import java.util.ArrayList;
-
 import static junit.framework.TestCase.assertTrue;
 
 /**
@@ -11,6 +10,7 @@ public class Main
     @org.junit.Test
     public  void main() throws Exception
     {
+
         BlockchainManager blockchainManager = new BlockchainManager();
         String firstHash = "0x0";
         long timestamp = 0;

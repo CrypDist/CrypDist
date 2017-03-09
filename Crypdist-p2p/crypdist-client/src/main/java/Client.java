@@ -1,14 +1,9 @@
-import javax.xml.crypto.Data;
 import java.io.*;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.SocketTimeoutException;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Timer;
-import java.util.TimerTask;
-import java.util.concurrent.*;
 /**
  * Client is actual working class for peers.
  *
@@ -17,6 +12,7 @@ import java.util.concurrent.*;
 
 public class Client extends Thread {
 
+    private BlockchainManager blockchainManager;
     private String swAdr;
     private int swPort;
     HashSet<Peer> peerList;

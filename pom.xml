@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.crypdist</groupId>
-    <artifactId>com.crypdist.blockchain_MVN</artifactId>
+    <artifactId>crypdist</artifactId>
     <version>1.0-SNAPSHOT</version>
 
     <packaging>pom</packaging>
@@ -14,6 +14,7 @@
         <module>db_manager</module>
         <module>Blockchain</module>
         <module>BlockchainManager</module>
+        <module>crypdist-p2p</module>
     </modules>
 
 </project>
