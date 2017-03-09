@@ -22,7 +22,6 @@ public class Block implements Serializable
     private static final long serialVersionUID = 1L;
     private ArrayList<Transaction> transactions;
     private MerkleTree data;
-    private byte[] targetDifficulty;
     private String hash;
     private int length;
     private int indegree;
@@ -40,15 +39,9 @@ public class Block implements Serializable
         indegree = 0;
         hash = "0x0";
         timestamp = 0L;
-        targetDifficulty = new byte[4];
-        targetDifficulty[0] = 0;
-        targetDifficulty[1] = 0;
-        targetDifficulty[2] = 0;
-        targetDifficulty[3] = 0;
-
     }
 
-    public Block(String prevHash, long timestamp, long nonce, byte[] targetDifficulty,
+    public Block(String prevHash, long timestamp, long nonce,
                  ArrayList<Transaction> transactions, Blockchain blockchain) throws NoSuchAlgorithmException,
             UnsupportedEncodingException
     {
@@ -57,7 +50,6 @@ public class Block implements Serializable
         this.prevHash = prevHash;
         this.timestamp = timestamp;
         this.nonce = nonce;
-        this.targetDifficulty = targetDifficulty;
         this.transactions = transactions;
 
         ArrayList<String> stringTransactions = new ArrayList<String>();
@@ -105,17 +97,6 @@ public class Block implements Serializable
         String blockData = "{" + timestamp + ":" + prevHash + ":" + data.getRoot()
                             + ":" + nonce + "}";
         return DatatypeConverter.printHexBinary(md.digest(blockData.getBytes("UTF-8")));
-    }
-
-    public long getDifficulty()
-    {
-        int exponent = targetDifficulty[3];
-        int coefficient = targetDifficulty[2] * 256 + targetDifficulty[1] * 16 + targetDifficulty[0];
-        long target = coefficient * (int) Math.pow(2, 8 * (exponent - 3));
-
-        if (timestamp < target)
-            return target;
-        return timestamp;
     }
 
     public String getHash()

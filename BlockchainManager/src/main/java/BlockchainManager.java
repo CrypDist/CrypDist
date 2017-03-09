@@ -51,7 +51,7 @@ public class BlockchainManager
 //        return blocks;
 //    }
 
-    public String mineBlock(String prevHash, long timestamp, long maxNonce,
+    public long mineBlock(String prevHash, long timestamp, long maxNonce,
                             ArrayList<Transaction> transactions)
     {
         BlockMiner miner = new BlockMiner(prevHash, timestamp, maxNonce, transactions);
@@ -86,10 +86,10 @@ public class BlockchainManager
             data = new MerkleTree(stringTransactions);
         }
 
-        public String mineBlock()
+        public long mineBlock()
         {
             long score = Long.MAX_VALUE;
-            int bestNonce = -1;
+            long bestNonce = -1;
             try
             {
                 MessageDigest md = MessageDigest.getInstance("SHA-256");
@@ -118,7 +118,7 @@ public class BlockchainManager
                 }
             }
             catch (NoSuchAlgorithmException | UnsupportedEncodingException e) {}
-            return bestNonce + ":" + score;
+            return bestNonce;
         }
     }
 }
