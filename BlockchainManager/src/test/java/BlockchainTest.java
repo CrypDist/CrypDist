@@ -5,7 +5,7 @@ import static junit.framework.TestCase.assertTrue;
 /**
  * Created by Kaan on 17-Feb-17.
  */
-public class Main
+public class BlockchainTest
 {
     @org.junit.Test
     public  void main() throws Exception
