@@ -64,7 +64,7 @@ public class PostgresDB {
         st = conn.createStatement();
 
 
-        query = "CREATE TABLE IF NOT EXISTS "+ TABLE_NAME + " (hash CHAR(32) UNIQUE PRIMARY KEY NOT NULL, data TEXT);";
+        query = "CREATE TABLE IF NOT EXISTS "+ TABLE_NAME + " (hash CHAR(256) UNIQUE PRIMARY KEY NOT NULL, data TEXT);";
 
         st.executeUpdate(query);
 
@@ -103,7 +103,7 @@ public class PostgresDB {
         boolean result = executeQuery(query);
         if (result)
         {
-            query = "CREATE TABLE "+ TABLE_NAME + " (hash CHAR(32) UNIQUE PRIMARY KEY NOT NULL, data TEXT);";
+            query = "CREATE TABLE "+ TABLE_NAME + " (hash CHAR(256) UNIQUE PRIMARY KEY NOT NULL, data TEXT);";
             return executeQuery(query);
         }
         return false;

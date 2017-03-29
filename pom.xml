@@ -11,10 +11,10 @@
     <packaging>pom</packaging>
 
     <modules>
-        <module>db_manager</module>
+        <module>DB_Manager</module>
         <module>Blockchain</module>
         <module>BlockchainManager</module>
-        <module>crypdist-p2p</module>
+        <module>Crypdist-p2p</module>
     </modules>
 
 </project>

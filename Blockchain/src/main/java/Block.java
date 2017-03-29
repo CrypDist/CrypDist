@@ -137,7 +137,7 @@ public class Block implements Serializable
     // Check if block structure is valid
     public boolean validateBlock()
     {
-        try
+        /*try
         {
             // Recalculate block hash and compare with the previous one
             MessageDigest md = MessageDigest.getInstance("SHA-256");
@@ -163,7 +163,7 @@ public class Block implements Serializable
                 if (!transactions.get(i).validate())
                     return false;
         }
-        catch (NoSuchAlgorithmException | UnsupportedEncodingException e) {}
+        catch (NoSuchAlgorithmException | UnsupportedEncodingException e) {}*/
         return true;
     }
 
