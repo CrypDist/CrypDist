@@ -15,6 +15,7 @@
         <module>Blockchain</module>
         <module>BlockchainManager</module>
         <module>Crypdist-p2p</module>
+        <module>UploadUnit</module>
     </modules>
 
 </project>
