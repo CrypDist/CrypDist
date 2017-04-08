@@ -36,7 +36,7 @@ public class Server extends Thread {
 
         //Timer action is used for periodical heartbeats to clients.
         Timer timer = new Timer();
-        timer.schedule(new HeartBeatTask(peerList), 1000, 5 * 1000);
+        timer.schedule(new HeartBeatTask(peerList, 100), 1000, 5 * 1000);
 
         //Server constantly accepts for new client connections.
         //Recall that serverSocket.accept() is a blocking call.

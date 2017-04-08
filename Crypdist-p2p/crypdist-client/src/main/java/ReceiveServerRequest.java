@@ -31,18 +31,10 @@ public class ReceiveServerRequest extends Thread {
                 int flag = in.readInt();
 
                 System.out.println("Type of message: " + flag);
-
-                if(flag == 2) {
-                    int hb = in.readInt();
-                    int sw = in.readInt();
-                    System.out.println(hb + " " + sw);
-                    Peer x = new Peer(server.getInetAddress() , sw, hb);
-                    client.peerList.put(x,0);
-                    System.out.println("Peer list has now size: " + client.peerList.size());
-                }
-                else {
-                    System.err.println("Unknown heartbeat request/response.");
-                }
+                System.out.print("The received messsage:");
+                String x = (String) in.readObject();
+                System.out.println(x);
+                System.out.println();
 
                 server.close();
             }
@@ -51,7 +43,9 @@ public class ReceiveServerRequest extends Thread {
             } catch (IOException e) {
                 System.err.println("IOException while receiving server request!");
                 e.printStackTrace();
-            } finally {
+            } catch (ClassNotFoundException e) {
+                System.err.println("Error read.");
+            }finally {
                 if(server != null && !server.isClosed())
                     try {
                         server.close();

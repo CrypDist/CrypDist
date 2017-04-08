@@ -2,6 +2,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.HashSet;
@@ -67,7 +68,7 @@ public class Client {
                 try {
                     Peer p = Peer.readObject(new ObjectInputStream(in));
                     peerList.put(p,0);
-                    new PeerNotifier(p,heartBeatPort,serverPort).start();
+                    //new PeerNotifier(p,heartBeatPort,serverPort).start();
                 }
                 catch (ClassNotFoundException classException) {
                     System.err.println("Peer " + i + " cannot be resolved to an object.");
@@ -81,10 +82,33 @@ public class Client {
         System.out.println("Client initialized with size: " + peerList.size());
 
     }
+
+    public void broadCastMessage(String message) {
+        for(Peer p: peerList.keySet()) {
+            sendMessage(p,message);
+        }
+    }
+
+    public boolean sendMessage(Peer p, String msg) {
+        try {
+            Socket messagedClient = new Socket(p.getAddress(),p.getPeerHeartBeatPort());
+            ObjectOutputStream out = new ObjectOutputStream(new DataOutputStream(messagedClient.getOutputStream()));
+            out.writeInt(200);
+            out.writeObject(msg);
+            out.flush();
+
+            messagedClient.close();
+
+            return true;
+        } catch (IOException e) {
+            return false;
+        }
+    }
+
     public void run() {
 
         Timer timer = new Timer();
-        timer.schedule(new HeartBeatTask(peerList), 0, 5 * 1000);
+        timer.schedule(new HeartBeatTask(peerList,101), 0, 5 * 1000);
 
         Thread t1 = new ReceiveHeartBeat(this);
         Thread t2 = new ReceiveServerRequest(this);

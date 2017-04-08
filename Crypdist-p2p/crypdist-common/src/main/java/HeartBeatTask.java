@@ -20,25 +20,41 @@ import java.util.concurrent.TimeUnit;
 
 public class HeartBeatTask extends TimerTask {
 
-    private ConcurrentHashMap<Peer,Integer> peerList;
-
     private class SendHeartBeat implements Callable<Peer> {
         private Peer peer;
-        public SendHeartBeat(Peer peer) {
+        private int flag;
+        private int hbPort;
+        private int swPort;
+
+        public SendHeartBeat(Peer peer, int flag) {
             this.peer = peer;
+            this.flag = flag;
         }
+
+        public SendHeartBeat(Peer peer, int flag,int hbPort, int swPort) {
+            this.peer = peer;
+            this.flag = flag;
+            this.hbPort = hbPort;
+            this.swPort = swPort;
+        }
+
         public Peer call() {
             try {
                 Socket clientSocket = new Socket(peer.getAddress(),peer.getPeerHeartBeatPort());
                 DataOutputStream out = new DataOutputStream(clientSocket.getOutputStream());
                 DataInputStream in = new DataInputStream(clientSocket.getInputStream());
-                out.writeInt(0);  //0 for heartbeats
+
+                out.writeInt(flag);  //0 for heartbeats
+                if(flag == 101) {
+                    out.writeInt(hbPort);
+                    out.writeInt(swPort);
+                }
                 out.flush();
                 int x = in.readInt();
                 while(x == -1) {
                     x = in.readInt();
                 }
-                if(x == 1) {
+                if(x == 102) {
                     return peer;
                 }
             } catch (IOException e) {
@@ -48,11 +64,25 @@ public class HeartBeatTask extends TimerTask {
         }
     }
 
-    public HeartBeatTask(ConcurrentHashMap<Peer,Integer> peerList) {
-        this.peerList = peerList;
-    }
-    public void run() {
 
+    private ConcurrentHashMap<Peer,Integer> peerList;
+    private int flag;
+    private int hbPort;
+    private int swPort;
+
+    public HeartBeatTask(ConcurrentHashMap<Peer,Integer> peerList, int flag) {
+        this.peerList = peerList;
+        this.flag = flag;
+    }
+
+    public HeartBeatTask(ConcurrentHashMap<Peer,Integer> peerList, int flag, int hbPort, int swPort) {
+        this.peerList = peerList;
+        this.flag = flag;
+        this.hbPort = hbPort;
+        this.swPort = swPort;
+    }
+
+    public void run() {
 
         int a = peerList.size();
 
@@ -61,17 +91,16 @@ public class HeartBeatTask extends TimerTask {
         ExecutorService executor = Executors.newCachedThreadPool();
         ArrayList<Future<Peer>> results = new ArrayList<>();
         for(Peer peer:checkedList.keySet()) {
-            Callable<Peer> task = new SendHeartBeat(peer);
+            Callable<Peer> task = new SendHeartBeat(peer,flag);
             Future<Peer> future = executor.submit(task);
             results.add(future);
         }
 
         ArrayList<Peer> peers = new ArrayList<>();
         try {
-            Thread.sleep(5000);
 
             for(Future<Peer> future: results) {
-                Peer p = future.get(1000, TimeUnit.MILLISECONDS);
+                Peer p = future.get(10000, TimeUnit.MILLISECONDS);
                 if(p != null)
                     peers.add(p);
             }

@@ -17,9 +17,9 @@ public class PeerNotifier extends Thread {
 
     public void run() {
         try {
-            Socket clientSocket = new Socket(p.getAddress(),p.getPeerServerPort());
+            Socket clientSocket = new Socket(p.getAddress(),p.getPeerHeartBeatPort());
             ObjectOutputStream out = new ObjectOutputStream(new DataOutputStream(clientSocket.getOutputStream()));
-            out.writeInt(2);  //2 for new cons
+            out.writeInt(101);  //2 for new cons
             out.writeInt(hb);
             out.writeInt(sw);
             out.flush();
