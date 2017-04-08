@@ -29,12 +29,14 @@ public class ReceiveServerRequest extends Thread {
 
                 ObjectInputStream in = new ObjectInputStream(new DataInputStream(server.getInputStream()));
                 int flag = in.readInt();
-
-                System.out.println("Type of message: " + flag);
-                System.out.print("The received messsage:");
                 String x = (String) in.readObject();
-                System.out.println(x);
-                System.out.println();
+
+                if(flag == 200) {
+                    System.out.print("The received messsage:" +  x + "\n");
+                }
+                if(flag == 300) {
+                    client.broadCastMessage(x);
+                }
 
                 server.close();
             }

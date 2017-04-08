@@ -15,7 +15,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * Created by od on 17.02.2017.
  */
 
-public class Client {
+public class Client extends Thread{
 
     private String swAdr;
     private int swPort;
@@ -51,7 +51,7 @@ public class Client {
 
             serverConnection.close();
 
-            run();
+            this.start();
         }
         catch (IOException e) {
             System.err.println("Cannot connect to the server, terminated.");
@@ -91,7 +91,7 @@ public class Client {
 
     public boolean sendMessage(Peer p, String msg) {
         try {
-            Socket messagedClient = new Socket(p.getAddress(),p.getPeerHeartBeatPort());
+            Socket messagedClient = new Socket(p.getAddress(),p.getPeerServerPort());
             ObjectOutputStream out = new ObjectOutputStream(new DataOutputStream(messagedClient.getOutputStream()));
             out.writeInt(200);
             out.writeObject(msg);

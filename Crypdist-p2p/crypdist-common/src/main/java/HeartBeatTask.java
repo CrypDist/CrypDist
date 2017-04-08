@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.TimerTask;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
@@ -17,6 +18,7 @@ import java.util.concurrent.TimeUnit;
  *
  * Created by od on 17.02.2017.
  */
+
 
 public class HeartBeatTask extends TimerTask {
 
@@ -50,10 +52,9 @@ public class HeartBeatTask extends TimerTask {
                     out.writeInt(swPort);
                 }
                 out.flush();
+                clientSocket.setSoTimeout(10000);
+
                 int x = in.readInt();
-                while(x == -1) {
-                    x = in.readInt();
-                }
                 if(x == 102) {
                     return peer;
                 }
@@ -84,9 +85,17 @@ public class HeartBeatTask extends TimerTask {
 
     public void run() {
 
-        int a = peerList.size();
 
         ConcurrentHashMap<Peer,Integer> checkedList = new ConcurrentHashMap<>(peerList);
+
+        for(Map.Entry<Peer,Integer> entry : peerList.entrySet() ) {
+            if (entry.getValue() > 3) {
+                peerList.remove(entry.getKey());
+            }
+            else {
+                peerList.put(entry.getKey(), entry.getValue() + 1);
+            }
+        }
 
         ExecutorService executor = Executors.newCachedThreadPool();
         ArrayList<Future<Peer>> results = new ArrayList<>();
@@ -98,11 +107,10 @@ public class HeartBeatTask extends TimerTask {
 
         ArrayList<Peer> peers = new ArrayList<>();
         try {
-
             for(Future<Peer> future: results) {
-                Peer p = future.get(10000, TimeUnit.MILLISECONDS);
+                Peer p = future.get();
                 if(p != null)
-                    peers.add(p);
+                    peerList.put(p,0);
             }
 
         } catch (Exception e) {
@@ -110,10 +118,8 @@ public class HeartBeatTask extends TimerTask {
             e.printStackTrace();
         }
 
-        System.out.println("Sent to: " + a + " and " + (checkedList.size()-peers.size()) + " is disconnected.");
-        checkedList.keySet().removeAll(peers);
-        peerList.keySet().removeAll(checkedList.keySet());
-
+        int a = peerList.size();
+        System.out.println("Process is alive with " + a + " peers.");
     }
 
 
