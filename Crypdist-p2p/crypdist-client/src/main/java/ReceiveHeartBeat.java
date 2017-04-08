@@ -1,3 +1,5 @@
+import com.sun.org.apache.xpath.internal.SourceTree;
+
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -8,43 +10,41 @@ import java.net.SocketTimeoutException;
 /**
  * Created by od on 3.03.2017.
  */
-public class ReceiveHeartBeat implements Runnable {
+public class ReceiveHeartBeat extends Thread {
 
-    private ServerSocket heartBeatSocket;
+    private Client client;
 
-    public ReceiveHeartBeat(ServerSocket heartBeatSocket) {
-        this.heartBeatSocket = heartBeatSocket;
+    public ReceiveHeartBeat(Client client) {
+        this.client = client;
     }
 
     public void run() {
         while (true) {
             try {
+                ServerSocket heartBeatSocket = new ServerSocket(client.getHeartBeatPort());
                 Socket hb = heartBeatSocket.accept();
-                System.out.println("Hb recieved.");
-                new Thread(() -> {
-                    try {
-                        DataInputStream in = new DataInputStream(hb.getInputStream());
-                        int flag = in.readInt();
-                        System.out.println("Flag: " + flag);
+                heartBeatSocket.close();
+                System.out.println("Hb recieved from: " + hb.getInetAddress());
 
-                        if(flag == 0) {
-                            DataOutputStream out = new DataOutputStream(hb.getOutputStream());
-                            out.writeInt(1);
-                            out.flush();
-                        }
+                DataInputStream in = new DataInputStream(hb.getInputStream());
+                int flag = in.readInt();
 
-                        hb.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }).start();
+                if(flag == 0) {
+                    DataOutputStream out = new DataOutputStream(hb.getOutputStream());
+                    out.writeInt(1);
+                    out.flush();
+                }
+                else {
+                    System.err.println("Unknown heartbeat request/response.");
+                }
+
+                hb.close();
             }
             catch (SocketTimeoutException s) {
-                System.out.println("Socket timed out!");
-                break;
+                System.err.println("Server socket timed out!");
             } catch (IOException e) {
+                System.err.println("IOException while receiving heartbeat!");
                 e.printStackTrace();
-                break;
             }
         }
     }

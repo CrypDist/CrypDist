@@ -1,29 +1,30 @@
-import java.io.*;
-import java.net.InetAddress;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.HashSet;
 import java.util.Timer;
+import java.util.concurrent.ConcurrentHashMap;
+
 /**
  * Client is actual working class for peers.
  *
  * Created by od on 17.02.2017.
  */
 
-public class Client extends Thread {
+public class Client {
 
-    private BlockchainManager blockchainManager;
     private String swAdr;
     private int swPort;
-    HashSet<Peer> peerList;
+    ConcurrentHashMap<Peer,Integer> peerList;
 
     private int serverPort;
     private int heartBeatPort;
-    private ServerSocket serverSocket;
-    private ServerSocket heartBeatSocket;
 
 
-    public Client (String swAdr, int swPort, int serverPort, int heartBeatPort) throws IOException,ClassNotFoundException {
+    public Client (String swAdr, int swPort,  int heartBeatPort , int serverPort) {
         this.heartBeatPort = heartBeatPort;
         this.serverPort = serverPort;
         this.swAdr = swAdr;
@@ -32,65 +33,71 @@ public class Client extends Thread {
         initialization();
     }
 
-    public void initialization() throws IOException,ClassNotFoundException {
+    public void initialization(){
 
         //Establish a connection with server, get number of active peers and their information.
-        Socket serverConnection = new Socket(swAdr,swPort);
-        DataInputStream in = new DataInputStream(serverConnection.getInputStream());
-        int peerSize = in.readInt();
-        peerList = new HashSet<>(peerSize);
+        try {
+            Socket serverConnection = new Socket(swAdr,swPort);
+            DataInputStream in = new DataInputStream(serverConnection.getInputStream());
 
-        for(int i = 0; i < peerSize ; i++) {
-            Peer p =Peer.readObject(new ObjectInputStream(in));
+            receivePeerList(in);
 
-            new Thread(() -> {
-                try {
-                    Socket clientSocket = new Socket(p.getAddress(),p.getPeerServerPort());
-                    DataOutputStream out = new DataOutputStream(clientSocket.getOutputStream());
-                    out.writeInt(2);  //2 for new cons
-                    new Peer(InetAddress.getLoopbackAddress(),serverPort,heartBeatPort).writeObject(new ObjectOutputStream(out));
-                    out.flush();
+            //Send itself data to server.
+            DataOutputStream out = new DataOutputStream(serverConnection.getOutputStream());
+            out.writeInt(serverPort);
+            out.writeInt(heartBeatPort);
+            out.flush();
 
-                    DataInputStream in2 = new DataInputStream(clientSocket.getInputStream());
-                    int result = in2.readInt();
+            serverConnection.close();
 
-                    if(result != 1)
-                        System.out.println("Error that should be handled");
-
-                    clientSocket.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }).start();
-            peerList.add(p);
+            run();
         }
-
-        //Send itself data to server.
-        DataOutputStream out = new DataOutputStream(serverConnection.getOutputStream());
-        out.writeInt(serverPort);
-        out.writeInt(heartBeatPort);
-        out.flush();
-
-        serverConnection.close();
-
-        //Opening heartbeat socket for accepting heartbeat connections..
-        heartBeatSocket = new ServerSocket(heartBeatPort);
-
-        //Opening server port for accepting data connections.
-        serverSocket = new ServerSocket(serverPort);
-
+        catch (IOException e) {
+            System.err.println("Cannot connect to the server, terminated.");
+        }
     }
 
+    public void receivePeerList(DataInputStream in) throws IOException{
+
+        try {
+            int peerSize = in.readInt();
+            peerList = new ConcurrentHashMap<>(peerSize);
+
+            for(int i = 0; i < peerSize ; i++) {
+                try {
+                    Peer p = Peer.readObject(new ObjectInputStream(in));
+                    peerList.put(p,0);
+                    new PeerNotifier(p,heartBeatPort,serverPort).start();
+                }
+                catch (ClassNotFoundException classException) {
+                    System.err.println("Peer " + i + " cannot be resolved to an object.");
+                }
+            }
+        } catch (IOException e) {
+            System.err.println("Cannot read from the server socket.");
+            throw e;
+        }
+
+        System.out.println("Client initialized with size: " + peerList.size());
+
+    }
     public void run() {
 
         Timer timer = new Timer();
-        timer.schedule(new HeartBeatTask(peerList), 0, 10 * 1000);
+        timer.schedule(new HeartBeatTask(peerList), 0, 5 * 1000);
 
-        Thread t1 = new Thread(new ReceiveHeartBeat(heartBeatSocket));
-        Thread t2 = new Thread(new ReceiveServerRequest(serverSocket,this));
+        Thread t1 = new ReceiveHeartBeat(this);
+        Thread t2 = new ReceiveServerRequest(this);
 
         t1.start();
         t2.start();
     }
 
+    public int getServerPort() {
+        return serverPort;
+    }
+
+    public int getHeartBeatPort() {
+        return heartBeatPort;
+    }
 }

@@ -22,6 +22,12 @@ public class Peer implements Serializable {
         this.peerHeartBeatPort = peerHeartBeatPort;
     }
 
+    public Peer(Peer p) {
+        address = p.getAddress();
+        peerServerPort = p.getPeerServerPort();
+        peerHeartBeatPort = p.getPeerHeartBeatPort();
+    }
+
     public InetAddress getAddress() {
         return address;
     }
@@ -36,18 +42,11 @@ public class Peer implements Serializable {
 
     //Serialization
     public void writeObject(ObjectOutputStream out) throws IOException{
-        out.writeObject(address);
-        out.writeInt(peerServerPort);
-        out.writeInt(peerHeartBeatPort);
-        out.flush();
+        out.writeObject(this);
     }
 
     //Deserialization
     public static Peer readObject(ObjectInputStream in) throws IOException,ClassNotFoundException {
-        InetAddress adr = (InetAddress)in.readObject();
-        int port1 = in.readInt();
-        int port2 = in.readInt();
-
-        return new Peer(adr,port1,port2);
+        return (Peer)in.readObject();
     }
 }

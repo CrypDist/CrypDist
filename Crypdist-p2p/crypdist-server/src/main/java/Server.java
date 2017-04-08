@@ -5,8 +5,9 @@ import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
-import java.util.*;
-import java.util.concurrent.*;
+import java.util.HashSet;
+import java.util.Timer;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Server implementation for establishing connection among peers.
@@ -20,11 +21,11 @@ import java.util.concurrent.*;
  */
 public class Server extends Thread {
 
-    HashSet<Peer> peerList;
+    ConcurrentHashMap<Peer,Integer> peerList;
     private ServerSocket serverSocket;
 
     public Server(int port) throws IOException {
-        peerList = new HashSet<Peer>();
+        peerList = new ConcurrentHashMap<>();
 
         //Opening serverSocket
         serverSocket = new ServerSocket(port);
@@ -35,7 +36,7 @@ public class Server extends Thread {
 
         //Timer action is used for periodical heartbeats to clients.
         Timer timer = new Timer();
-        timer.schedule(new HeartBeatTask(peerList), 100000, 100 * 1000);
+        timer.schedule(new HeartBeatTask(peerList), 1000, 5 * 1000);
 
         //Server constantly accepts for new client connections.
         //Recall that serverSocket.accept() is a blocking call.
@@ -47,7 +48,7 @@ public class Server extends Thread {
                 //Whenever a new client is connected, the number of alive clients and their objects are sent.
                 out.writeInt(peerList.size());
 
-                for(Peer peer : peerList) {
+                for(Peer peer : peerList.keySet()) {
                     peer.writeObject(new ObjectOutputStream(out));
                 }
 
@@ -57,7 +58,7 @@ public class Server extends Thread {
                 int port2 = in.readInt();
 
                 System.out.println(newConnection.getInetAddress() + " is connected.");
-                peerList.add( new Peer(newConnection.getInetAddress(),port,port2 ));
+                peerList.put( new Peer(newConnection.getInetAddress(),port,port2 ),0);
 
                 newConnection.close();
             }

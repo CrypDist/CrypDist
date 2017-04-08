@@ -53,11 +53,11 @@
     </build>
 
     <dependencies>
-        <dependency>
+<!--        <dependency>
             <groupId>com.crypdist</groupId>
             <artifactId>BlockchainManager</artifactId>
             <version>1.0-SNAPSHOT</version>
-        </dependency>
+        </dependency>-->
         <dependency>
             <groupId>com.crypdist</groupId>
             <artifactId>crypdist-common</artifactId>

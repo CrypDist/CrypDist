@@ -9,61 +9,56 @@ import java.net.SocketTimeoutException;
 /**
  * Created by od on 3.03.2017.
  */
-public class ReceiveServerRequest implements Runnable {
+public class ReceiveServerRequest extends Thread {
 
-    private ServerSocket serverSocket;
     private Client client;
-    public ReceiveServerRequest(ServerSocket serverSocket, Client client) {
-        this.serverSocket = serverSocket;
+    public ReceiveServerRequest(Client client) {
         this.client = client;
     }
 
     public void run() {
-        System.out.println("Accepting server..");
+        ServerSocket serverSocket;
+        Socket server = null;
         while (true) {
             try {
-                Socket incomingRequest = serverSocket.accept();
+                serverSocket = new ServerSocket(client.getServerPort());
+                server = serverSocket.accept();
+                serverSocket.close();
 
-                System.out.println("Accepted:" + incomingRequest.getInetAddress().getCanonicalHostName());
-                new Thread(() -> {
-                    try {
-                        DataInputStream in = new DataInputStream(incomingRequest.getInputStream());
-                        int flag = in.readInt();
+                System.out.println("Server request incoming.");
 
-                        System.out.println("Fflag:" + flag);
+                ObjectInputStream in = new ObjectInputStream(new DataInputStream(server.getInputStream()));
+                int flag = in.readInt();
 
-                        DataOutputStream out = new DataOutputStream(incomingRequest.getOutputStream());
-                        switch (flag){
-                            case 1:
-                                out.writeInt(0);
-                                break;
-                            case 2:
-                                Peer p = Peer.readObject(new ObjectInputStream(in));
-                                out.writeInt(1);
-                                client.peerList.add(p);
-                                break;
-                            case 3:
-                                break;
-                            case 4:
-                                break;
-                        }
+                System.out.println("Type of message: " + flag);
 
-                        out.flush();
+                if(flag == 2) {
+                    int hb = in.readInt();
+                    int sw = in.readInt();
+                    System.out.println(hb + " " + sw);
+                    Peer x = new Peer(server.getInetAddress() , sw, hb);
+                    client.peerList.put(x,0);
+                    System.out.println("Peer list has now size: " + client.peerList.size());
+                }
+                else {
+                    System.err.println("Unknown heartbeat request/response.");
+                }
 
-                        incomingRequest.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    } catch (ClassNotFoundException e) {
-                        e.printStackTrace();
-                    }
-                }).start();
+                server.close();
             }
             catch (SocketTimeoutException s) {
-                System.out.println("Socket timed out!");
-                break;
+                System.err.println("Server socket timed out!");
             } catch (IOException e) {
+                System.err.println("IOException while receiving server request!");
                 e.printStackTrace();
-                break;
+            } finally {
+                if(server != null && !server.isClosed())
+                    try {
+                        server.close();
+                    } catch (Exception e) {
+                        continue;
+                    }
+
             }
         }
     }
