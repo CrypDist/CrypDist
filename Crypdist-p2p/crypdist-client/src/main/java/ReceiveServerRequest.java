@@ -1,7 +1,4 @@
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
+import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
@@ -37,7 +34,11 @@ public class ReceiveServerRequest extends Thread {
                 if(flag == 300) {
                     client.broadCastMessage(x);
                 }
-
+                if(flag == 400){
+                    ObjectOutputStream pout = new ObjectOutputStream(server.getOutputStream());
+                    pout.writeObject(client.getBCM().getBlockchain().getBlockMap());
+                    pout.flush();
+                }
                 server.close();
             }
             catch (SocketTimeoutException s) {

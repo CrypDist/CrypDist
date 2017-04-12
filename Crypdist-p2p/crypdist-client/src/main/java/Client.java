@@ -1,10 +1,8 @@
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketTimeoutException;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Timer;
 import java.util.concurrent.ConcurrentHashMap;
@@ -23,7 +21,10 @@ public class Client extends Thread{
 
     private int serverPort;
     private int heartBeatPort;
+    private ServerSocket serverSocket;
 
+    /* Each client has its own blockchain */
+    private BlockchainManager bcm;
 
     public Client (String swAdr, int swPort,  int heartBeatPort , int serverPort) {
         this.heartBeatPort = heartBeatPort;
@@ -31,14 +32,21 @@ public class Client extends Thread{
         this.swAdr = swAdr;
         this.swPort = swPort;
 
+        /* Initialize the blockchain for new client */
+        this.bcm = new BlockchainManager(new Block());
+
         initialization();
     }
 
-    public void initialization(){
+    public BlockchainManager getBCM(){
+        return bcm;
+    }
+
+    public void initialization() {
 
         //Establish a connection with server, get number of active peers and their information.
         try {
-            Socket serverConnection = new Socket(swAdr,swPort);
+            Socket serverConnection = new Socket(swAdr, swPort);
             DataInputStream in = new DataInputStream(serverConnection.getInputStream());
 
             receivePeerList(in);
@@ -51,9 +59,83 @@ public class Client extends Thread{
 
             serverConnection.close();
 
+
+            /* Receive the keymap from one of the clients */
+            try
+            {
+                Socket peerConnection = new Socket(swAdr, swPort);
+                ObjectOutputStream pout = new ObjectOutputStream(new DataOutputStream(peerConnection.getOutputStream()));
+                pout.writeInt(400);
+                pout.flush();
+
+                ObjectInputStream pin = new ObjectInputStream(new DataInputStream(peerConnection.getInputStream()));
+
+                /* Get the keymap from a client */
+                try
+                {
+                    Object o = pin.readObject();
+
+                    /* Ask one block from each client */
+
+                    for(Peer peer : peerList.keySet())
+                    {
+                        peer.writeObject(new ObjectOutputStream(out));
+                    }
+
+                }
+                catch(ClassNotFoundException e)
+                {
+                    System.err.println("Cannot convert to object");
+                }
+
+            }
+            catch (IOException e){
+                System.out.println("Canno connected to peer");
+            }
+
+            // TODO receive blockchain from the active peers
+
+                /*int index = 0;
+
+                *//* TODO Full blockchain'i nasil anliyorum *//*
+                while( !this.bcm.getBlockchain().equals(bcm.getBlockchain()) )
+                {
+                    for(Peer peer : peerList.keySet())
+                    {
+                        if(peer.getAddress().isReachable(10000))
+                        {
+                            try
+                            {
+                                Socket peerConnection = new Socket(peer.getAddress(), peer.getPeerServerPort());
+                                DataInputStream peerin = new DataInputStream(peerConnection.getInputStream());
+
+                                while(index < bcm.getBlockchain().getLength())
+                                {
+                                    try
+                                    {
+                                        Block block = Block.readObject(new ObjectInputStream(peerin));
+                                        this.bcm.getBlockchain().addBlock(block);
+                                        index++;
+                                    }
+                                    catch(ClassNotFoundException classException)
+                                    {
+                                        System.err.println("Block " + index + " cannot be resolved to an object.");
+                                    }
+                                }
+                            }
+                            catch(IOException e)
+                            {
+                                System.err.println("Peer connection is interrupted");
+                            }
+                        }
+                    }
+                }
+*/
+
             this.start();
         }
-        catch (IOException e) {
+        catch(IOException e)
+        {
             System.err.println("Cannot connect to the server, terminated.");
         }
     }
@@ -65,7 +147,7 @@ public class Client extends Thread{
             peerList = new ConcurrentHashMap<>(peerSize);
 
             for(int i = 0; i < peerSize ; i++) {
-                try {
+                    try {
                     Peer p = Peer.readObject(new ObjectInputStream(in));
                     peerList.put(p,0);
                     //new PeerNotifier(p,heartBeatPort,serverPort).start();
@@ -115,6 +197,26 @@ public class Client extends Thread{
 
         t1.start();
         t2.start();
+    /*
+        // Receive PeerNotifier request from the new node
+        while (this.isAlive())
+        {
+            new Thread(() -> {
+                try {
+                    Socket newConnection = serverSocket.accept();
+                    ObjectInputStream peerMessage = new ObjectInputStream(newConnection.getInputStream());
+
+                    int m1 = peerMessage.readInt();
+                    int m2 = peerMessage.readInt();
+                    int m3 = peerMessage.readInt();
+
+                    System.out.println(m1 + "\n" + m2 + "\n" + m3 + "\n");
+                    System.out.println("Socket timed out!");
+                } catch (IOException e) {
+                    System.err.println("Message did not delivered to the peer");
+                }
+            }).start();
+        }*/
     }
 
     public int getServerPort() {
