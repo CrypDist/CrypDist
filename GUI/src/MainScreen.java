@@ -41,7 +41,9 @@ public class MainScreen extends JPanel {
         query.addActionListener(listener);
         authenticate.addActionListener(listener);
 
-        FlowLayout buttonsLayout = new FlowLayout();
+        FlowLayout buttonsLayout = new FlowLayout(FlowLayout.CENTER);
+        buttonsLayout.setHgap(80);
+        buttonsLayout.setVgap(10);
         buttonsPanel.setLayout(buttonsLayout);
         buttonsPanel.setBackground(Color.white);
         buttonsPanel.add(update);
@@ -58,16 +60,23 @@ public class MainScreen extends JPanel {
         blockPanel.setBackground(Color.white);
         JScrollPane scrollPane = null;
         blockContent = new JPanel(new GridLayout(0,1));
+        blockContent.setBackground(Color.white);
         JTextArea content = new JTextArea();
         content.setEditable(false);
         JScrollPane contentScroll = new JScrollPane(content);
         blockContent.add(contentScroll);
 
         if(blocklist != null) {
-
+            UIDefaults defaults = UIManager.getLookAndFeelDefaults();
+            if (defaults.get("Table.alternateRowColor") == null)
+                defaults.put("Table.alternateRowColor", new Color(240, 240, 240));
             Object columnNames[] = {"blockId", "timestamp"};
             blockTable = new JTable(blocklist, columnNames);
+            blockTable.setGridColor(Color.white);
+            blockTable.setRowHeight(getHeight()/15);
+            blockTable.setSelectionModel(new ForcedListSelectionModel());
             scrollPane = new JScrollPane(blockTable);
+            scrollPane.setBackground(Color.white);
             add(scrollPane);
             blockTable.getSelectionModel().addListSelectionListener(new ListSelectionListener(){
                 public void valueChanged(ListSelectionEvent event) {
@@ -133,6 +142,21 @@ public class MainScreen extends JPanel {
                 controller.showLogin();
             }
             repaint();
+        }
+
+    }
+    class ForcedListSelectionModel extends DefaultListSelectionModel {
+
+        public ForcedListSelectionModel () {
+            setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        }
+
+        @Override
+        public void clearSelection() {
+        }
+
+        @Override
+        public void removeSelectionInterval(int index0, int index1) {
         }
 
     }

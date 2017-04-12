@@ -1,4 +1,6 @@
 import javax.swing.*;
+import javax.swing.border.Border;
+import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -42,6 +44,11 @@ public class DataUpdateScreen extends JPanel implements ActionListener{
         cancel.setEnabled(false);
         progressBar.setVisible(false);
 
+        Border border = BorderFactory.createLineBorder(Color.GRAY, 1);
+        label.setBorder(new EmptyBorder(10, 40, 10, 10));
+        pathField.setFont(new Font("Arial", Font.LAYOUT_LEFT_TO_RIGHT,14));
+        pathField.setBorder(border);
+
         // Create the layout structure
         GridLayout mainLayout = new GridLayout(5,0);
         this.setLayout(mainLayout);
@@ -51,11 +58,11 @@ public class DataUpdateScreen extends JPanel implements ActionListener{
         bottom.add(back);
         bottom.add(cancel);
 
-        JPanel browsePanel = new JPanel();
+        JPanel browsePanel = new JPanel(new FlowLayout(FlowLayout.LEFT,20,0));
         browsePanel.setBackground(Color.white);
         browsePanel.add(pathField);
         browsePanel.add(browse);
-        browse.setAlignmentX(JButton.RIGHT_ALIGNMENT);
+        browsePanel.setBorder(BorderFactory.createEmptyBorder(10, 30, 10, 10));
 
         JPanel layer3 = new JPanel();
         layer3.setBackground(Color.white);
