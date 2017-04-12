@@ -88,6 +88,11 @@ public class Blockchain implements Serializable
         return false;
     }
 
+    public String getLastBlock()
+    {
+        return validBlock.getHash();
+    }
+
 //    // Maps the hashes to blocks
 //    private HashMap<String, Block> blockMap;
 //    // There are multiple chains for forks

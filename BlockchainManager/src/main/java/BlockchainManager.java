@@ -1,22 +1,34 @@
 
-import javax.xml.bind.DatatypeConverter;
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.TimerTask;
+import java.util.concurrent.PriorityBlockingQueue;
 
 /**
  * Created by Kaan on 18-Feb-17.
  */
 public class BlockchainManager
 {
+
+    private final int BLOCK_SIZE = 4;
+    private final int MAX_TIMEOUT_MS = 10000;
     private Blockchain blockchain;
     private PostgresDB dbManager;
+    private ServerAccessor serverAccessor;
+    private PriorityBlockingQueue<Transaction> transactionBucket;
+    private ArrayList<Transaction> transactionBucket_solid;
+    private boolean hashReceived;
+    private String lastHash;
 
     public BlockchainManager(Block genesis)
     {
         dbManager = new PostgresDB("blockchain", "postgres", "", false);
         blockchain = new Blockchain(genesis);
+        serverAccessor = new ServerAccessor();
+        transactionBucket = new PriorityBlockingQueue<>();
+        transactionBucket_solid = new ArrayList<>(BLOCK_SIZE);
     }
 
     public Blockchain getBlockchain()
@@ -24,7 +36,23 @@ public class BlockchainManager
         return blockchain;
     }
 
-    public boolean addBlockToBlockchain(Block block) throws Exception {
+    public void uploadFile(String filePath)
+    {
+        String[] path = filePath.split("/");
+        String fileName = path[path.length - 1];
+
+        Upload upload = new Upload(fileName, filePath);
+        upload.execute(serverAccessor);
+        transactionBucket.add(upload);
+    }
+
+    // Transaction is serializable and taken from the p2p connection as it is
+    public void addTransaction(Transaction transaction)
+    {
+        transactionBucket.add(transaction);
+    }
+
+    private boolean addBlockToBlockchain(Block block) throws Exception {
         if (blockchain.addBlock(block))
             if (dbManager.addBlock(block.getHash(), block.toString()))
                 return true;
@@ -52,10 +80,43 @@ public class BlockchainManager
 //        return blocks;
 //    }
 
-    public long mineBlock(String prevHash, long timestamp, long maxNonce,
-                            ArrayList<Transaction> transactions)
+    public void createBlock()
     {
-        BlockMiner miner = new BlockMiner(prevHash, timestamp, maxNonce, transactions);
+        if (transactionBucket_solid.size() != BLOCK_SIZE)
+        {
+            return;
+        }
+        else
+        {
+            String prevHash = blockchain.getLastBlock();
+            long timestamp = getTime();
+            long maxNonce = Long.MAX_VALUE;
+            String hash = mineBlock(prevHash, timestamp, maxNonce);
+            Block block = null;
+            try {
+                block = new Block(prevHash, timestamp, hash, transactionBucket_solid, blockchain);
+            } catch (NoSuchAlgorithmException e) {
+                e.printStackTrace();
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
+
+            try {
+                addBlockToBlockchain(block);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public long getTime()
+    {
+        return System.currentTimeMillis();
+    }
+
+    public String mineBlock(String prevHash, long timestamp, long maxNonce)
+    {
+        BlockMiner miner = new BlockMiner(prevHash, timestamp, maxNonce, transactionBucket_solid);
         return miner.mineBlock();
     }
 
@@ -87,10 +148,14 @@ public class BlockchainManager
             data = new MerkleTree(stringTransactions);
         }
 
-        public long mineBlock()
+        public String mineBlock()
         {
+            if(hashReceived) {
+                return lastHash;
+            }
             long score = Long.MAX_VALUE;
             long bestNonce = -1;
+            byte[] hash = null;
             try
             {
                 MessageDigest md = MessageDigest.getInstance("SHA-256");
@@ -100,8 +165,9 @@ public class BlockchainManager
                 // Try all values as brute-force
                 for (int i = 0; i < maxNonce; i++)
                 {
+                    // TODO: OGUZ, BURADA EGER BASKA BIR HASH BULUNMUSSA BU THREAD DURACAK.
                     String dataWithNonce = blockData + ":" + i + "}";
-                    byte[] hash = md.digest(dataWithNonce.getBytes("UTF-8"));
+                    hash = md.digest(dataWithNonce.getBytes("UTF-8"));
 
                     long tempScore = 0L;
                     for (int j = 0; j < 8; j++)
@@ -119,7 +185,27 @@ public class BlockchainManager
                 }
             }
             catch (NoSuchAlgorithmException | UnsupportedEncodingException e) {}
-            return bestNonce;
+
+            // TODO BROADCAST HASH VALUE!
+            return new String(hash);
+        }
+    }
+
+    public class BlockchainBatch extends TimerTask{
+        @Override
+        public void run() {
+            while(true) {
+                if (transactionBucket.peek().timeStamp.getTime() < getTime() - MAX_TIMEOUT_MS)
+                {
+                    transactionBucket_solid.add(transactionBucket.poll());
+                    if (transactionBucket_solid.size() == BLOCK_SIZE)
+                    {
+                        createBlock();
+                    }
+                }
+                else
+                    break;
+            }
         }
     }
 }

@@ -34,6 +34,11 @@
             <artifactId>DB_Manager</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>UploadUnit</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 
 </project>

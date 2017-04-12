@@ -1,36 +1,62 @@
 
 import java.io.File;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.security.Timestamp;
+
+import java.net.InetAddress;
+import java.util.Date;
+import org.apache.commons.net.ntp.NTPUDPClient;
+import org.apache.commons.net.ntp.TimeInfo;
+
+import static java.lang.System.currentTimeMillis;
 
 /**
  * Created by Kaan on 19-Feb-17.
  */
 public class Upload extends Transaction
 {
-    public Upload(String stringFormat)
+    private final String TIME_SERVER = "nist1-macon.macon.ga.us";
+    private final String amazonServer = "https://s3.eu-central-1.amazonaws.com/";
+    private final String bucketName = System.getenv("BUCKET_NAME");
+
+    public Upload(String filePath, String fileName)
     {
-        this.stringFormat = stringFormat;
+        this.filePath = filePath;
+        this.fileName = fileName;
+        // TODO will be fixed
+
+        NTPUDPClient timeClient = new NTPUDPClient();
+        InetAddress inetAddress = null;
+        try {
+            inetAddress = InetAddress.getByName(TIME_SERVER);
+            TimeInfo timeInfo = timeClient.getTime(inetAddress);
+            long returnTime = timeInfo.getMessage().getTransmitTimeStamp().getTime();
+            System.out.println(returnTime);
+            Date time = new Date(returnTime);
+
+            this.timeStamp = time;
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+
     }
 
-    public void execute()
+    public void execute(ServerAccessor serverAccessor)
     {
-
+        try {
+            serverAccessor.upload(fileName, filePath);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
-    public boolean validate()
-    {
-        // Transaction format: UPLOAD filename source link
-        String parts[] = stringFormat.split(" ");
-        if (parts.length != 4)
-            return false;
-        if (!parts[0].equals("UPLOAD"))
-            return false;
-
-        File file = new File(parts[1]);
-        if (!file.exists())
-            return false;
-
-        // TODO check if the source exists
-        // TODO check if the link is valid
-        return true;
+    @Override
+    public String getStringFormat() {
+        return amazonServer + bucketName + "/" + fileName;
     }
 }

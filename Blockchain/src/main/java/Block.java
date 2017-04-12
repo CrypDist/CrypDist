@@ -41,7 +41,7 @@ public class Block implements Serializable
         timestamp = 0L;
     }
 
-    public Block(String prevHash, long timestamp, long nonce,
+    public Block(String prevHash, long timestamp, String hash,
                  ArrayList<Transaction> transactions, Blockchain blockchain) throws NoSuchAlgorithmException,
             UnsupportedEncodingException
     {
