@@ -78,33 +78,39 @@ public class DataUploadScreen extends JPanel implements ActionListener{
         if (e.getSource() == upload) {
             {
                 if(pathField.getText().equals(""))
-                    JOptionPane.showMessageDialog(this, "Please enter a path", "Warning",
+                    JOptionPane.showMessageDialog(this, "Please enter a valid path!", "Warning",
                             JOptionPane.WARNING_MESSAGE);
                 else {
-                    pathField.setEditable(false);
-                    browse.setEnabled(false);
-                    back.setEnabled(false);
-                    cancel.setEnabled(true);
-                    progressBar.setVisible(true);
-                    progressBar.setIndeterminate(true);
-                    Runnable myrunnable = new Runnable() {
-                        public void run() {
+                    if(controller.isPathExist(pathField.getText())) {
+                        pathField.setEditable(false);
+                        browse.setEnabled(false);
+                        back.setEnabled(false);
+                        cancel.setEnabled(true);
+                        progressBar.setVisible(true);
+                        progressBar.setIndeterminate(true);
+                        Runnable myrunnable = new Runnable() {
+                            public void run() {
 
-                            try {
-                                controller.uploadData(pathField.getText());
-                                pathField.setEditable(true);
-                                browse.setEnabled(true);
-                                back.setEnabled(true);
-                                cancel.setEnabled(false);
-                                progressBar.setVisible(false);
-                                progressBar.setIndeterminate(false);
-                                pathField.setText("");
-                            } catch (InterruptedException e1) {
-                                e1.printStackTrace();
+                                try {
+                                    controller.uploadData(pathField.getText());
+                                    pathField.setEditable(true);
+                                    browse.setEnabled(true);
+                                    back.setEnabled(true);
+                                    cancel.setEnabled(false);
+                                    progressBar.setVisible(false);
+                                    progressBar.setIndeterminate(false);
+                                    pathField.setText("");
+                                } catch (InterruptedException e1) {
+                                    e1.printStackTrace();
+                                }
                             }
-                        }
-                    };
-                    new Thread(myrunnable).start();
+                        };
+                        new Thread(myrunnable).start();
+                    }
+                    else {
+                        JOptionPane.showMessageDialog(this, "Please enter a valid path!", "Warning",
+                                JOptionPane.WARNING_MESSAGE);
+                    }
                 }
             }
         }

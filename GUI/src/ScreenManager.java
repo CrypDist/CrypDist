@@ -3,6 +3,7 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -204,5 +205,14 @@ public class ScreenManager extends JFrame{
     }
 
     private void cancelDownload() {
+    }
+
+    public String query(String text) {
+        return "query";
+    }
+
+    public boolean isPathExist(String text) {
+        File file = new File(text);
+        return file.exists();
     }
 }
