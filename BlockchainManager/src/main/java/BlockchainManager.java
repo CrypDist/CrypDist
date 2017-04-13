@@ -1,17 +1,22 @@
 
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Observable;
+import java.util.Observer;
 import java.util.TimerTask;
 import java.util.concurrent.PriorityBlockingQueue;
 
 /**
  * Created by Kaan on 18-Feb-17.
  */
-public class BlockchainManager
+public class BlockchainManager extends Observable
 {
-
     private final int BLOCK_SIZE = 4;
     private final int MAX_TIMEOUT_MS = 10000;
     private Blockchain blockchain;
@@ -44,6 +49,14 @@ public class BlockchainManager
         Upload upload = new Upload(fileName, filePath);
         upload.execute(serverAccessor);
         transactionBucket.add(upload);
+
+
+        Gson gson = new Gson();
+        JsonObject obj = new JsonObject();
+        obj.addProperty("flag",1);
+        obj.addProperty("data", gson.toJson(upload));
+        notifyObservers(obj);
+
     }
 
     // Transaction is serializable and taken from the p2p connection as it is
@@ -186,7 +199,14 @@ public class BlockchainManager
             }
             catch (NoSuchAlgorithmException | UnsupportedEncodingException e) {}
 
-            // TODO BROADCAST HASH VALUE!
+
+            Gson gson = new Gson();
+            JsonObject obj = new JsonObject();
+            obj.addProperty("flag",2);
+            obj.addProperty("data", new String(hash));
+            notifyObservers(obj);
+
+
             return new String(hash);
         }
     }

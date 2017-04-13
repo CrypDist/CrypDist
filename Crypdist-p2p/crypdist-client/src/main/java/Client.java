@@ -4,6 +4,7 @@ import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Observable;
 import java.util.Timer;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -13,7 +14,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * Created by od on 17.02.2017.
  */
 
-public class Client extends Thread{
+public class Client extends Observable implements Runnable{
 
     private String swAdr;
     private int swPort;
@@ -23,8 +24,6 @@ public class Client extends Thread{
     private int heartBeatPort;
     private ServerSocket serverSocket;
 
-    /* Each client has its own blockchain */
-    private BlockchainManager bcm;
 
     public Client (String swAdr, int swPort,  int heartBeatPort , int serverPort) {
         this.heartBeatPort = heartBeatPort;
@@ -32,14 +31,8 @@ public class Client extends Thread{
         this.swAdr = swAdr;
         this.swPort = swPort;
 
-        /* Initialize the blockchain for new client */
-        this.bcm = new BlockchainManager(new Block());
 
         initialization();
-    }
-
-    public BlockchainManager getBCM(){
-        return bcm;
     }
 
     public void initialization() {
@@ -131,8 +124,6 @@ public class Client extends Thread{
                     }
                 }
 */
-
-            this.start();
         }
         catch(IOException e)
         {
@@ -176,7 +167,7 @@ public class Client extends Thread{
             Socket messagedClient = new Socket(p.getAddress(),p.getPeerServerPort());
             ObjectOutputStream out = new ObjectOutputStream(new DataOutputStream(messagedClient.getOutputStream()));
             out.writeInt(200);
-            out.writeObject(msg);
+            out.writeUTF(msg);
             out.flush();
 
             messagedClient.close();
