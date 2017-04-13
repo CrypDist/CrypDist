@@ -97,9 +97,9 @@ public class QueryScreen extends JPanel {
 
             if(e.getSource() == run) {
                 back.setEnabled(false);
-                // TODO: Check if correct query statement
+                // TODO: Check if query statement is correct
                 if(query.getText().equals("")) {
-                    JOptionPane.showMessageDialog(QueryScreen.this, "Please enter a query!", "Warning",
+                    JOptionPane.showMessageDialog(QueryScreen.this, "Please enter a query statement!", "Warning",
                             JOptionPane.WARNING_MESSAGE);
                 }
                 String result = controller.query(query.getText());

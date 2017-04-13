@@ -54,7 +54,7 @@ public class ScreenManager extends JFrame{
     }
 
     public String getBlockContent(String blockId) {
-
+        // TODO
         return "hi";
     }
 
@@ -110,6 +110,7 @@ public class ScreenManager extends JFrame{
     }
 
     public String[][] getBlockList() {
+        // TODO
         String[][] blocklist = {
                 {"#id1", "2017-04-11T18:46:07+00:00 "},
                 {"#id2", "2016-04-11T18:46:07+00:00 "},
@@ -122,19 +123,19 @@ public class ScreenManager extends JFrame{
 
     public void abortUpload() throws InterruptedException {
          /* cancel upload or update data  */
-
+        // TODO Interrupt upload
         TimeUnit.SECONDS.sleep(1);
     }
 
     public void uploadData(String text) throws InterruptedException {
         /* upload data  */
-
+        // TODO
         TimeUnit.SECONDS.sleep(5);
     }
 
     public void updateData(String text, String blockId) throws InterruptedException {
         /* update data  */
-
+        // TODO
         TimeUnit.SECONDS.sleep(5);
     }
 
@@ -152,6 +153,7 @@ public class ScreenManager extends JFrame{
         dlg.add(progressBar);
 
         GlossyButton cancel = new GlossyButton("Cancel");
+        JPanel bottomP = new JPanel();
 
         Thread t = new Thread(new Runnable() {
             public void run() {
@@ -171,14 +173,14 @@ public class ScreenManager extends JFrame{
                     label.setText("Data downloaded..");
                     progressBar.setEnabled(false);
                     progressBar.setVisible(false);
-                    dlg.remove(cancel);
+                    bottomP.remove(cancel);
                     GlossyButton ok = new GlossyButton("OK");
                     ok.addActionListener(new ActionListener() {
                         public void actionPerformed(ActionEvent e) {
                             dlg.dispose();
                         }
                     } );
-                    dlg.add(ok);
+                    bottomP.add(ok);
                     ok.repaint();
                     dlg.repaint();
                     dlg.setVisible(true);
@@ -196,7 +198,9 @@ public class ScreenManager extends JFrame{
                 t.interrupt();
             }
         } );
-        dlg.add(cancel);
+        bottomP.add(cancel);
+        cancel.setSize(100,80);
+        dlg.add(bottomP);
         dlg.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
         dlg.setSize(600, 100);
         dlg.setLocationRelativeTo(this);
@@ -207,10 +211,12 @@ public class ScreenManager extends JFrame{
     }
 
     private void cancelDownload() {
+        // TODO interrupt download
     }
 
     public String query(String text) {
-        return "query";
+        // TODO query();
+        return "queryResults";
     }
 
     public boolean isPathExist(String text) {
