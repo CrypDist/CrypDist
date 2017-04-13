@@ -13,8 +13,8 @@ public class BlockchainTest
     private static BlockchainManager blockchainManager = new BlockchainManager(new Block());
     Transaction t1 = new Upload("UPLOAD filename 1");
     Transaction t2 = new Upload("UPLOAD filename 2");
-    Transaction t3 = new Download("DOWNLOAD 1");
-    Transaction t4 = new Download("DOWNLOAD 2");
+    Transaction t3 = new Upload("UPLOAD filename 3");
+    Transaction t4 = new Upload("UPLOAD filename 4");
     ArrayList<Transaction> transactions = new ArrayList<Transaction>();
     private static Block genesis = new Block();
 
