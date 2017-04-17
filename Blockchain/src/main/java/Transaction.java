@@ -61,4 +61,8 @@ public class Transaction
     public String getStringFormat() {
         return amazonServer + bucketName + "/" + fileName;
     }
+
+    public Date getTimeStamp() {
+        return timeStamp;
+    }
 }

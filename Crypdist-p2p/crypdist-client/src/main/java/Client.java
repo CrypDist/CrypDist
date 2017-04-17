@@ -53,77 +53,78 @@ public class Client extends Observable implements Runnable{
             serverConnection.close();
 
 
-            /* Receive the keymap from one of the clients */
-            try
-            {
-                Socket peerConnection = new Socket(swAdr, swPort);
-                ObjectOutputStream pout = new ObjectOutputStream(new DataOutputStream(peerConnection.getOutputStream()));
-                pout.writeInt(400);
-                pout.flush();
-
-                ObjectInputStream pin = new ObjectInputStream(new DataInputStream(peerConnection.getInputStream()));
-
-                /* Get the keymap from a client */
-                try
-                {
-                    Object o = pin.readObject();
-
-                    /* Ask one block from each client */
-
-                    for(Peer peer : peerList.keySet())
-                    {
-                        peer.writeObject(new ObjectOutputStream(out));
-                    }
-
-                }
-                catch(ClassNotFoundException e)
-                {
-                    System.err.println("Cannot convert to object");
-                }
-
-            }
-            catch (IOException e){
-                System.out.println("Canno connected to peer");
-            }
-
-            // TODO receive blockchain from the active peers
-
-                /*int index = 0;
-
-                *//* TODO Full blockchain'i nasil anliyorum *//*
-                while( !this.bcm.getBlockchain().equals(bcm.getBlockchain()) )
-                {
-                    for(Peer peer : peerList.keySet())
-                    {
-                        if(peer.getAddress().isReachable(10000))
-                        {
-                            try
-                            {
-                                Socket peerConnection = new Socket(peer.getAddress(), peer.getPeerServerPort());
-                                DataInputStream peerin = new DataInputStream(peerConnection.getInputStream());
-
-                                while(index < bcm.getBlockchain().getLength())
-                                {
-                                    try
-                                    {
-                                        Block block = Block.readObject(new ObjectInputStream(peerin));
-                                        this.bcm.getBlockchain().addBlock(block);
-                                        index++;
-                                    }
-                                    catch(ClassNotFoundException classException)
-                                    {
-                                        System.err.println("Block " + index + " cannot be resolved to an object.");
-                                    }
-                                }
-                            }
-                            catch(IOException e)
-                            {
-                                System.err.println("Peer connection is interrupted");
-                            }
-                        }
-                    }
-                }
-*/
+//
+//            /* Receive the keymap from one of the clients */
+//            try
+//            {
+//                Socket peerConnection = new Socket(swAdr, swPort);
+//                ObjectOutputStream pout = new ObjectOutputStream(new DataOutputStream(peerConnection.getOutputStream()));
+//                pout.writeInt(400);
+//                pout.flush();
+//
+//                ObjectInputStream pin = new ObjectInputStream(new DataInputStream(peerConnection.getInputStream()));
+//
+//                /* Get the keymap from a client */
+//                try
+//                {
+//                    Object o = pin.readObject();
+//
+//                    /* Ask one block from each client */
+//
+//                    for(Peer peer : peerList.keySet())
+//                    {
+//                        peer.writeObject(new ObjectOutputStream(out));
+//                    }
+//
+//                }
+//                catch(ClassNotFoundException e)
+//                {
+//                    System.err.println("Cannot convert to object");
+//                }
+//
+//            }
+//            catch (IOException e){
+//                System.out.println("Canno connected to peer");
+//            }
+//
+//            // TODO receive blockchain from the active peers
+//
+//                /*int index = 0;
+//
+//                *//* TODO Full blockchain'i nasil anliyorum *//*
+//                while( !this.bcm.getBlockchain().equals(bcm.getBlockchain()) )
+//                {
+//                    for(Peer peer : peerList.keySet())
+//                    {
+//                        if(peer.getAddress().isReachable(10000))
+//                        {
+//                            try
+//                            {
+//                                Socket peerConnection = new Socket(peer.getAddress(), peer.getPeerServerPort());
+//                                DataInputStream peerin = new DataInputStream(peerConnection.getInputStream());
+//
+//                                while(index < bcm.getBlockchain().getLength())
+//                                {
+//                                    try
+//                                    {
+//                                        Block block = Block.readObject(new ObjectInputStream(peerin));
+//                                        this.bcm.getBlockchain().addBlock(block);
+//                                        index++;
+//                                    }
+//                                    catch(ClassNotFoundException classException)
+//                                    {
+//                                        System.err.println("Block " + index + " cannot be resolved to an object.");
+//                                    }
+//                                }
+//                            }
+//                            catch(IOException e)
+//                            {
+//                                System.err.println("Peer connection is interrupted");
+//                            }
+//                        }
+//                    }
+//                }
+//*/
         }
         catch(IOException e)
         {

@@ -10,11 +10,12 @@ import java.util.ArrayList;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.TimerTask;
-import java.util.concurrent.PriorityBlockingQueue;
+import java.util.concurrent.*;
 
 /**
  * Created by Kaan on 18-Feb-17.
  */
+
 public class BlockchainManager extends Observable
 {
     private final int BLOCK_SIZE = 4;
@@ -27,8 +28,9 @@ public class BlockchainManager extends Observable
     private boolean hashReceived;
     private String lastHash;
 
-    public BlockchainManager(Block genesis)
+    public BlockchainManager()
     {
+        Block genesis = new Block();
         dbManager = new PostgresDB("blockchain", "postgres", "", false);
         blockchain = new Blockchain(genesis);
         serverAccessor = new ServerAccessor();
@@ -46,7 +48,7 @@ public class BlockchainManager extends Observable
         String[] path = filePath.split("/");
         String fileName = path[path.length - 1];
 
-        Upload upload = new Upload(fileName, filePath);
+        Transaction upload = new Transaction(fileName, filePath);
         upload.execute(serverAccessor);
         transactionBucket.add(upload);
 
@@ -64,6 +66,12 @@ public class BlockchainManager extends Observable
     {
         transactionBucket.add(transaction);
     }
+    public void addTransaction(String data)
+    {
+        Gson gson = new Gson();
+        Transaction transaction = gson.fromJson(data, Transaction.class);
+        transactionBucket.add(transaction);
+    }
 
     private boolean addBlockToBlockchain(Block block) throws Exception {
         if (blockchain.addBlock(block))
@@ -76,6 +84,15 @@ public class BlockchainManager extends Observable
         catch (Exception ignored){}
 
         return false;
+    }
+
+
+    public void receiveHash(String data) {
+        Gson gson = new Gson();
+        String str = gson.fromJson(data,String.class);
+
+        hashReceived = true;
+        lastHash = str;
     }
 
     public int getBlockchainLength()
@@ -129,8 +146,16 @@ public class BlockchainManager extends Observable
 
     public String mineBlock(String prevHash, long timestamp, long maxNonce)
     {
-        BlockMiner miner = new BlockMiner(prevHash, timestamp, maxNonce, transactionBucket_solid);
-        return miner.mineBlock();
+        ExecutorService executor = Executors.newCachedThreadPool();
+
+        Callable<String> task =  new BlockMiner(prevHash, timestamp, maxNonce, transactionBucket_solid);
+        Future<String> future = executor.submit(task);
+
+        try {
+            return future.get();
+        } catch (Exception e) {
+            return "";
+        }
     }
 
     /**
@@ -140,7 +165,7 @@ public class BlockchainManager extends Observable
      * to find a minimum value which is called nonce to make the hash
      * key. The score should be below a target after doing this.
      */
-    private class BlockMiner
+    private class BlockMiner implements Callable<String>
     {
         private long blockId;
         private MerkleTree data;
@@ -161,7 +186,7 @@ public class BlockchainManager extends Observable
             data = new MerkleTree(stringTransactions);
         }
 
-        public String mineBlock()
+        public String call()
         {
             if(hashReceived) {
                 return lastHash;
@@ -215,7 +240,7 @@ public class BlockchainManager extends Observable
         @Override
         public void run() {
             while(true) {
-                if (transactionBucket.peek().timeStamp.getTime() < getTime() - MAX_TIMEOUT_MS)
+                if (transactionBucket.peek().getTimeStamp().getTime() < getTime() - MAX_TIMEOUT_MS)
                 {
                     transactionBucket_solid.add(transactionBucket.poll());
                     if (transactionBucket_solid.size() == BLOCK_SIZE)
