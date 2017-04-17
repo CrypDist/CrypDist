@@ -1,3 +1,5 @@
+import com.google.gson.Gson;
+
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -9,6 +11,7 @@ import java.net.SocketTimeoutException;
 public class ReceiveServerRequest extends Thread {
 
     private Client client;
+
     public ReceiveServerRequest(Client client) {
         this.client = client;
     }
@@ -25,20 +28,10 @@ public class ReceiveServerRequest extends Thread {
                 System.out.println("Server request incoming.");
 
                 ObjectInputStream in = new ObjectInputStream(new DataInputStream(server.getInputStream()));
-                int flag = in.readInt();
-                String x = (String) in.readObject();
+                String str = in.readUTF();
 
-                if(flag == 200) {
-                    System.out.print("The received messsage:" +  x + "\n");
-                }
-                if(flag == 300) {
-                    client.broadCastMessage(x);
-                }
-                if(flag == 400){
-                    ObjectOutputStream pout = new ObjectOutputStream(server.getOutputStream());
-                    pout.writeObject(client.getBCM().getBlockchain().getBlockMap());
-                    pout.flush();
-                }
+                client.notifyObservers(str);
+
                 server.close();
             }
             catch (SocketTimeoutException s) {
@@ -46,16 +39,13 @@ public class ReceiveServerRequest extends Thread {
             } catch (IOException e) {
                 System.err.println("IOException while receiving server request!");
                 e.printStackTrace();
-            } catch (ClassNotFoundException e) {
-                System.err.println("Error read.");
             }finally {
                 if(server != null && !server.isClosed())
                     try {
                         server.close();
                     } catch (Exception e) {
-                        continue;
-                    }
 
+                    }
             }
         }
     }
