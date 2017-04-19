@@ -22,7 +22,6 @@ public class Client extends Observable implements Runnable{
 
     private int serverPort;
     private int heartBeatPort;
-    private ServerSocket serverSocket;
 
 
     public Client (String swAdr, int swPort,  int heartBeatPort , int serverPort) {
@@ -35,6 +34,9 @@ public class Client extends Observable implements Runnable{
         initialization();
     }
 
+    public void change(){
+        setChanged();
+    }
     public void initialization() {
 
         //Establish a connection with server, get number of active peers and their information.
@@ -46,8 +48,8 @@ public class Client extends Observable implements Runnable{
 
             //Send itself data to server.
             DataOutputStream out = new DataOutputStream(serverConnection.getOutputStream());
-            out.writeInt(serverPort);
             out.writeInt(heartBeatPort);
+            out.writeInt(serverPort);
             out.flush();
 
             serverConnection.close();
@@ -142,7 +144,7 @@ public class Client extends Observable implements Runnable{
                     try {
                     Peer p = Peer.readObject(new ObjectInputStream(in));
                     peerList.put(p,0);
-                    //new PeerNotifier(p,heartBeatPort,serverPort).start();
+                    //new Peer8Notifier(p,heartBeatPort,serverPort).start();
                 }
                 catch (ClassNotFoundException classException) {
                     System.err.println("Peer " + i + " cannot be resolved to an object.");
@@ -164,6 +166,7 @@ public class Client extends Observable implements Runnable{
     }
 
     public boolean sendMessage(Peer p, String msg) {
+
         try {
             Socket messagedClient = new Socket(p.getAddress(),p.getPeerServerPort());
             ObjectOutputStream out = new ObjectOutputStream(new DataOutputStream(messagedClient.getOutputStream()));
@@ -172,9 +175,10 @@ public class Client extends Observable implements Runnable{
             out.flush();
 
             messagedClient.close();
-
+            System.out.println("Message is sent:" + msg);
             return true;
         } catch (IOException e) {
+            e.printStackTrace();
             return false;
         }
     }
@@ -182,7 +186,7 @@ public class Client extends Observable implements Runnable{
     public void run() {
 
         Timer timer = new Timer();
-        timer.schedule(new HeartBeatTask(peerList,101), 0, 5 * 1000);
+        timer.schedule(new HeartBeatTask(peerList,101, heartBeatPort,serverPort), 0, 5 * 1000);
 
         Thread t1 = new ReceiveHeartBeat(this);
         Thread t2 = new ReceiveServerRequest(this);

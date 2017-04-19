@@ -51,7 +51,7 @@ public class ReceiveHeartBeat extends Thread {
                         }
                     }
                     if (b) {
-                        Peer x = new Peer(addr,swPort,hbPort);
+                        Peer x = new Peer(addr,hbPort,swPort);
                         System.out.println("New peer added.");
                         client.peerList.put(x,0);
                     }

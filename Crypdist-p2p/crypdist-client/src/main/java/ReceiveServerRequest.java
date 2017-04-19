@@ -27,9 +27,13 @@ public class ReceiveServerRequest extends Thread {
 
                 System.out.println("Server request incoming.");
 
+
                 ObjectInputStream in = new ObjectInputStream(new DataInputStream(server.getInputStream()));
+                int flag = in.readInt();
                 String str = in.readUTF();
 
+                System.out.println("Client is notifying with " + flag  + " | " + str);
+                client.change();
                 client.notifyObservers(str);
 
                 server.close();

@@ -16,7 +16,7 @@ public class Peer implements Serializable {
     private int peerServerPort;
     private int peerHeartBeatPort;
 
-    public Peer(InetAddress address, int peerServerPort, int peerHeartBeatPort) {
+    public Peer(InetAddress address, int peerHeartBeatPort,int peerServerPort) {
         this.address = address;
         this.peerServerPort = peerServerPort;
         this.peerHeartBeatPort = peerHeartBeatPort;

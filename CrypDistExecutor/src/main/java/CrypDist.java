@@ -9,19 +9,22 @@ import jdk.nashorn.internal.parser.JSONParser;
 public class CrypDist implements Observer{
 
 
-    private BlockchainManager blockchainManager;
-    private Client client;
+    BlockchainManager blockchainManager;
+    Client client;
 
     public CrypDist(String swAdr, int swPort, int hbPort, int serverPort ) {
 
         blockchainManager = new BlockchainManager();
         client = new Client(swAdr, swPort, hbPort,serverPort );
+        Thread t = new Thread(client);
         blockchainManager.addObserver(this);
         client.addObserver(this);
+        t.start();
     }
     @Override
     public void update(Observable o, Object arg) {
 
+        System.out.println("BE NOTIFIED");
         Gson gson = new Gson();
         if( o instanceof BlockchainManager) {
             JsonObject obj = (JsonObject) arg;
@@ -40,11 +43,11 @@ public class CrypDist implements Observer{
 
             int flagValue = obj2.get("flag").getAsInt();
 
-            if (flagValue == 1) //SIMDILIK 1 TRANSACTION
-            {
+
                 JsonElement data = obj2.get("data");
-                blockchainManager.addTransaction(data.toString());
-            }
+                System.out.println("DATA RECEIVED" + data.getAsString());
+                blockchainManager.addTransaction(data.getAsString());
+
 
 
         } else

@@ -12,3 +12,5 @@ target/
 *.iws
 .DS_Store
 .directory
+*/jarFile/
+jarFile

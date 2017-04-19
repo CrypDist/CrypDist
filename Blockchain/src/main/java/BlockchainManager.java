@@ -6,10 +6,7 @@ import com.google.gson.JsonObject;
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.Observable;
-import java.util.Observer;
-import java.util.TimerTask;
+import java.util.*;
 import java.util.concurrent.*;
 
 /**
@@ -33,9 +30,12 @@ public class BlockchainManager extends Observable
         Block genesis = new Block();
         dbManager = new PostgresDB("blockchain", "postgres", "", false);
         blockchain = new Blockchain(genesis);
-        serverAccessor = new ServerAccessor();
+   //     serverAccessor = new ServerAccessor();
         transactionBucket = new PriorityBlockingQueue<>();
         transactionBucket_solid = new ArrayList<>(BLOCK_SIZE);
+        Timer timer = new Timer();
+        timer.schedule(new BlockchainBatch(),0, 5 * 1000);
+
     }
 
     public Blockchain getBlockchain()
@@ -49,15 +49,17 @@ public class BlockchainManager extends Observable
         String fileName = path[path.length - 1];
 
         Transaction upload = new Transaction(fileName, filePath);
-        upload.execute(serverAccessor);
+        //upload.execute(serverAccessor);
         transactionBucket.add(upload);
-
+        System.out.println("Transaction added, being broadcasted.");
 
         Gson gson = new Gson();
         JsonObject obj = new JsonObject();
         obj.addProperty("flag",1);
         obj.addProperty("data", gson.toJson(upload));
+        setChanged();
         notifyObservers(obj);
+        System.out.println("Notified");
 
     }
 
@@ -112,6 +114,7 @@ public class BlockchainManager extends Observable
 
     public void createBlock()
     {
+        System.out.println("Block is creating.");
         if (transactionBucket_solid.size() != BLOCK_SIZE)
         {
             return;
@@ -236,20 +239,23 @@ public class BlockchainManager extends Observable
         }
     }
 
-    public class BlockchainBatch extends TimerTask{
+    private class BlockchainBatch extends TimerTask{
         @Override
         public void run() {
             while(true) {
-                if (transactionBucket.peek().getTimeStamp().getTime() < getTime() - MAX_TIMEOUT_MS)
-                {
-                    transactionBucket_solid.add(transactionBucket.poll());
-                    if (transactionBucket_solid.size() == BLOCK_SIZE)
+                if(!transactionBucket.isEmpty()) {
+                    if (transactionBucket.peek().getTimeStamp().getTime() < getTime() - MAX_TIMEOUT_MS)
                     {
-                        createBlock();
+                        transactionBucket_solid.add(transactionBucket.poll());
+                        if (transactionBucket_solid.size() == BLOCK_SIZE)
+                        {
+                            createBlock();
+                        }
                     }
+                    else
+                        break;
                 }
-                else
-                    break;
+
             }
         }
     }

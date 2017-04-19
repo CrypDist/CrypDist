@@ -15,7 +15,7 @@ import static java.lang.System.currentTimeMillis;
 /**
  * Created by Kaan on 19-Feb-17.
  */
-public class Transaction
+public class Transaction implements Comparable<Transaction>
 {
     private final String TIME_SERVER = "nist1-macon.macon.ga.us";
     private final String amazonServer = "https://s3.eu-central-1.amazonaws.com/";
@@ -24,6 +24,17 @@ public class Transaction
     private String fileName;
     private Date timeStamp;
 
+    public int compareTo(Transaction t) {
+        long x = this.timeStamp.getTime();
+        long y = t.getTimeStamp().getTime();
+
+        if (x > y)
+            return 1;
+        else if (y > x)
+            return -1;
+        else
+            return 0;
+    }
     public Transaction(String filePath, String fileName)
     {
         this.filePath = filePath;
@@ -36,7 +47,7 @@ public class Transaction
             inetAddress = InetAddress.getByName(TIME_SERVER);
             TimeInfo timeInfo = timeClient.getTime(inetAddress);
             long returnTime = timeInfo.getMessage().getTransmitTimeStamp().getTime();
-            System.out.println(returnTime);
+            System.out.println("Time:" + returnTime);
             Date time = new Date(returnTime);
 
             this.timeStamp = time;

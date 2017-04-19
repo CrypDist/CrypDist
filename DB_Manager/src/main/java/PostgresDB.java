@@ -31,6 +31,7 @@ public class PostgresDB {
         try {
             conn = DriverManager.getConnection(url, user, secret);
         } catch (SQLException e) {
+            e.printStackTrace();
             System.out.println("DB could not be created, there is a possible problem related to properties");
         }
 
