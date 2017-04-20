@@ -33,6 +33,7 @@ public class CrypDist implements Observer{
             if(flag == 1) {
                 client.broadCastMessage(obj.toString());
             } else if (flag == 2) {
+                System.out.println("HASH BROADCAST IS IN PROCESS");
                 client.broadCastMessage(obj.toString());
              } else
                 System.out.println("sa");
@@ -43,12 +44,17 @@ public class CrypDist implements Observer{
 
             int flagValue = obj2.get("flag").getAsInt();
 
-
+            if (flagValue == 1) {
                 JsonElement data = obj2.get("data");
                 System.out.println("DATA RECEIVED" + data.getAsString());
                 blockchainManager.addTransaction(data.getAsString());
-
-
+            }
+            else if (flagValue == 2)
+            {
+                JsonElement data = obj2.get("data");
+                System.out.println("HASH RECEIVED" + data.getAsString());
+                blockchainManager.receiveHash(data.getAsString());
+            }
 
         } else
             System.out.println("Err");

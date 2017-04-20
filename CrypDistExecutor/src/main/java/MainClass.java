@@ -19,10 +19,7 @@ public class MainClass {
                 case "upload":
                     c.blockchainManager.uploadFile("SelaminAleykum/Merhaba");
                     break;
-
             }
-
-
         }
     }
 }

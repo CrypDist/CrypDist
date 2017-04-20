@@ -114,7 +114,7 @@ public class BlockchainManager extends Observable
 
     public void createBlock()
     {
-        System.out.println("Block is creating.");
+        System.out.println("Block is being created");
         if (transactionBucket_solid.size() != BLOCK_SIZE)
         {
             return;
@@ -125,9 +125,18 @@ public class BlockchainManager extends Observable
             long timestamp = getTime();
             long maxNonce = Long.MAX_VALUE;
             String hash = mineBlock(prevHash, timestamp, maxNonce);
+
+            hashReceived = false;
+
             Block block = null;
             try {
+                System.out.println("Hash: " + hash);
                 block = new Block(prevHash, timestamp, hash, transactionBucket_solid, blockchain);
+                if (block == null)
+                {
+                    System.out.println("BLOCK COULD NOT BE CREATED");
+                    return;
+                }
             } catch (NoSuchAlgorithmException e) {
                 e.printStackTrace();
             } catch (UnsupportedEncodingException e) {
@@ -206,6 +215,9 @@ public class BlockchainManager extends Observable
                 // Try all values as brute-force
                 for (int i = 0; i < maxNonce; i++)
                 {
+                    if(hashReceived) {
+                        return lastHash;
+                    }
                     // TODO: OGUZ, BURADA EGER BASKA BIR HASH BULUNMUSSA BU THREAD DURACAK.
                     String dataWithNonce = blockData + ":" + i + "}";
                     hash = md.digest(dataWithNonce.getBytes("UTF-8"));
@@ -232,8 +244,9 @@ public class BlockchainManager extends Observable
             JsonObject obj = new JsonObject();
             obj.addProperty("flag",2);
             obj.addProperty("data", new String(hash));
+            System.out.println("CALL TO NOTIFY OBSERVERS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+            setChanged();
             notifyObservers(obj);
-
 
             return new String(hash);
         }
