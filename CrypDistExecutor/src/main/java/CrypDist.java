@@ -26,8 +26,10 @@ public class CrypDist implements Observer{
 
         System.out.println("BE NOTIFIED");
         Gson gson = new Gson();
+        String lastHash = blockchainManager.getBlockchain().getLastBlock();
         if( o instanceof BlockchainManager) {
             JsonObject obj = (JsonObject) arg;
+            obj.addProperty("lastHash", lastHash);
             int flag = obj.get("flag").getAsInt();
 
             if(flag == 1) {
@@ -43,17 +45,22 @@ public class CrypDist implements Observer{
             JsonObject obj2 = gson.fromJson(str, JsonObject.class);
 
             int flagValue = obj2.get("flag").getAsInt();
+            String hashValue = obj2.get("lastHash").getAsString();
+            if (blockchainManager.validateHash(hashValue)) {
 
-            if (flagValue == 1) {
-                JsonElement data = obj2.get("data");
-                System.out.println("DATA RECEIVED" + data.getAsString());
-                blockchainManager.addTransaction(data.getAsString());
+                if (flagValue == 1) {
+                    JsonElement data = obj2.get("data");
+                    System.out.println("DATA RECEIVED" + data.getAsString());
+                    blockchainManager.addTransaction(data.getAsString());
+                } else if (flagValue == 2) {
+                    JsonElement data = obj2.get("data");
+                    System.out.println("HASH RECEIVED" + data.getAsString());
+                    blockchainManager.receiveHash(data.getAsString());
+                }
             }
-            else if (flagValue == 2)
+            else
             {
-                JsonElement data = obj2.get("data");
-                System.out.println("HASH RECEIVED" + data.getAsString());
-                blockchainManager.receiveHash(data.getAsString());
+                // TODO REPLY WITH UPDATE YOUR BLOCKCHAIN
             }
 
         } else

@@ -58,7 +58,7 @@ public class Block implements Serializable
 
         data = new MerkleTree(stringTransactions);
         merkleRoot = data.getRoot();
-        hash = computeHash();
+        this.hash = computeHash();
     }
 
     public int getLength()

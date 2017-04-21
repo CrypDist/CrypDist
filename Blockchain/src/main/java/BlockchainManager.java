@@ -54,11 +54,8 @@ public class BlockchainManager extends Observable
         System.out.println("Transaction added, being broadcasted.");
 
         Gson gson = new Gson();
-        JsonObject obj = new JsonObject();
-        obj.addProperty("flag",1);
-        obj.addProperty("data", gson.toJson(upload));
-        setChanged();
-        notifyObservers(obj);
+        broadcast(gson.toJson(upload), 1);
+
         System.out.println("Notified");
 
     }
@@ -90,11 +87,8 @@ public class BlockchainManager extends Observable
 
 
     public void receiveHash(String data) {
-        Gson gson = new Gson();
-        String str = gson.fromJson(data,String.class);
-
         hashReceived = true;
-        lastHash = str;
+        lastHash = data;
     }
 
     public int getBlockchainLength()
@@ -124,6 +118,7 @@ public class BlockchainManager extends Observable
             String prevHash = blockchain.getLastBlock();
             long timestamp = getTime();
             long maxNonce = Long.MAX_VALUE;
+
             String hash = mineBlock(prevHash, timestamp, maxNonce);
 
             hashReceived = false;
@@ -132,6 +127,7 @@ public class BlockchainManager extends Observable
             try {
                 System.out.println("Hash: " + hash);
                 block = new Block(prevHash, timestamp, hash, transactionBucket_solid, blockchain);
+                System.out.println("This has is in block now:" + block.getHash());
                 if (block == null)
                 {
                     System.out.println("BLOCK COULD NOT BE CREATED");
@@ -156,6 +152,11 @@ public class BlockchainManager extends Observable
         return System.currentTimeMillis();
     }
 
+    public boolean validateHash(String hash)
+    {
+        return blockchain.getLastBlock().equals(hash);
+    }
+
     public String mineBlock(String prevHash, long timestamp, long maxNonce)
     {
         ExecutorService executor = Executors.newCachedThreadPool();
@@ -168,6 +169,17 @@ public class BlockchainManager extends Observable
         } catch (Exception e) {
             return "";
         }
+    }
+
+    // Any message which is going to be broadcasted will be processed in here
+    public void broadcast(String data, int flag)
+    {
+        JsonObject obj = new JsonObject();
+        obj.addProperty("flag",flag);
+        obj.addProperty("data", data);
+        obj.addProperty("timeStamp", getTime());
+        setChanged();
+        notifyObservers(obj);
     }
 
     /**
@@ -241,12 +253,9 @@ public class BlockchainManager extends Observable
 
 
             Gson gson = new Gson();
-            JsonObject obj = new JsonObject();
-            obj.addProperty("flag",2);
-            obj.addProperty("data", new String(hash));
             System.out.println("CALL TO NOTIFY OBSERVERS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-            setChanged();
-            notifyObservers(obj);
+
+            broadcast(new String(hash), 2);
 
             return new String(hash);
         }
@@ -262,6 +271,7 @@ public class BlockchainManager extends Observable
                         transactionBucket_solid.add(transactionBucket.poll());
                         if (transactionBucket_solid.size() == BLOCK_SIZE)
                         {
+                            hashReceived = false;
                             createBlock();
                         }
                     }

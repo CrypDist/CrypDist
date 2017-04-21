@@ -71,8 +71,16 @@ public class Blockchain implements Serializable
         for (int i = 0; i < sinkBlocks.size(); i++)
         {
             String tmp = sinkBlocks.get(i);
+            if (tmp == null)
+                System.out.println("tmp is null");
             Block tmpBlock = blockMap.get(tmp);
-            if (block.getHash().equals(tmpBlock.getHash()))
+            if (tmpBlock == null)
+                System.out.println("BlockMap does not have tmpBlock");
+            if (block == null)
+                System.out.println("Block is null!!!!!");
+            if (block.getHash() == null)
+                System.out.println("HASH VALUE IS NULL");
+            if ((block.getHash()).equals(tmpBlock.getHash()))
                 return false;
             if (block.getPreviousHash().equals(tmpBlock.getHash()))
             {
