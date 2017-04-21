@@ -74,7 +74,8 @@ public class BlockchainManager extends Observable
 
     private boolean addBlockToBlockchain(Block block) throws Exception {
         if (blockchain.addBlock(block))
-            if (dbManager.addBlock(block.getHash(), block.toString()))
+            //if (dbManager.addBlock(block.getHash(), block.toString()))
+            if (dbManager.addBlock("furkan", "Sahin"))
                 return true;
 
         try {

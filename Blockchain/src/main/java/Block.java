@@ -30,7 +30,7 @@ public class Block implements Serializable
     private String prevHash;
     private String merkleRoot;
     private long timestamp;
-    private long nonce;
+//    private long nonce;
 
     // genesis block
     public Block()
@@ -49,7 +49,7 @@ public class Block implements Serializable
         indegree = 0;
         this.prevHash = prevHash;
         this.timestamp = timestamp;
-        this.nonce = nonce;                       // ?????????????????????????????
+        this.hash = hash;
         this.transactions = transactions;
 
         ArrayList<String> stringTransactions = new ArrayList<String>();
@@ -58,8 +58,6 @@ public class Block implements Serializable
 
         data = new MerkleTree(stringTransactions);
         merkleRoot = data.getRoot();
-        this.hash = computeHash();                // ??????????????????????????????
-        // the taken hash argument??????????????????????????????
     }
 
     public int getLength()
@@ -87,19 +85,15 @@ public class Block implements Serializable
         return timestamp;
     }
 
-    public long getNonce()
-    {
-        return nonce;
-    }
 
-    private String computeHash() throws NoSuchAlgorithmException, UnsupportedEncodingException
+/*    private String computeHash() throws NoSuchAlgorithmException, UnsupportedEncodingException
     {
         MessageDigest md = MessageDigest.getInstance("SHA-256");
         String blockData = "{" + timestamp + ":" + prevHash + ":" + data.getRoot()
                             + ":" + nonce + "}";
         return DatatypeConverter.printHexBinary(md.digest(blockData.getBytes("UTF-8")));
     }
-
+*/
     public String getHash()
     {
         return hash;
