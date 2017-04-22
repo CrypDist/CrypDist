@@ -8,8 +8,8 @@ public class PostgresDBTest {
     private static PostgresDB db = new PostgresDB("blockchain_test", "postgres", "", true);
     String hash_to_test = "00000000126748912643A126482:TEST";
     String new_hash_to_test = "00000000126748912643A12648:TEST2";
-    String data_to_test = "{\"prev_hash\": \"00000000126748912643A1_PREV:TEST\", \"description\": \"Furkan''IN kol geni\", \"nonce\": 123}";
-    String data_to_test_2 = "{\"prev_hash\": \"00000000126748912643A1_PREV:TEST\", \"description\": \"Furkan''IN ayak geni\", \"nonce\": 123}";
+    String data_to_test = "{\"prev_hash\": \"00000000126748912643A1_PREV:TEST\", \"description\": \"Furkan'IN kol geni\", \"nonce\": 123}";
+    String data_to_test_2 = "{\"prev_hash\": \"00000000126748912643A1_PREV:TEST\", \"description\": \"Furkan'IN ayak geni\", \"nonce\": 123}";
     String data_expected = "{\"prev_hash\": \"00000000126748912643A1_PREV:TEST\", \"description\": \"Furkan'IN kol geni\", \"nonce\": 123}";
     String data_expected_2 = "{\"prev_hash\": \"00000000126748912643A1_PREV:TEST\", \"description\": \"Furkan'IN ayak geni\", \"nonce\": 123}";
 
@@ -32,7 +32,7 @@ public class PostgresDBTest {
     public void addBlock() throws Exception {
         db.addBlock(new_hash_to_test, data_to_test_2);
 
-        String result = db.getData(new_hash_to_test);
+        String result = (db.getData(new_hash_to_test));
 
         assertEquals(data_expected_2,result);
         System.out.println("addBlock is done!");

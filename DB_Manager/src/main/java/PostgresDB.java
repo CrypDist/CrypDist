@@ -65,7 +65,7 @@ public class PostgresDB {
         st = conn.createStatement();
 
 
-        query = "CREATE TABLE IF NOT EXISTS "+ TABLE_NAME + " (hash bytea UNIQUE PRIMARY KEY NOT NULL, data bytea);";
+        query = "CREATE TABLE IF NOT EXISTS "+ TABLE_NAME + " (hash TEXT UNIQUE PRIMARY KEY NOT NULL, data TEXT);";
 
         st.executeUpdate(query);
 
@@ -78,12 +78,14 @@ public class PostgresDB {
 
     public boolean addBlock(String hash, String data)
     {
-        String query = "INSERT INTO " + TABLE_NAME  + " VALUES(\'" + hash + "\', \'" + data + "\');";
-        Statement st = null;
+        String query = "INSERT INTO " + TABLE_NAME  + " VALUES(?, ?);";
+        PreparedStatement st = null;
         
         try {
-            st = conn.createStatement();
-            st.executeUpdate(query);
+            st = conn.prepareStatement(query);
+            st.setString(1, processText(hash));
+            st.setString(2, processText(data));
+            st.executeUpdate();
             return true;
         } catch (SQLException e) {
             e.printStackTrace();
@@ -98,64 +100,94 @@ public class PostgresDB {
         }
     }
 
-    public boolean deleteAllTable()
+    public void deleteAllTable()
     {
-        String query = "DROP TABLE " + TABLE_NAME;
-        boolean result = executeQuery(query);
-        if (result)
-        {
-            query = "CREATE TABLE "+ TABLE_NAME + " (hash CHAR(256) UNIQUE PRIMARY KEY NOT NULL, data TEXT);";
-            return executeQuery(query);
+        String query = "DROP TABLE if exists " + TABLE_NAME + " CASCADE;";
+        PreparedStatement st = null;
+        try {
+            st = conn.prepareStatement(query);
+            st.executeUpdate();
+            query = "CREATE TABLE " + TABLE_NAME + " (hash TEXT UNIQUE PRIMARY KEY NOT NULL, data TEXT);";
+            st = conn.prepareStatement(query);
+            st.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
-        return false;
     }
 
     public boolean newHashForBlock(String oldHash, String newHash)
     {
-        String query = "UPDATE " + TABLE_NAME + " SET hash=\'" + newHash + "\' WHERE hash=\'" + oldHash + "\';";
-        return executeQuery(query);
-    }
+        String query = "UPDATE " + TABLE_NAME + " SET hash=? WHERE hash=?;";
+
+        return executeQuery(prepareStatement(query,newHash, oldHash));    }
 
     public boolean updateData(String hash, String data)
     {
-        String query = "UPDATE " + TABLE_NAME + " SET data=\'" + data + "\' WHERE hash=\'" + hash + "\'";
-        return executeQuery(query);
+        String query = "UPDATE " + TABLE_NAME + " SET data=? WHERE hash=?;";
+
+        return executeQuery(prepareStatement(query,data, hash));
     }
 
+    private PreparedStatement prepareStatement(String query, String firstData, String secondData)
+    {
+        PreparedStatement st = null;
+        try {
+            st = conn.prepareStatement(query);
+            st.setString(1,processText(firstData));
+            st.setString(2, processText(secondData));
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return st;
+    }
     public String getData(String hash)
     {
-        String query = "SELECT data FROM " + TABLE_NAME + " WHERE hash=\'" + hash + "\';";
-
-        return dataFetcher(query);
+        String query = "SELECT data FROM " + TABLE_NAME + " WHERE hash=?;";
+        PreparedStatement st = null;
+        try {
+            st = conn.prepareStatement(query);
+            st.setString(1, processText(hash));
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return dataFetcher(st);
     }
 
     public String getAllData()
     {
         String query = "SELECT data FROM " + TABLE_NAME + ";";
-
-        return dataFetcher(query);
+        PreparedStatement st = null;
+        try {
+            st = conn.prepareStatement(query);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return dataFetcher(st);
     }
     public int getSize()
     {
         String query = "SELECT count(*) FROM " + TABLE_NAME + ";";
-
-        String output = dataFetcher(query);
+        PreparedStatement st = null;
+        try {
+            st = conn.prepareStatement(query);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        String output = dataFetcher(st);
 
         return Integer.parseInt(output);
     }
 
-    private String dataFetcher(String query)
+    private String dataFetcher(PreparedStatement st)
     {
-        Statement st = null;
         try {
-            st = conn.createStatement();
-            ResultSet rs = st.executeQuery(query);
+            ResultSet rs = st.executeQuery();
             StringBuilder result = new StringBuilder();
 
             while (rs.next())
                 result.append(rs.getString(1));
 
-            return result.toString();
+            return processTextReversed(result.toString());
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -169,12 +201,10 @@ public class PostgresDB {
 
         return null;
     }
-    private boolean executeQuery(String query)
+    private boolean executeQuery(PreparedStatement st)
     {
-        Statement st = null;
         try {
-            st = conn.createStatement();
-            st.executeUpdate(query);
+            st.executeUpdate();
             return true;
         }
         catch (SQLException e) {
@@ -189,5 +219,14 @@ public class PostgresDB {
         }
 
         return false;
+    }
+
+    private String processText(String text)
+    {
+        return text.replaceAll("\0", "NONCHAR");
+    }
+    private String processTextReversed(String text)
+    {
+        return text.replaceAll("NONCHAR", "\0");
     }
 }

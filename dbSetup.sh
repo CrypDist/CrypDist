@@ -10,6 +10,6 @@ sudo apt-get update
 sudo apt-get install postgresql postgresql-contrib
 su -c "createdb blockchain" -m "postgres"
 #sudo -u postgres createdb blockchain
-su -c "psql postgres -c \"CREATE TABLE blockchain (hash bytea UNIQUE PRIMARY KEY NOT NULL, data bytea);\"" -m "postgres"
+su -c "psql postgres -c \"CREATE TABLE blockchain (hash TEXT UNIQUE PRIMARY KEY NOT NULL, data TEXT);\"" -m "postgres"
 su -c "psql postgres -c \"alter user postgres password '';\"" -m "postgres"
 #psql postgres -c "CREATE TABLE blockchain (hash CHAR(256) UNIQUE PRIMARY KEY NOT NULL, data TEXT);"

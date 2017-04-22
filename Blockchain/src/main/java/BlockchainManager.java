@@ -73,9 +73,10 @@ public class BlockchainManager extends Observable
     }
 
     private boolean addBlockToBlockchain(Block block) throws Exception {
+        Gson gson = new Gson();
         if (blockchain.addBlock(block))
-            //if (dbManager.addBlock(block.getHash(), block.toString()))
-            if (dbManager.addBlock("furkan", "Sahin"))
+            if (dbManager.addBlock(block.getHash(), gson.toJson(block, Block.class)))
+  //          if (dbManager.addBlock("furkan", "Sahin"))
                 return true;
 
         try {
