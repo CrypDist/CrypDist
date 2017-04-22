@@ -23,13 +23,16 @@ public class Client extends Observable implements Runnable{
     private int serverPort;
     private int heartBeatPort;
 
+    // Added to support the hash choosing algorithm.
+    int lastSize;
+
 
     public Client (String swAdr, int swPort,  int heartBeatPort , int serverPort) {
         this.heartBeatPort = heartBeatPort;
         this.serverPort = serverPort;
         this.swAdr = swAdr;
         this.swPort = swPort;
-
+        lastSize = 0;
 
         initialization();
     }

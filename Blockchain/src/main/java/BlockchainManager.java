@@ -2,6 +2,7 @@
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.sun.tools.javac.util.Pair;
 
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
@@ -24,6 +25,11 @@ public class BlockchainManager extends Observable
     private ArrayList<Transaction> transactionBucket_solid;
     private boolean hashReceived;
     private String lastHash;
+    private Long lastTime;
+    // To collect hash values to given blockIds with time stamp
+    // Mapping is like BlockId -> ArrayOf[(Hash, TimeStamp)]
+    private ConcurrentHashMap<String, ArrayList<Pair>> hashes;
+    private int numOfPairs;
 
     public BlockchainManager()
     {
@@ -33,6 +39,8 @@ public class BlockchainManager extends Observable
    //     serverAccessor = new ServerAccessor();
         transactionBucket = new PriorityBlockingQueue<>();
         transactionBucket_solid = new ArrayList<>(BLOCK_SIZE);
+        hashes = new ConcurrentHashMap<>();
+        numOfPairs = 0;
         Timer timer = new Timer();
         timer.schedule(new BlockchainBatch(),0, 5 * 1000);
 
@@ -54,7 +62,7 @@ public class BlockchainManager extends Observable
         System.out.println("Transaction added, being broadcasted.");
 
         Gson gson = new Gson();
-        broadcast(gson.toJson(upload), 1);
+        broadcast(gson.toJson(upload), 1, null);
 
         System.out.println("Notified");
 
@@ -88,9 +96,13 @@ public class BlockchainManager extends Observable
     }
 
 
-    public void receiveHash(String data) {
+    public void receiveHash(String data, Long timeStamp, String blockId) {
         hashReceived = true;
         lastHash = data;
+        lastTime = timeStamp;
+        if (!hashes.containsKey(blockId))
+            hashes.put(blockId, new ArrayList<>());
+        hashes.get(blockId).add(new Pair<>(lastHash, timeStamp));
     }
 
     public int getBlockchainLength()
@@ -121,7 +133,8 @@ public class BlockchainManager extends Observable
             long timestamp = getTime();
             long maxNonce = Long.MAX_VALUE;
 
-            String hash = mineBlock(prevHash, timestamp, maxNonce);
+            String blockId = generateBlockId(transactionBucket_solid);
+            String hash = mineBlock(blockId, prevHash, timestamp, maxNonce);
 
             hashReceived = false;
 
@@ -129,7 +142,6 @@ public class BlockchainManager extends Observable
             try {
                 System.out.println("Hash: " + hash);
                 block = new Block(prevHash, timestamp, hash, transactionBucket_solid, blockchain);
-                System.out.println("This has is in block now:" + block.getHash());
                 if (block == null)
                 {
                     System.out.println("BLOCK COULD NOT BE CREATED");
@@ -149,6 +161,13 @@ public class BlockchainManager extends Observable
         }
     }
 
+    private String generateBlockId(ArrayList<Transaction> transactionBucket_solid) {
+        StringBuilder blockId = new StringBuilder();
+        for (Transaction t : transactionBucket_solid)
+            blockId.append(t.getStringFormat());
+        return blockId.toString();
+    }
+
     public long getTime()
     {
         return System.currentTimeMillis();
@@ -159,11 +178,11 @@ public class BlockchainManager extends Observable
         return blockchain.getLastBlock().equals(hash);
     }
 
-    public String mineBlock(String prevHash, long timestamp, long maxNonce)
+    public String mineBlock(String blockId, String prevHash, long timestamp, long maxNonce)
     {
         ExecutorService executor = Executors.newCachedThreadPool();
 
-        Callable<String> task =  new BlockMiner(prevHash, timestamp, maxNonce, transactionBucket_solid);
+        Callable<String> task =  new BlockMiner(blockId, prevHash, timestamp, maxNonce, transactionBucket_solid);
         Future<String> future = executor.submit(task);
 
         try {
@@ -174,14 +193,19 @@ public class BlockchainManager extends Observable
     }
 
     // Any message which is going to be broadcasted will be processed in here
-    public void broadcast(String data, int flag)
+    public Long broadcast(String data, int flag, String blockId)
     {
+
+        long time = getTime();
         JsonObject obj = new JsonObject();
         obj.addProperty("flag",flag);
         obj.addProperty("data", data);
-        obj.addProperty("timeStamp", getTime());
+        obj.addProperty("timeStamp", time);
+        if (flag == 2 )
+            obj.addProperty("blockId", blockId);
         setChanged();
         notifyObservers(obj);
+        return time;
     }
 
     /**
@@ -193,15 +217,16 @@ public class BlockchainManager extends Observable
      */
     private class BlockMiner implements Callable<String>
     {
-        private long blockId;
         private MerkleTree data;
         private String prevHash;
         private long timestamp;
         private long maxNonce;
+        private String blockId;
 
-        public BlockMiner(String prevHash, long timestamp, long maxNonce,
+        public BlockMiner(String blockId, String prevHash, long timestamp, long maxNonce,
                           ArrayList<Transaction> transactions)
         {
+            this.blockId = blockId;
             this.prevHash = prevHash;
             this.timestamp = timestamp;
             this.maxNonce = maxNonce;
@@ -232,7 +257,6 @@ public class BlockchainManager extends Observable
                     if(hashReceived) {
                         return lastHash;
                     }
-                    // TODO: OGUZ, BURADA EGER BASKA BIR HASH BULUNMUSSA BU THREAD DURACAK.
                     String dataWithNonce = blockData + ":" + i + "}";
                     hash = md.digest(dataWithNonce.getBytes("UTF-8"));
 
@@ -253,13 +277,38 @@ public class BlockchainManager extends Observable
             }
             catch (NoSuchAlgorithmException | UnsupportedEncodingException e) {}
 
-
-            Gson gson = new Gson();
             System.out.println("CALL TO NOTIFY OBSERVERS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+            long timeStamp = broadcast(new String(hash), 2, blockId);
+            if (!hashes.containsKey(blockId))
+            {
+                hashes.put(blockId, new ArrayList<>());
+            }
+            hashes.get(blockId).add(new Pair<String, Long>(new String(hash), timeStamp));
 
-            broadcast(new String(hash), 2);
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
 
-            return new String(hash);
+            String minHash = findMinHash(blockId);
+
+            hashes.remove(blockId);
+            return minHash;
+        }
+
+        private String findMinHash(String blockId)
+        {
+            long minTime = Long.MAX_VALUE;
+            String minHash = "";
+            for (Pair<String, Long> p : hashes.get(blockId)){
+                if (p.snd < minTime)
+                {
+                    minTime = p.snd;
+                    minHash = p.fst;
+                }
+            }
+            return minHash;
         }
     }
 

@@ -54,8 +54,10 @@ public class CrypDist implements Observer{
                     blockchainManager.addTransaction(data.getAsString());
                 } else if (flagValue == 2) {
                     JsonElement data = obj2.get("data");
+                    JsonElement time = obj2.get("timeStamp");
+                    JsonElement blockId = obj2.get("blockId");
                     System.out.println("HASH RECEIVED" + data.getAsString());
-                    blockchainManager.receiveHash(data.getAsString());
+                    blockchainManager.receiveHash(data.getAsString(), time.getAsLong(), blockId.getAsString());
                 }
             }
             else
