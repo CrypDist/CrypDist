@@ -2,7 +2,6 @@
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.sun.tools.javac.util.Pair;
 
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
@@ -102,7 +101,7 @@ public class BlockchainManager extends Observable
         lastTime = timeStamp;
         if (!hashes.containsKey(blockId))
             hashes.put(blockId, new ArrayList<>());
-        hashes.get(blockId).add(new Pair<>(lastHash, timeStamp));
+        hashes.get(blockId).add(new Pair(lastHash, timeStamp));
     }
 
     public int getBlockchainLength()
@@ -283,7 +282,7 @@ public class BlockchainManager extends Observable
             {
                 hashes.put(blockId, new ArrayList<>());
             }
-            hashes.get(blockId).add(new Pair<String, Long>(new String(hash), timeStamp));
+            hashes.get(blockId).add(new Pair(new String(hash), timeStamp));
 
             try {
                 Thread.sleep(1000);
@@ -301,11 +300,12 @@ public class BlockchainManager extends Observable
         {
             long minTime = Long.MAX_VALUE;
             String minHash = "";
-            for (Pair<String, Long> p : hashes.get(blockId)){
-                if (p.snd < minTime)
+            for (Pair p : hashes.get(blockId)){
+                System.out.println("HASH:\t" + p.hash);
+                if (p.time < minTime)
                 {
-                    minTime = p.snd;
-                    minHash = p.fst;
+                    minTime = p.time;
+                    minHash = p.hash;
                 }
             }
             return minHash;
@@ -331,6 +331,17 @@ public class BlockchainManager extends Observable
                 }
 
             }
+        }
+    }
+
+    private class Pair{
+        String hash;
+        long time;
+
+        public Pair(String hash, long time)
+        {
+            this.hash = hash;
+            this.time = time;
         }
     }
 }
