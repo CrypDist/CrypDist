@@ -77,8 +77,7 @@ public class HeartBeatTask extends TimerTask {
 
     public void run() {
 
-
-        ConcurrentHashMap<Peer,Integer> checkedList = new ConcurrentHashMap<>(peerList);
+        int size = peerList.size();
 
         for(Map.Entry<Peer,Integer> entry : peerList.entrySet() ) {
             if (entry.getValue() > 3) {
@@ -91,7 +90,7 @@ public class HeartBeatTask extends TimerTask {
 
         ExecutorService executor = Executors.newCachedThreadPool();
         ArrayList<Future<Peer>> results = new ArrayList<>();
-        for(Peer peer:checkedList.keySet()) {
+        for(Peer peer:peerList.keySet()) {
             Callable<Peer> task = new SendHeartBeat(peer);
             Future<Peer> future = executor.submit(task);
             results.add(future);
@@ -110,7 +109,10 @@ public class HeartBeatTask extends TimerTask {
         }
 
         int a = peerList.size();
-        System.out.println("Process is alive with " + a + " peers.");
+
+        if(size > a ) {
+            System.out.println(size-a + " is disconnected.");
+        }
     }
 
 

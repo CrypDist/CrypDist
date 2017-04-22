@@ -5,7 +5,6 @@ import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
-import java.util.HashSet;
 import java.util.Timer;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -43,24 +42,51 @@ public class Server extends Thread {
         while (true) {
             try {
                 Socket newConnection = serverSocket.accept();
-                DataOutputStream out = new DataOutputStream(newConnection.getOutputStream());
 
-                //Whenever a new client is connected, the number of alive clients and their objects are sent.
-                out.writeInt(peerList.size());
+                new Thread(() -> {
+                    try {
+                        Peer p = new Peer(newConnection.getInetAddress(),1,1);
+                        DataOutputStream out = new DataOutputStream(newConnection.getOutputStream());
 
-                for(Peer peer : peerList.keySet()) {
-                    peer.writeObject(new ObjectOutputStream(out));
-                }
+                        //Whenever a new client is connected, the number of alive clients and their objects are sent.
+                        int x = peerList.size();
 
-                //The data for dataPort and heartBeatPort for newly connected client is taken from same socket.
-                DataInputStream in = new DataInputStream(newConnection.getInputStream());
-                int port = in.readInt();
-                int port2 = in.readInt();
+                        if(x != 0 ) {
+                            if(peerList.containsKey(p))
+                                out.writeInt(x-1);
+                            else
+                                out.writeInt(x);
+                        }
+                        else
+                            out.writeInt(x);
 
-                System.out.println(newConnection.getInetAddress() + " is connected.");
-                peerList.put( new Peer(newConnection.getInetAddress(),port,port2 ),0);
+                        out.flush();
 
-                newConnection.close();
+                        for(Peer peer : peerList.keySet()) {
+                            if(!p.equals(peer))
+                                peer.writeObject(new ObjectOutputStream(out));
+                        }
+                        out.flush();
+
+                        //The data for dataPort and heartBeatPort for newly connected client is taken from same socket.
+                        DataInputStream in = new DataInputStream(newConnection.getInputStream());
+                        int port = in.readInt();
+                        int port2 = in.readInt();
+
+                        System.out.println(newConnection.getInetAddress() + " is connected.");
+                        p = new Peer(newConnection.getInetAddress(),port,port2 );
+
+                        peerList.put(p,0);
+
+
+                        newConnection.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+
+                }).start();
+
+
             }
             catch (SocketTimeoutException s) {
                 System.out.println("Socket timed out!");

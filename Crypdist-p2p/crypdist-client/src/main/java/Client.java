@@ -45,6 +45,8 @@ public class Client extends Observable implements Runnable{
         //Establish a connection with server, get number of active peers and their information.
         try {
             Socket serverConnection = new Socket(swAdr, swPort);
+            serverConnection.setSoTimeout(2000);
+
             DataInputStream in = new DataInputStream(serverConnection.getInputStream());
 
             receivePeerList(in);
@@ -133,6 +135,7 @@ public class Client extends Observable implements Runnable{
         }
         catch(IOException e)
         {
+            e.printStackTrace();
             System.err.println("Cannot connect to the server, terminated.");
         }
     }
@@ -154,8 +157,8 @@ public class Client extends Observable implements Runnable{
                 }
             }
         } catch (IOException e) {
+            e.printStackTrace();
             System.err.println("Cannot read from the server socket.");
-            throw e;
         }
 
         System.out.println("Client initialized with size: " + peerList.size());

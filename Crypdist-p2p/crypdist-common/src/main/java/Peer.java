@@ -28,6 +28,24 @@ public class Peer implements Serializable {
         peerHeartBeatPort = p.getPeerHeartBeatPort();
     }
 
+
+    @Override
+    public int hashCode() {
+        return address.getHostAddress().hashCode();
+    }
+
+
+    @Override
+    public boolean equals(Object obj) {
+
+        if (obj instanceof  Peer) {
+            Peer p = (Peer)obj;
+            if(address.getHostAddress().equals(p.getAddress().getHostAddress()))
+                return true;
+        }
+        return false;
+    }
+
     public InetAddress getAddress() {
         return address;
     }
