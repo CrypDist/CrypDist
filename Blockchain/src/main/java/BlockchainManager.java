@@ -146,6 +146,11 @@ public class BlockchainManager extends Observable
                     System.out.println("BLOCK COULD NOT BE CREATED");
                     return;
                 }
+                for (Transaction t : block.getTransactions()) {
+                    transactionBucket.remove(t);
+                    transactionBucket_solid.remove(t);
+                }
+
             } catch (NoSuchAlgorithmException e) {
                 e.printStackTrace();
             } catch (UnsupportedEncodingException e) {

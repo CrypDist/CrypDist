@@ -50,7 +50,7 @@ public class Block implements Serializable
         this.prevHash = prevHash;
         this.timestamp = timestamp;
         this.hash = hash;
-        this.transactions = transactions;
+        this.transactions = (ArrayList<Transaction>) transactions.clone();
 
         ArrayList<String> stringTransactions = new ArrayList<String>();
         for (int i = 0; i < transactions.size(); i++)
