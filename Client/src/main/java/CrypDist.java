@@ -1,5 +1,3 @@
-import Blockchain.BlockchainManager;
-import P2P.Client;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -7,8 +5,13 @@ import com.google.gson.JsonObject;
 import java.util.Observable;
 import java.util.Observer;
 
+import jdk.nashorn.internal.parser.JSONParser;
 public class CrypDist implements Observer{
 
+    // Flag 1 = Transaction data
+    // Flag 2 = Hash
+    // Flag 3 = Valid transaction message
+    // Flag 4 = Validate my blockchain (taken from blockchainManager)
 
     BlockchainManager blockchainManager;
     Client client;
@@ -35,38 +38,62 @@ public class CrypDist implements Observer{
 
             if(flag == 1) {
                 client.broadCastMessage(obj.toString());
-            } else if (flag == 2) {
+            }
+            else if (flag == 2) {
                 System.out.println("HASH BROADCAST IS IN PROCESS");
                 client.broadCastMessage(obj.toString());
-             } else
+            }
+            else if (flag == 4) {
+                updateBlockchain();
+            }
+            else
                 System.out.println("sa");
 
-        } else if (o instanceof Client) {
+        }
+        else if (o instanceof Client) {
             String str = (String) arg;
-            JsonObject obj2 = gson.fromJson(str, JsonObject.class);
+            String[] elems = str.split("////");
+            String ip = elems[0];
+            str = elems[1];
 
+            JsonObject obj2 = gson.fromJson(str, JsonObject.class);
             int flagValue = obj2.get("flag").getAsInt();
             String hashValue = obj2.get("lastHash").getAsString();
             if (blockchainManager.validateHash(hashValue)) {
-
                 if (flagValue == 1) {
+                    JsonObject toReturn = new JsonObject();
                     JsonElement data = obj2.get("data");
-                    System.out.println("DATA RECEIVED" + data.getAsString());
-                    blockchainManager.addTransaction(data.getAsString());
-                } else if (flagValue == 2) {
+                    String dataStr = data.getAsString();
+
+                    toReturn.addProperty("transaction", dataStr);
+                    toReturn.addProperty("flag", 3);
+                    toReturn.addProperty("lastHash", hashValue);
+                    client.sendMessage(ip, toReturn.getAsString());
+
+                    System.out.println("DATA RECEIVED" + dataStr);
+                    blockchainManager.addTransaction(dataStr);
+                }
+                else if (flagValue == 2) {
                     JsonElement data = obj2.get("data");
                     JsonElement time = obj2.get("timeStamp");
                     JsonElement blockId = obj2.get("blockId");
                     System.out.println("HASH RECEIVED" + data.getAsString());
                     blockchainManager.receiveHash(data.getAsString(), time.getAsLong(), blockId.getAsString());
                 }
-            }
-            else
-            {
-                // TODO REPLY WITH UPDATE YOUR BLOCKCHAIN
-            }
+                else if (flagValue == 3)
+                {
+                    JsonElement transaction = obj2.get("transaction");
+                    blockchainManager.markValid(transaction.getAsString());
+                }
 
-        } else
+            }
+        }
+        else
             System.out.println("Err");
+    }
+
+    private void updateBlockchain()
+    {
+        // UPDATE BLOCKCHAIN
     }
 }

@@ -1,14 +1,16 @@
-package Blockchain;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.security.Timestamp;
 
+import java.net.InetAddress;
 import java.util.Date;
-
-import UploadUnit.ServerAccessor;
 import org.apache.commons.net.ntp.NTPUDPClient;
 import org.apache.commons.net.ntp.TimeInfo;
+
+import static java.lang.System.currentTimeMillis;
 
 /**
  * Created by Kaan on 19-Feb-17.
@@ -20,16 +22,13 @@ public class Transaction implements Comparable<Transaction>
     private final String bucketName = System.getenv("BUCKET_NAME");
     private String filePath;
     private String fileName;
-    private Date timeStamp;
+    private Long timeStamp;
 
     public int compareTo(Transaction t) {
-        long x = this.timeStamp.getTime();
-        long y = t.getTimeStamp().getTime();
-
-        if (x > y)
-            return 1;
-        else if (y > x)
+        if (t.getTimeStamp() > this.timeStamp)
             return -1;
+        else if (this.timeStamp > t.getTimeStamp())
+            return 1;
         else
             return 0;
     }
@@ -48,7 +47,7 @@ public class Transaction implements Comparable<Transaction>
             System.out.println("Time:" + returnTime);
             Date time = new Date(returnTime);
 
-            this.timeStamp = time;
+            this.timeStamp = time.getTime();
         } catch (UnknownHostException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -71,7 +70,7 @@ public class Transaction implements Comparable<Transaction>
         return amazonServer + bucketName + "/" + fileName;
     }
 
-    public Date getTimeStamp() {
+    public Long getTimeStamp() {
         return timeStamp;
     }
 }

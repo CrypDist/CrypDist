@@ -1,15 +1,19 @@
-package Blockchain;
 
-import DbManager.PostgresDB;
-import UploadUnit.ServerAccessor;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import org.apache.commons.net.ntp.NTPUDPClient;
+import org.apache.commons.net.ntp.TimeInfo;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.concurrent.*;
+import org.apache.commons.net.ntp.NTPUDPClient;
+import org.apache.commons.net.ntp.TimeInfo;
 
 /**
  * Created by Kaan on 18-Feb-17.
@@ -22,11 +26,13 @@ public class BlockchainManager extends Observable
     private Blockchain blockchain;
     private PostgresDB dbManager;
     private ServerAccessor serverAccessor;
+    private ConcurrentHashMap<String, Pair> transactionPendingBucket;
     private PriorityBlockingQueue<Transaction> transactionBucket;
     private ArrayList<Transaction> transactionBucket_solid;
     private boolean hashReceived;
     private String lastHash;
     private Long lastTime;
+    private final String TIME_SERVER = "nist1-macon.macon.ga.us";
     // To collect hash values to given blockIds with time stamp
     // Mapping is like BlockId -> ArrayOf[(Hash, TimeStamp)]
     private ConcurrentHashMap<String, ArrayList<Pair>> hashes;
@@ -37,14 +43,16 @@ public class BlockchainManager extends Observable
         Block genesis = new Block();
         dbManager = new PostgresDB("blockchain", "postgres", "", false);
         blockchain = new Blockchain(genesis);
-   //     serverAccessor = new UploadUnit.ServerAccessor();
+   //     serverAccessor = new ServerAccessor();
+        transactionPendingBucket = new ConcurrentHashMap<>();
         transactionBucket = new PriorityBlockingQueue<>();
         transactionBucket_solid = new ArrayList<>(BLOCK_SIZE);
         hashes = new ConcurrentHashMap<>();
         numOfPairs = 0;
         Timer timer = new Timer();
         timer.schedule(new BlockchainBatch(),0, 5 * 1000);
-
+        HashValidation validation = new HashValidation();
+        validation.start();
     }
 
     public Blockchain getBlockchain()
@@ -59,21 +67,21 @@ public class BlockchainManager extends Observable
 
         Transaction upload = new Transaction(fileName, filePath);
         //upload.execute(serverAccessor);
-        transactionBucket.add(upload);
-        System.out.println("Blockchain.Transaction added, being broadcasted.");
 
         Gson gson = new Gson();
+        transactionPendingBucket.put(gson.toJson(upload), new Pair<Transaction, Integer>(upload, 0));
+        System.out.println("Transaction added, being broadcasted.");
         broadcast(gson.toJson(upload), 1, null);
 
         System.out.println("Notified");
-
     }
 
-    // Blockchain.Transaction is serializable and taken from the p2p connection as it is
-    public void addTransaction(Transaction transaction)
+    // Transaction is serializable and taken from the p2p connection as it is
+/*    public void addTransaction(Transaction transaction)
     {
         transactionBucket.add(transaction);
     }
+*/
     public void addTransaction(String data)
     {
         Gson gson = new Gson();
@@ -85,7 +93,6 @@ public class BlockchainManager extends Observable
         Gson gson = new Gson();
         if (blockchain.addBlock(block))
             if (dbManager.addBlock(block.getHash(), gson.toJson(block, Block.class)))
-  //          if (dbManager.addBlock("furkan", "Sahin"))
                 return true;
 
         try {
@@ -103,7 +110,7 @@ public class BlockchainManager extends Observable
         lastTime = timeStamp;
         if (!hashes.containsKey(blockId))
             hashes.put(blockId, new ArrayList<>());
-        hashes.get(blockId).add(new Pair(lastHash, timeStamp));
+        hashes.get(blockId).add(new Pair<String, Long>(lastHash, timeStamp));
     }
 
     public int getBlockchainLength()
@@ -111,10 +118,10 @@ public class BlockchainManager extends Observable
         return blockchain.getLength();
     }
 
-//    public ArrayList<Blockchain.Block> getLongestChain()
+//    public ArrayList<Block> getLongestChain()
 //    {
 //        ArrayList<String> hashChain = blockchain.getBlockchain();
-//        ArrayList<Blockchain.Block> blocks = new ArrayList<Blockchain.Block>();
+//        ArrayList<Block> blocks = new ArrayList<Block>();
 //
 //        for (int i = 0; i < hashChain.size(); i++)
 //            blocks.add(blockchain.getBlock(hashChain.get(i)));
@@ -123,7 +130,7 @@ public class BlockchainManager extends Observable
 
     public void createBlock()
     {
-        System.out.println("Blockchain.Block is being created");
+        System.out.println("Block is being created");
         if (transactionBucket_solid.size() != BLOCK_SIZE)
         {
             return;
@@ -176,7 +183,20 @@ public class BlockchainManager extends Observable
 
     public long getTime()
     {
-        return System.currentTimeMillis();
+        long timeL = 0;
+        NTPUDPClient timeClient = new NTPUDPClient();
+        InetAddress inetAddress = null;
+        try {
+            inetAddress = InetAddress.getByName(TIME_SERVER);
+            TimeInfo timeInfo = timeClient.getTime(inetAddress);
+            timeL = timeInfo.getMessage().getTransmitTimeStamp().getTime();
+
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return timeL;
     }
 
     public boolean validateHash(String hash)
@@ -201,17 +221,33 @@ public class BlockchainManager extends Observable
     // Any message which is going to be broadcasted will be processed in here
     public Long broadcast(String data, int flag, String blockId)
     {
-
-        long time = getTime();
+        long time = 0;
         JsonObject obj = new JsonObject();
         obj.addProperty("flag",flag);
         obj.addProperty("data", data);
-        obj.addProperty("timeStamp", time);
-        if (flag == 2 )
+        if (flag == 2 ) {
             obj.addProperty("blockId", blockId);
+            time = getTime();
+            obj.addProperty("timeStamp", time);
+        }
         setChanged();
         notifyObservers(obj);
+
         return time;
+    }
+
+    public void markValid(String transaction)
+    {
+        if(transactionPendingBucket.containsKey(transaction)) {
+            int count = (int)transactionPendingBucket.get(transaction).scnd;
+            transactionPendingBucket.get(transaction).scnd = count + 1;
+            if (count + 1 > numOfPairs/2)
+            {
+                Transaction tr = ((Transaction)transactionPendingBucket.get(transaction).frst);
+                transactionBucket.add(tr);
+                transactionPendingBucket.remove(tr);
+            }
+        }
     }
 
     /**
@@ -289,7 +325,7 @@ public class BlockchainManager extends Observable
             {
                 hashes.put(blockId, new ArrayList<>());
             }
-            hashes.get(blockId).add(new Pair(new String(hash), timeStamp));
+            hashes.get(blockId).add(new Pair<String, Long>(new String(hash), timeStamp));
 
             try {
                 Thread.sleep(1000);
@@ -308,11 +344,11 @@ public class BlockchainManager extends Observable
             long minTime = Long.MAX_VALUE;
             String minHash = "";
             for (Pair p : hashes.get(blockId)){
-                System.out.println("HASH:\t" + p.hash);
-                if (p.time < minTime)
+                System.out.println("HASH:\t" + p.frst);
+                if ((long)p.scnd < minTime)
                 {
-                    minTime = p.time;
-                    minHash = p.hash;
+                    minTime = (long) p.scnd;
+                    minHash = (String) p.frst;
                 }
             }
             return minHash;
@@ -324,7 +360,7 @@ public class BlockchainManager extends Observable
         public void run() {
             while(true) {
                 if(!transactionBucket.isEmpty()) {
-                    if (transactionBucket.peek().getTimeStamp().getTime() < getTime() - MAX_TIMEOUT_MS)
+                    if (transactionBucket.peek().getTimeStamp() < getTime() - MAX_TIMEOUT_MS)
                     {
                         transactionBucket_solid.add(transactionBucket.poll());
                         if (transactionBucket_solid.size() == BLOCK_SIZE)
@@ -341,14 +377,41 @@ public class BlockchainManager extends Observable
         }
     }
 
-    private class Pair{
-        String hash;
-        long time;
+    private class Pair<T,V>{
+        T frst;
+        V scnd;
 
-        public Pair(String hash, long time)
+        public Pair(T frst, V scnd)
         {
-            this.hash = hash;
-            this.time = time;
+            this.frst = frst;
+            this.scnd = scnd;
+        }
+    }
+
+    private class HashValidation extends Thread{
+
+        public void run()
+        {
+            while(true)
+            {
+                Set<String> keys = transactionPendingBucket.keySet();
+                for (String key : keys)
+                {
+                    Pair pair = transactionPendingBucket.get(key);
+                    Transaction trans = (Transaction)pair.frst;
+                    if (trans.getTimeStamp() < getTime() - 1000)
+                    {
+                        BlockchainManager.this.setChanged();
+                        BlockchainManager.this.notifyObservers(4);
+                    }
+                }
+
+                try {
+                    Thread.sleep(300);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
         }
     }
 }
