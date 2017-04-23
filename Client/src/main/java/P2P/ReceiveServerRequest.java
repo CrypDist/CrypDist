@@ -31,6 +31,8 @@ public class ReceiveServerRequest extends Thread {
                 int flag = in.readInt();
                 String str = in.readUTF();
 
+                str = server.getInetAddress().toString() + "////" + str;
+
                 System.out.println("P2P.Client is notifying with " + flag  + " | " + str);
                 client.change();
                 client.notifyObservers(str);
