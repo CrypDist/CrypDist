@@ -1,3 +1,5 @@
+import Blockchain.BlockchainManager;
+import P2P.Client;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -5,7 +7,6 @@ import com.google.gson.JsonObject;
 import java.util.Observable;
 import java.util.Observer;
 
-import jdk.nashorn.internal.parser.JSONParser;
 public class CrypDist implements Observer{
 
     // Flag 1 = Transaction data

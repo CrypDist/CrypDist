@@ -1,3 +1,4 @@
+package Blockchain;
 
 import java.io.File;
 import java.io.IOException;
@@ -7,6 +8,8 @@ import java.security.Timestamp;
 
 import java.net.InetAddress;
 import java.util.Date;
+
+import UploadUnit.ServerAccessor;
 import org.apache.commons.net.ntp.NTPUDPClient;
 import org.apache.commons.net.ntp.TimeInfo;
 

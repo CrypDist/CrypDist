@@ -169,6 +169,16 @@ public class Client extends Observable implements Runnable{
         }
     }
 
+    public boolean sendMessage(String adr, String msg) {
+
+        for(Peer p: peerList.keySet()){
+            if(p.getAddress().toString().equals(adr)){
+                return sendMessage(p,msg);
+            }
+        }
+        return false;
+    }
+
     public boolean sendMessage(Peer p, String msg) {
 
         try {
