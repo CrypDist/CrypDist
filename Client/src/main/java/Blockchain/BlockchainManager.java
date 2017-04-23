@@ -72,6 +72,8 @@ public class BlockchainManager extends Observable
         //upload.execute(serverAccessor);
 
         Gson gson = new Gson();
+
+        System.out.println(gson.toJson(upload));
         transactionPendingBucket.put(gson.toJson(upload), new Pair<Transaction, Integer>(upload, 0));
         System.out.println("Transaction added, being broadcasted.");
         broadcast(gson.toJson(upload), 1, null);
@@ -248,7 +250,7 @@ public class BlockchainManager extends Observable
             {
                 Transaction tr = ((Transaction)transactionPendingBucket.get(transaction).frst);
                 transactionBucket.add(tr);
-                transactionPendingBucket.remove(tr);
+                transactionPendingBucket.remove(transaction);
             }
         }
     }
@@ -404,13 +406,16 @@ public class BlockchainManager extends Observable
                     Transaction trans = (Transaction)pair.frst;
                     if (trans.getTimeStamp() < getTime() - 1000)
                     {
+                        JsonObject obj = new JsonObject();
+                        obj.addProperty("flag", 4);
+
                         BlockchainManager.this.setChanged();
-                        BlockchainManager.this.notifyObservers(4);
+                        BlockchainManager.this.notifyObservers(obj);
                     }
                 }
 
                 try {
-                    Thread.sleep(300);
+                    Thread.sleep(1000);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }

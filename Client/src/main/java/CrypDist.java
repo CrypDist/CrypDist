@@ -1,4 +1,5 @@
 import Blockchain.BlockchainManager;
+import Blockchain.Transaction;
 import P2P.Client;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
@@ -46,16 +47,17 @@ public class CrypDist implements Observer{
             }
             else if (flag == 4) {
                 updateBlockchain();
+                System.out.println("HASH IS NOT UP TO DATE");
             }
             else
                 System.out.println("sa");
 
         }
         else if (o instanceof Client) {
-            String str = (String) arg;
-            String[] elems = str.split("////");
+            String strToBeSplitted = (String) arg;
+            String[] elems = strToBeSplitted.split("////");
             String ip = elems[0];
-            str = elems[1];
+            String str = elems[1];
 
             JsonObject obj2 = gson.fromJson(str, JsonObject.class);
             int flagValue = obj2.get("flag").getAsInt();
@@ -69,7 +71,7 @@ public class CrypDist implements Observer{
                     toReturn.addProperty("transaction", dataStr);
                     toReturn.addProperty("flag", 3);
                     toReturn.addProperty("lastHash", hashValue);
-                    client.sendMessage(ip, toReturn.getAsString());
+                    client.sendMessage(ip, gson.toJson(toReturn));
 
                     System.out.println("DATA RECEIVED" + dataStr);
                     blockchainManager.addTransaction(dataStr);

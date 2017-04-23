@@ -171,6 +171,9 @@ public class Client extends Observable implements Runnable{
 
     public boolean sendMessage(String adr, String msg) {
 
+        for (Peer p : peerList.keySet())
+            System.out.println(p.getAddress());
+
         for(Peer p: peerList.keySet()){
             if(p.getAddress().toString().equals(adr)){
                 return sendMessage(p,msg);
@@ -182,6 +185,8 @@ public class Client extends Observable implements Runnable{
     public boolean sendMessage(Peer p, String msg) {
 
         try {
+            System.out.println(p.getPeerServerPort());
+            System.out.println(p.getAddress());
             Socket messagedClient = new Socket(p.getAddress(),p.getPeerServerPort());
             ObjectOutputStream out = new ObjectOutputStream(new DataOutputStream(messagedClient.getOutputStream()));
             out.writeInt(200);
