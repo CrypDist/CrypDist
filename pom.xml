@@ -12,11 +12,8 @@
 
 
     <modules>
-        <module>DB_Manager</module>
-        <module>Blockchain</module>
-        <module>Crypdist-p2p</module>
-        <module>UploadUnit</module>
-        <module>CrypDistExecutor</module>
+        <module>Client</module>
+        <module>Server</module>
     </modules>
 
 
