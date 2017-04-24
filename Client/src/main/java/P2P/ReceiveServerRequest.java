@@ -40,6 +40,9 @@ public class ReceiveServerRequest extends Thread {
 
                         str = server.getInetAddress().toString() + "////" + str;
 
+                        ObjectOutputStream out = new ObjectOutputStream(new DataOutputStream(server.getOutputStream()));
+                        out.writeInt(900);
+                        out.flush();
                         System.out.println("Client is notifying with " + flag  + " | " + str);
                         client.change();
                         client.notifyObservers(str);
