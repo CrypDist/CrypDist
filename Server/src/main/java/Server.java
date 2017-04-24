@@ -21,6 +21,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class Server extends Thread {
 
     ConcurrentHashMap<Peer,Integer> peerList;
+    private final static Object lock = new Object();
     private ServerSocket serverSocket;
 
     public Server(int port) throws IOException {
@@ -48,35 +49,36 @@ public class Server extends Thread {
                         Peer p = new Peer(newConnection.getInetAddress(),1,1);
                         DataOutputStream out = new DataOutputStream(newConnection.getOutputStream());
 
-                        //Whenever a new client is connected, the number of alive clients and their objects are sent.
-                        int x = peerList.size();
+                        synchronized (lock) {
+                            //Whenever a new client is connected, the number of alive clients and their objects are sent.
+                            int x = peerList.size();
 
-                        if(x != 0 ) {
-                            if(peerList.containsKey(p))
-                                out.writeInt(x-1);
-                            else
+                            if (x != 0) {
+                                if (peerList.containsKey(p))
+                                    out.writeInt(x - 1);
+                                else
+                                    out.writeInt(x);
+                            } else
                                 out.writeInt(x);
+
+                            out.flush();
+
+                            for (Peer peer : peerList.keySet()) {
+                                if (!p.equals(peer))
+                                    peer.writeObject(new ObjectOutputStream(out));
+                            }
+                            out.flush();
+
+                            //The data for dataPort and heartBeatPort for newly connected client is taken from same socket.
+                            DataInputStream in = new DataInputStream(newConnection.getInputStream());
+                            int port = in.readInt();
+                            int port2 = in.readInt();
+                            p = new Peer(newConnection.getInetAddress(),port,port2 );
+
+                            peerList.put(p,0);
                         }
-                        else
-                            out.writeInt(x);
-
-                        out.flush();
-
-                        for(Peer peer : peerList.keySet()) {
-                            if(!p.equals(peer))
-                                peer.writeObject(new ObjectOutputStream(out));
-                        }
-                        out.flush();
-
-                        //The data for dataPort and heartBeatPort for newly connected client is taken from same socket.
-                        DataInputStream in = new DataInputStream(newConnection.getInputStream());
-                        int port = in.readInt();
-                        int port2 = in.readInt();
 
                         System.out.println(newConnection.getInetAddress() + " is connected.");
-                        p = new Peer(newConnection.getInetAddress(),port,port2 );
-
-                        peerList.put(p,0);
 
 
                         newConnection.close();

@@ -2,6 +2,7 @@ package P2P;
 
 import java.io.*;
 import java.net.Socket;
+import java.net.SocketTimeoutException;
 import java.util.Observable;
 import java.util.Timer;
 import java.util.concurrent.ConcurrentHashMap;
@@ -43,7 +44,7 @@ public class Client extends Observable implements Runnable{
         //Establish a connection with server, get number of active peers and their information.
         try {
             Socket serverConnection = new Socket(swAdr, swPort);
-            serverConnection.setSoTimeout(2000);
+            serverConnection.setSoTimeout(3000);
 
             DataInputStream in = new DataInputStream(serverConnection.getInputStream());
 
@@ -165,7 +166,7 @@ public class Client extends Observable implements Runnable{
 
     public void broadCastMessage(String message) {
         for(Peer p: peerList.keySet()) {
-            sendMessage(p,message);
+            sendMessage(p,message,0);
         }
     }
 
@@ -176,29 +177,38 @@ public class Client extends Observable implements Runnable{
 
         for(Peer p: peerList.keySet()){
             if(p.getAddress().toString().equals(adr)){
-                return sendMessage(p,msg);
+                return sendMessage(p,msg,0);
             }
         }
         return false;
     }
 
-    public boolean sendMessage(Peer p, String msg) {
+    public boolean sendMessage(Peer p, String msg,int trials) {
 
+        if (trials > 4) {
+            System.out.println("Message cannot be sent after 5 trials.");
+        }
         try {
             System.out.println(p.getPeerServerPort());
             System.out.println(p.getAddress());
             Socket messagedClient = new Socket(p.getAddress(),p.getPeerServerPort());
-            ObjectOutputStream out = new ObjectOutputStream(new DataOutputStream(messagedClient.getOutputStream()));
+            ObjectOutputStream out = new ObjectOutputStream(messagedClient.getOutputStream());
             out.writeInt(200);
             out.writeUTF(msg);
             out.flush();
 
+            ObjectInputStream in = new ObjectInputStream(new DataInputStream(messagedClient.getInputStream()));
+            int ack = in.readInt();
             messagedClient.close();
+            if(ack != 900) {
+                System.out.println("Non flag read");
+                return sendMessage(p,msg,trials+1);
+            }
+
             System.out.println("Message is sent:" + msg);
             return true;
         } catch (IOException e) {
-            e.printStackTrace();
-            return false;
+            return sendMessage(p,msg,trials+1);
         }
     }
 
