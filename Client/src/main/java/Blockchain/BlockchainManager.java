@@ -147,6 +147,7 @@ public class BlockchainManager extends Observable
             long maxNonce = Long.MAX_VALUE;
 
             String blockId = generateBlockId(transactionBucket_solid);
+            hashes.put(blockId, new ArrayList<>());
             String hash = mineBlock(blockId, prevHash, timestamp, maxNonce);
 
             hashReceived = false;
@@ -241,7 +242,7 @@ public class BlockchainManager extends Observable
         return time;
     }
 
-    public void markValid(String transaction)
+    public boolean markValid(String transaction)
     {
         if(transactionPendingBucket.containsKey(transaction)) {
             int count = (int)transactionPendingBucket.get(transaction).scnd;
@@ -251,8 +252,10 @@ public class BlockchainManager extends Observable
                 Transaction tr = ((Transaction)transactionPendingBucket.get(transaction).frst);
                 transactionBucket.add(tr);
                 transactionPendingBucket.remove(transaction);
+                return true;
             }
         }
+        return false;
     }
 
     /**
@@ -287,7 +290,8 @@ public class BlockchainManager extends Observable
         public String call()
         {
             if(hashReceived) {
-                return lastHash;
+                Thread.currentThread().interrupt();
+
             }
             long score = Long.MAX_VALUE;
             long bestNonce = -1;
@@ -302,7 +306,10 @@ public class BlockchainManager extends Observable
                 for (int i = 0; i < maxNonce; i++)
                 {
                     if(hashReceived) {
-                        return lastHash;
+                        Thread.currentThread().interrupt();
+                        String minHash = findMinHash(blockId);
+                        hashes.remove(blockId);
+                        return minHash;
                     }
                     String dataWithNonce = blockData + ":" + i + "}";
                     hash = md.digest(dataWithNonce.getBytes("UTF-8"));
@@ -326,14 +333,12 @@ public class BlockchainManager extends Observable
 
             System.out.println("CALL TO NOTIFY OBSERVERS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
             long timeStamp = broadcast(new String(hash), 2, blockId);
-            if (!hashes.containsKey(blockId))
-            {
-                hashes.put(blockId, new ArrayList<>());
-            }
-            hashes.get(blockId).add(new Pair<String, Long>(new String(hash), timeStamp));
 
+            hashes.get(blockId).add(new Pair<String, Long>(new String(hash), timeStamp));
+            Random rnd = new Random();
+            int sleepAmount = rnd.nextInt(200);
             try {
-                Thread.sleep(1000);
+                Thread.sleep(sleepAmount + 300);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
