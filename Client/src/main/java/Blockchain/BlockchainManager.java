@@ -427,4 +427,8 @@ public class BlockchainManager extends Observable
             }
         }
     }
+
+    public void setNumOfPairs(int numOfPairs) {
+        this.numOfPairs = numOfPairs;
+    }
 }

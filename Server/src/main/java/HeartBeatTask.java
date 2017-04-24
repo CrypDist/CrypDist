@@ -34,11 +34,7 @@ public class HeartBeatTask extends TimerTask {
                 DataOutputStream out = new DataOutputStream(clientSocket.getOutputStream());
                 DataInputStream in = new DataInputStream(clientSocket.getInputStream());
 
-                out.writeInt(flag);  //0 for heartbeats
-                if(flag == 101) {
-                    out.writeInt(hbPort);
-                    out.writeInt(swPort);
-                }
+                out.writeInt(100);  //0 for heartbeats
                 out.flush();
                 clientSocket.setSoTimeout(10000);
 
@@ -55,21 +51,9 @@ public class HeartBeatTask extends TimerTask {
 
 
     private ConcurrentHashMap<Peer,Integer> peerList;
-    private int flag;
-    private int hbPort;
-    private int swPort;
 
-    public HeartBeatTask(ConcurrentHashMap<Peer,Integer> peerList, int flag) {
+    public HeartBeatTask(ConcurrentHashMap<Peer,Integer> peerList) {
         this.peerList = peerList;
-        this.flag = flag;
-    }
-
-
-    public HeartBeatTask(ConcurrentHashMap<Peer,Integer> peerList, int flag, int hbPort, int swPort) {
-        this.peerList = peerList;
-        this.flag = flag;
-        this.hbPort = hbPort;
-        this.swPort = swPort;
     }
 
 
