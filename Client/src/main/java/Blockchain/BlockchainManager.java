@@ -53,7 +53,7 @@ public class BlockchainManager extends Observable
         hashes = new ConcurrentHashMap<>();
         numOfPairs = 0;
         Timer timer = new Timer();
-        timer.schedule(new BlockchainBatch(),0, 5 * 1000);
+        timer.schedule(new BlockchainBatch(),0, 8000);
         HashValidation validation = new HashValidation();
         validation.start();
     }
@@ -92,6 +92,7 @@ public class BlockchainManager extends Observable
         Gson gson = new Gson();
         Transaction transaction = gson.fromJson(data, Transaction.class);
         transactionBucket.add(transaction);
+        System.out.println("My bucket size is:" + transactionBucket.size());
     }
 
     private boolean addBlockToBlockchain(Block block) throws Exception {
@@ -252,6 +253,7 @@ public class BlockchainManager extends Observable
                 Transaction tr = ((Transaction)transactionPendingBucket.get(transaction).frst);
                 transactionBucket.add(tr);
                 transactionPendingBucket.remove(transaction);
+
             }
         }
     }
@@ -287,13 +289,20 @@ public class BlockchainManager extends Observable
 
         public String call()
         {
-            if(hashReceived) {
+            Random rnd = new Random();
+            int sleepAmount = rnd.nextInt(500);
+            try {
+                Thread.sleep(sleepAmount + 600);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+/*            if(hashReceived) {
                 Thread.currentThread().interrupt();
                 String minHash = findMinHash(blockId);
                 hashes.remove(blockId);
                 return minHash;
             }
-            long score = Long.MAX_VALUE;
+  */          long score = Long.MAX_VALUE;
             long bestNonce = -1;
             byte[] hash = null;
             try
@@ -306,9 +315,9 @@ public class BlockchainManager extends Observable
                 for (int i = 0; i < maxNonce; i++)
                 {
                     if(hashReceived) {
-                        Thread.currentThread().interrupt();
+    //                    Thread.currentThread().interrupt();
                         String minHash = findMinHash(blockId);
-                        hashes.remove(blockId);
+      //                  hashes.remove(blockId);
                         return minHash;
                     }
                     String dataWithNonce = blockData + ":" + i + "}";
@@ -335,13 +344,6 @@ public class BlockchainManager extends Observable
             long timeStamp = broadcast(new String(hash), 2, blockId);
 
             hashes.get(blockId).add(new Pair<String, Long>(new String(hash), timeStamp));
-            Random rnd = new Random();
-            int sleepAmount = rnd.nextInt(200);
-            try {
-                Thread.sleep(sleepAmount + 300);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
 
             String minHash = findMinHash(blockId);
 
@@ -377,6 +379,7 @@ public class BlockchainManager extends Observable
                         {
                             hashReceived = false;
                             createBlock();
+                            hashReceived = false;
                         }
                     }
                     else

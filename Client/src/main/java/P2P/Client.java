@@ -170,10 +170,6 @@ public class Client extends Observable implements Runnable{
     }
 
     public boolean sendMessage(String adr, String msg) {
-
-        for (Peer p : peerList.keySet())
-            System.out.println(p.getAddress());
-
         for(Peer p: peerList.keySet()){
             if(p.getAddress().toString().equals(adr)){
                 return sendMessage(p,msg);
@@ -194,7 +190,7 @@ public class Client extends Observable implements Runnable{
             out.flush();
 
             messagedClient.close();
-            System.out.println("Message is sent:" + msg);
+            System.out.println("Message is sent!");
             return true;
         } catch (IOException e) {
             e.printStackTrace();

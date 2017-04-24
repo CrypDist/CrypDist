@@ -77,14 +77,12 @@ public class CrypDist implements Observer{
                     toReturn.addProperty("lastHash", hashValue);
                     client.sendMessage(ip, gson.toJson(toReturn));
 
-                    System.out.println("DATA RECEIVED" + dataStr);
                     blockchainManager.addTransaction(dataStr);
                 }
                 else if (flagValue == 2) {
                     JsonElement data = obj2.get("data");
                     JsonElement time = obj2.get("timeStamp");
                     JsonElement blockId = obj2.get("blockId");
-                    System.out.println("HASH RECEIVED" + data.getAsString());
                     blockchainManager.receiveHash(data.getAsString(), time.getAsLong(), blockId.getAsString());
                 }
                 else if (flagValue == 3)
