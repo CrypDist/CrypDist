@@ -46,7 +46,7 @@ public class BlockchainManager extends Observable
         Block genesis = new Block();
         dbManager = new PostgresDB("blockchain", "postgres", "", false);
         blockchain = new Blockchain(genesis);
-   //     serverAccessor = new ServerAccessor();
+        //     serverAccessor = new ServerAccessor();
         transactionPendingBucket = new ConcurrentHashMap<>();
         transactionBucket = new PriorityBlockingQueue<>();
         transactionBucket_solid = new ArrayList<>(BLOCK_SIZE);
@@ -242,7 +242,7 @@ public class BlockchainManager extends Observable
         return time;
     }
 
-    public boolean markValid(String transaction)
+    public void markValid(String transaction)
     {
         if(transactionPendingBucket.containsKey(transaction)) {
             int count = (int)transactionPendingBucket.get(transaction).scnd;
@@ -252,10 +252,8 @@ public class BlockchainManager extends Observable
                 Transaction tr = ((Transaction)transactionPendingBucket.get(transaction).frst);
                 transactionBucket.add(tr);
                 transactionPendingBucket.remove(transaction);
-                return true;
             }
         }
-        return false;
     }
 
     /**
@@ -291,7 +289,9 @@ public class BlockchainManager extends Observable
         {
             if(hashReceived) {
                 Thread.currentThread().interrupt();
-
+                String minHash = findMinHash(blockId);
+                hashes.remove(blockId);
+                return minHash;
             }
             long score = Long.MAX_VALUE;
             long bestNonce = -1;
@@ -300,7 +300,7 @@ public class BlockchainManager extends Observable
             {
                 MessageDigest md = MessageDigest.getInstance("SHA-256");
                 String blockData = "{" + timestamp + ":" + prevHash + ":" +
-                                    data.getRoot();
+                        data.getRoot();
 
                 // Try all values as brute-force
                 for (int i = 0; i < maxNonce; i++)
