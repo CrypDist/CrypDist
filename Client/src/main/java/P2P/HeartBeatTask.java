@@ -55,26 +55,40 @@ public class HeartBeatTask extends TimerTask {
 
 
     private ConcurrentHashMap<Peer,Integer> peerList;
-    private Client client;
+    private static Client client;
     private int hbPort;
     private int swPort;
+    private int size;
 
-    public HeartBeatTask(ConcurrentHashMap<Peer,Integer> peerList, int flag) {
+    public HeartBeatTask(Client client, ConcurrentHashMap<Peer,Integer> peerList, int flag) {
         this.peerList = peerList;
+        HeartBeatTask.client = client;
+        this.size =peerList.size();
+        if (size != 0) {
+            client.change();
+            client.notifyObservers("X////" + size);
+        }
     }
 
 
-    public HeartBeatTask(ConcurrentHashMap<Peer,Integer> peerList, int hbPort, int swPort) {
+    public HeartBeatTask(Client client, ConcurrentHashMap<Peer,Integer> peerList, int hbPort, int swPort) {
         this.peerList = peerList;
         this.hbPort = hbPort;
         this.swPort = swPort;
+        this.size =peerList.size();
+        HeartBeatTask.client = client;
+        if(HeartBeatTask.client == null)
+        {
+            System.out.println("Helloooo!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+        }
+        if (size != 0) {
+            HeartBeatTask.client.change();
+            HeartBeatTask.client.notifyObservers("X////" + size);
+        }
     }
 
 
     public void run() {
-
-        int size = peerList.size();
-
         for(Map.Entry<Peer,Integer> entry : peerList.entrySet() ) {
             if (entry.getValue() > 3) {
                 peerList.remove(entry.getKey());
@@ -103,13 +117,12 @@ public class HeartBeatTask extends TimerTask {
             System.out.println("Interrupted.");
             e.printStackTrace();
         }
-
         int a = peerList.size();
-
-        if(size > a ) {
-            System.out.println(size-a + " is disconnected.");
-            client.change();
-            client.notifyObservers("X////" + a);
+        if (size != a)
+        {
+            HeartBeatTask.client.change();
+            HeartBeatTask.client.notifyObservers("X////"+a);
+            size = a;
         }
     }
 

@@ -148,14 +148,15 @@ public class BlockchainManager extends Observable
             long maxNonce = Long.MAX_VALUE;
 
             String blockId = generateBlockId(transactionBucket_solid);
-            hashes.put(blockId, new ArrayList<>());
-            String hash = mineBlock(blockId, prevHash, timestamp, maxNonce);
+            if (!hashes.containsKey(blockId))
+                hashes.put(blockId, new ArrayList<>());
 
+            String hash = mineBlock(blockId, prevHash, timestamp, maxNonce);
             hashReceived = false;
 
             Block block = null;
             try {
-                System.out.println("Hash: " + hash);
+                System.out.println("Hash in block: " + hash);
                 block = new Block(prevHash, timestamp, hash, transactionBucket_solid, blockchain);
                 if (block == null)
                 {
@@ -248,13 +249,14 @@ public class BlockchainManager extends Observable
         if(transactionPendingBucket.containsKey(transaction)) {
             int count = (int)transactionPendingBucket.get(transaction).scnd;
             transactionPendingBucket.get(transaction).scnd = count + 1;
-            if (count + 1 > numOfPairs/2)
+            if (count + 1 > numOfPairs / 2)
             {
                 Transaction tr = ((Transaction)transactionPendingBucket.get(transaction).frst);
                 transactionBucket.add(tr);
                 transactionPendingBucket.remove(transaction);
-
             }
+            System.out.println("COUNT=\t" + (count + 1));
+            System.out.println("PAIR NUM=\t" + numOfPairs);
         }
     }
 
@@ -289,20 +291,15 @@ public class BlockchainManager extends Observable
 
         public String call()
         {
-            Random rnd = new Random();
-            int sleepAmount = rnd.nextInt(500);
+/*            Random rnd = new Random();
+            int sleepAmount = rnd.nextInt(200);
             try {
-                Thread.sleep(sleepAmount + 600);
+                Thread.sleep(sleepAmount + 300);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-/*            if(hashReceived) {
-                Thread.currentThread().interrupt();
-                String minHash = findMinHash(blockId);
-                hashes.remove(blockId);
-                return minHash;
-            }
-  */          long score = Long.MAX_VALUE;
+            */
+            long score = Long.MAX_VALUE;
             long bestNonce = -1;
             byte[] hash = null;
             try
@@ -314,10 +311,12 @@ public class BlockchainManager extends Observable
                 // Try all values as brute-force
                 for (int i = 0; i < maxNonce; i++)
                 {
-                    if(hashReceived) {
+                    if(hashes.get(blockId).size() > numOfPairs/2) {
     //                    Thread.currentThread().interrupt();
+                        System.out.println("THEY CAME BEFORE I PRODUCE");
+                        System.out.println("HASH_NUM_I_HAVE = " + hashes.get(blockId).size());
+                        System.out.println("GREATER THAN = " + numOfPairs/2);
                         String minHash = findMinHash(blockId);
-      //                  hashes.remove(blockId);
                         return minHash;
                     }
                     String dataWithNonce = blockData + ":" + i + "}";
@@ -341,18 +340,27 @@ public class BlockchainManager extends Observable
             catch (NoSuchAlgorithmException | UnsupportedEncodingException e) {}
 
             System.out.println("CALL TO NOTIFY OBSERVERS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+            System.out.println("Produced Hash=\t" + new String(hash));
             long timeStamp = broadcast(new String(hash), 2, blockId);
 
             hashes.get(blockId).add(new Pair<String, Long>(new String(hash), timeStamp));
 
             String minHash = findMinHash(blockId);
 
-            hashes.remove(blockId);
             return minHash;
         }
 
         private String findMinHash(String blockId)
         {
+            while (hashes.get(blockId).size() < numOfPairs/2 + 1) {
+                try {
+                    Thread.sleep(10);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                System.out.println("DAMDAMDAMDAMDAMDAMDAMDAMDAMDAM");
+            }
+
             long minTime = Long.MAX_VALUE;
             String minHash = "";
             for (Pair p : hashes.get(blockId)){
@@ -363,6 +371,8 @@ public class BlockchainManager extends Observable
                     minHash = (String) p.frst;
                 }
             }
+            System.out.println("Chosen hash= " + minHash);
+            hashes.remove(blockId);
             return minHash;
         }
     }

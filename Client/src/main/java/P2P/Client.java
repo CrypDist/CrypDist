@@ -212,7 +212,7 @@ public class Client extends Observable implements Runnable{
     public void run() {
 
         Timer timer = new Timer();
-        timer.schedule(new HeartBeatTask(peerList, heartBeatPort,serverPort), 0, 5 * 1000);
+        timer.schedule(new HeartBeatTask(this, peerList, heartBeatPort,serverPort), 0, 5 * 1000);
 
         Thread t1 = new ReceiveHeartBeat(this);
         Thread t2 = new ReceiveServerRequest(this);

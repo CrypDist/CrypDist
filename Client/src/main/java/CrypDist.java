@@ -59,11 +59,14 @@ public class CrypDist implements Observer{
             String ip = elems[0];
             String str = elems[1];
 
-            if(ip == "X") {
+            if(ip.equals("X")) {
                 System.out.println("Pair size is now " + str);
                 blockchainManager.setNumOfPairs(Integer.parseInt(str));
+                return;
             }
+
             JsonObject obj2 = gson.fromJson(str, JsonObject.class);
+
             int flagValue = obj2.get("flag").getAsInt();
             String hashValue = obj2.get("lastHash").getAsString();
             if (blockchainManager.validateHash(hashValue)) {
