@@ -141,27 +141,27 @@ public class ScreenManager extends JFrame{
 
     public void showDownload(String s) {
 
-        JDialog dlg = new JDialog(this, "Cryp Dist", true);
+        final JDialog dlg = new JDialog(this, "Cryp Dist", true);
         dlg.setLayout(new GridLayout(3,0));
 
-        JLabel label = new JLabel("Downloading...");
+        final JLabel label = new JLabel("Downloading...");
         dlg.add(label);
 
-        JProgressBar progressBar = new JProgressBar();
+        final JProgressBar progressBar = new JProgressBar();
         progressBar.setBorder( new EmptyBorder( 10,10,10,10 ) );
         progressBar.setIndeterminate(true);
         dlg.add(progressBar);
 
-        GlossyButton cancel = new GlossyButton("Cancel");
-        JPanel bottomP = new JPanel();
+        final GlossyButton cancel = new GlossyButton("Cancel");
+        final JPanel bottomP = new JPanel();
 
-        Thread t = new Thread(new Runnable() {
+        final Thread t = new Thread(new Runnable() {
             public void run() {
                 dlg.setVisible(true);
             }
         });
 
-        Thread download = new Thread(new Runnable() {
+        final Thread download = new Thread(new Runnable() {
             public void run()
             {
                 /*
