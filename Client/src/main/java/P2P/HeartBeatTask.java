@@ -1,5 +1,7 @@
 package P2P;
 
+import org.apache.log4j.Logger;
+
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -21,6 +23,8 @@ import java.util.concurrent.Future;
 
 
 public class HeartBeatTask extends TimerTask {
+
+    private static Logger log = Client.log;
 
     private class SendHeartBeat implements Callable<Peer> {
         private Peer peer;
@@ -114,14 +118,13 @@ public class HeartBeatTask extends TimerTask {
             }
 
         } catch (Exception e) {
-            System.out.println("Interrupted.");
-            e.printStackTrace();
+
         }
         int a = peerList.size();
-        if (size != a)
-        {
+
+        if (size != a) {
             HeartBeatTask.client.change();
-            HeartBeatTask.client.notifyObservers("X////"+a);
+            HeartBeatTask.client.notifyObservers("X////" + a);
             size = a;
         }
     }

@@ -1,26 +1,39 @@
 package DbManager;
 
-import java.sql.*;
+import org.apache.log4j.Logger;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+
 
 /**
  * Created by furkansahin on 15/02/2017.
  */
 public class PostgresDB {
 
+    private static org.apache.log4j.Logger log = Logger.getLogger("DbManager");
+
     Connection conn;
     final String TABLE_NAME = "blocks";
     public PostgresDB(String dbName, String user, String secret, boolean reset)
     {
+
         try {
             Class.forName("org.postgresql.Driver");
         } catch (ClassNotFoundException e) {
-            System.out.println("Postgres driver couldn't be reached. Download the jar file and link it to the project");
+            log.fatal("Postgres driver couldn't be reached. Download the jar file and link it to the project");
+            log.trace(e);
         }
 
         try {
             setupDB(dbName, user, secret, reset);
         } catch (SQLException e) {
-            System.out.println("Postgres could not setup the desired database.");
+            log.fatal("Postgres could not setup the desired database.");
+            log.trace(e);
         }
 
 
@@ -32,8 +45,8 @@ public class PostgresDB {
         try {
             conn = DriverManager.getConnection(url, user, secret);
         } catch (SQLException e) {
-            e.printStackTrace();
-            System.out.println("DB could not be created, there is a possible problem related to properties");
+            log.fatal("DB could not be created, there is a possible problem related to properties.");
+            log.trace(e);
         }
 
         String query = "SELECT datname FROM pg_database WHERE datname=\'" + dbName + "\'";

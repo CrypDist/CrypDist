@@ -1,6 +1,12 @@
 package P2P;
 
-import java.io.*;
+import org.apache.log4j.Logger;
+
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
@@ -9,6 +15,8 @@ import java.net.SocketTimeoutException;
  * Created by od on 3.03.2017.
  */
 public class ReceiveServerRequest extends Thread {
+
+    private static Logger log = Client.log;
 
     private Client client;
     ServerSocket serverSocket;
@@ -22,7 +30,8 @@ public class ReceiveServerRequest extends Thread {
         try {
              serverSocket = new ServerSocket(client.getServerPort());
         } catch (IOException e) {
-            System.err.println("Cannot open the server socket.");
+            log.fatal("Cannot open the server socket.");
+            log.trace(e);
             return;
         }
 
@@ -32,7 +41,7 @@ public class ReceiveServerRequest extends Thread {
 
                 new Thread(() -> {
                     try {
-                        System.out.println("Server request incoming.");
+                        log.trace("Server request incoming.");
 
                         ObjectInputStream in = new ObjectInputStream(new DataInputStream(server.getInputStream()));
                         int flag = in.readInt();
@@ -43,7 +52,8 @@ public class ReceiveServerRequest extends Thread {
                         ObjectOutputStream out = new ObjectOutputStream(new DataOutputStream(server.getOutputStream()));
                         out.writeInt(900);
                         out.flush();
-                        System.out.println("Client is notifying with " + flag  + " | " + str);
+
+                        log.trace("Client is notifying with " + flag  + " | " + str);
                         client.change();
                         client.notifyObservers(str);
 
@@ -64,10 +74,11 @@ public class ReceiveServerRequest extends Thread {
 
             }
             catch (SocketTimeoutException s) {
-                System.err.println("Server socket timed out!");
+                log.error("Server socket timed out!");
+                log.trace(s);
             } catch (IOException e) {
-                System.err.println("IOException while receiving server request!");
-                e.printStackTrace();
+                log.error("IOException while receiving server request!");
+                log.trace(e);
             }
         }
     }

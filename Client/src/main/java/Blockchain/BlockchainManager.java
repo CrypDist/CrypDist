@@ -6,6 +6,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import org.apache.commons.net.ntp.NTPUDPClient;
 import org.apache.commons.net.ntp.TimeInfo;
+import org.apache.log4j.Logger;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -13,10 +14,18 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.*;
-import java.util.concurrent.*;
-import org.apache.commons.net.ntp.NTPUDPClient;
-import org.apache.commons.net.ntp.TimeInfo;
+import java.util.ArrayList;
+import java.util.Observable;
+import java.util.Random;
+import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.PriorityBlockingQueue;
 
 /**
  * Created by Kaan on 18-Feb-17.
@@ -24,6 +33,8 @@ import org.apache.commons.net.ntp.TimeInfo;
 
 public class BlockchainManager extends Observable
 {
+    static transient Logger log = Logger.getLogger("Blockchain");
+
     private final int BLOCK_SIZE = 4;
     private final int MAX_TIMEOUT_MS = 10000;
     private Blockchain blockchain;
@@ -73,12 +84,12 @@ public class BlockchainManager extends Observable
 
         Gson gson = new Gson();
 
-        System.out.println(gson.toJson(upload));
+        log.trace(gson.toJson(upload));
         transactionPendingBucket.put(gson.toJson(upload), new Pair<Transaction, Integer>(upload, 0));
-        System.out.println("Transaction added, being broadcasted.");
+        log.info("Transaction added, being broadcasted.");
         broadcast(gson.toJson(upload), 1, null);
 
-        System.out.println("Notified");
+        log.info("Notified");
     }
 
     // Transaction is serializable and taken from the p2p connection as it is
@@ -136,7 +147,7 @@ public class BlockchainManager extends Observable
 
     public void createBlock()
     {
-        System.out.println("Block is being created");
+        log.trace("Block is being created");
         if (transactionBucket_solid.size() != BLOCK_SIZE)
         {
             return;
@@ -156,11 +167,11 @@ public class BlockchainManager extends Observable
 
             Block block = null;
             try {
-                System.out.println("Hash in block: " + hash);
+                log.trace("Hash in block: " + hash);
                 block = new Block(prevHash, timestamp, hash, transactionBucket_solid, blockchain);
                 if (block == null)
                 {
-                    System.out.println("BLOCK COULD NOT BE CREATED");
+                    log.fatal("BLOCK COULD NOT BE CREATED");
                     return;
                 }
                 for (Transaction t : block.getTransactions()) {
@@ -339,8 +350,9 @@ public class BlockchainManager extends Observable
             }
             catch (NoSuchAlgorithmException | UnsupportedEncodingException e) {}
 
-            System.out.println("CALL TO NOTIFY OBSERVERS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-            System.out.println("Produced Hash=\t" + new String(hash));
+            log.trace("CALL TO NOTIFY OBSERVERS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+            log.trace("Produced Hash=\t" + new String(hash));
+
             long timeStamp = broadcast(new String(hash), 2, blockId);
 
             hashes.get(blockId).add(new Pair<String, Long>(new String(hash), timeStamp));
@@ -364,7 +376,7 @@ public class BlockchainManager extends Observable
             long minTime = Long.MAX_VALUE;
             String minHash = "";
             for (Pair p : hashes.get(blockId)){
-                System.out.println("HASH:\t" + p.frst);
+                log.trace("HASH:\t" + p.frst);
                 if ((long)p.scnd < minTime)
                 {
                     minTime = (long) p.scnd;

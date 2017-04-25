@@ -1,11 +1,15 @@
 package Blockchain;
 
+import org.apache.log4j.Logger;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 
 public class Blockchain implements Serializable
 {
+    private static Logger log = BlockchainManager.log;
+
     private HashMap<String, Block> blockMap;
     private ArrayList<String> sinkBlocks;
     private Block validBlock;
@@ -73,14 +77,14 @@ public class Blockchain implements Serializable
         {
             String tmp = sinkBlocks.get(i);
             if (tmp == null)
-                System.out.println("tmp is null");
+                log.error("tmp is null");
             Block tmpBlock = blockMap.get(tmp);
             if (tmpBlock == null)
-                System.out.println("BlockMap does not have tmpBlock");
+                log.error("BlockMap does not have tmpBlock");
             if (block == null)
-                System.out.println("Blockchain.Block is null!!!!!");
+                log.error(".Block is null!!!!!");
             if (block.getHash() == null)
-                System.out.println("HASH VALUE IS NULL");
+                log.error("HASH VALUE IS NULL");
             if ((block.getHash()).equals(tmpBlock.getHash()))
                 return false;
             if (block.getPreviousHash().equals(tmpBlock.getHash()))

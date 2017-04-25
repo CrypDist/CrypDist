@@ -1,24 +1,30 @@
 package P2P;
 
-import java.io.*;
+import org.apache.log4j.Logger;
+
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.Socket;
-import java.net.SocketTimeoutException;
 import java.util.Observable;
 import java.util.Timer;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * P2P.Client is actual working class for peers.
+ * Client is actual working class for peers.
  *
  * Created by od on 17.02.2017.
  */
 
 public class Client extends Observable implements Runnable{
 
+    static transient  Logger log = Logger.getLogger("P2P");
+
     private String swAdr;
     private int swPort;
     ConcurrentHashMap<Peer,Integer> peerList;
-
     private int serverPort;
     private int heartBeatPort;
 
@@ -134,8 +140,8 @@ public class Client extends Observable implements Runnable{
         }
         catch(IOException e)
         {
-            e.printStackTrace();
-            System.err.println("Cannot connect to the server, terminated.");
+            log.fatal("Cannot connect to the server, terminated.");
+            log.trace(e);
         }
     }
 
@@ -146,21 +152,21 @@ public class Client extends Observable implements Runnable{
             peerList = new ConcurrentHashMap<>(peerSize);
 
             for(int i = 0; i < peerSize ; i++) {
-                    try {
+                try {
                     Peer p = Peer.readObject(new ObjectInputStream(in));
                     peerList.put(p,0);
                     //new Peer8Notifier(p,heartBeatPort,serverPort).start();
                 }
                 catch (ClassNotFoundException classException) {
-                    System.err.println("P2P.Peer " + i + " cannot be resolved to an object.");
+                    log.error("A peer cannot be resolved to an object.");
+                    log.trace(classException);
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();
-            System.err.println("Cannot read from the server socket.");
+            throw e;
         }
 
-        System.out.println("P2P.Client initialized with size: " + peerList.size());
+        log.info("Client initialized with size: " + peerList.size());
 
     }
 
@@ -182,11 +188,12 @@ public class Client extends Observable implements Runnable{
     public boolean sendMessage(Peer p, String msg,int trials) {
 
         if (trials > 4) {
-            System.out.println("Message cannot be sent after 5 trials.");
+            log.error("Message cannot be sent after 5 trials");
+            log.trace(msg);
         }
         try {
-            System.out.println(p.getPeerServerPort());
-            System.out.println(p.getAddress());
+            log.trace(p.getPeerServerPort());
+            log.trace(p.getAddress());
             Socket messagedClient = new Socket(p.getAddress(),p.getPeerServerPort());
             ObjectOutputStream out = new ObjectOutputStream(messagedClient.getOutputStream());
             out.writeInt(200);
@@ -196,12 +203,13 @@ public class Client extends Observable implements Runnable{
             ObjectInputStream in = new ObjectInputStream(new DataInputStream(messagedClient.getInputStream()));
             int ack = in.readInt();
             messagedClient.close();
-            System.out.println("Message is sent!");
+            log.info("Message is sent!");
 
             if(ack != 900) {
-                System.out.println("Non flag read");
+                log.trace("Non flag read");
                 return sendMessage(p,msg,trials+1);
             }
+
 
             return true;
         } catch (IOException e) {

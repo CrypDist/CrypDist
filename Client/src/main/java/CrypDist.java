@@ -1,14 +1,17 @@
 import Blockchain.BlockchainManager;
-import Blockchain.Transaction;
 import P2P.Client;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import org.apache.log4j.Logger;
+import org.apache.log4j.PropertyConfigurator;
 
 import java.util.Observable;
 import java.util.Observer;
 
 public class CrypDist implements Observer{
+
+    private static transient  Logger log = Logger.getLogger("CrypDist");
 
     // Flag 1 = Transaction data
     // Flag 2 = Hash
@@ -20,6 +23,8 @@ public class CrypDist implements Observer{
 
     public CrypDist(String swAdr, int swPort, int hbPort, int serverPort ) {
 
+        PropertyConfigurator.configure(getClass().getResourceAsStream("log4j_custom.properties"));
+
         blockchainManager = new BlockchainManager();
         client = new Client(swAdr, swPort, hbPort,serverPort );
         Thread t = new Thread(client);
@@ -30,7 +35,7 @@ public class CrypDist implements Observer{
     @Override
     public void update(Observable o, Object arg) {
 
-        System.out.println("BE NOTIFIED");
+        log.trace("BE NOTIFIED");
         Gson gson = new Gson();
         String lastHash = blockchainManager.getBlockchain().getLastBlock();
         if( o instanceof BlockchainManager) {
@@ -42,15 +47,15 @@ public class CrypDist implements Observer{
                 client.broadCastMessage(obj.toString());
             }
             else if (flag == 2) {
-                System.out.println("HASH BROADCAST IS IN PROCESS");
+                log.trace("HASH BROADCAST IS IN PROCESS");
                 client.broadCastMessage(obj.toString());
             }
             else if (flag == 4) {
                 updateBlockchain();
-                System.out.println("HASH IS NOT UP TO DATE");
+                log.warn("HASH IS NOT UP TO DATE");
             }
             else
-                System.out.println("sa");
+                log.error("Invalid flag");
 
         }
         else if (o instanceof Client) {
@@ -60,7 +65,7 @@ public class CrypDist implements Observer{
             String str = elems[1];
 
             if(ip.equals("X")) {
-                System.out.println("Pair size is now " + str);
+                log.info("Pair size is now " + str);
                 blockchainManager.setNumOfPairs(Integer.parseInt(str));
                 return;
             }
@@ -80,12 +85,16 @@ public class CrypDist implements Observer{
                     toReturn.addProperty("lastHash", hashValue);
                     client.sendMessage(ip, gson.toJson(toReturn));
 
+                    log.trace("DATA RECEIVED" + dataStr);
+
                     blockchainManager.addTransaction(dataStr);
                 }
                 else if (flagValue == 2) {
                     JsonElement data = obj2.get("data");
                     JsonElement time = obj2.get("timeStamp");
                     JsonElement blockId = obj2.get("blockId");
+
+                    log.trace("HASH RECEIVED" + data.getAsString());
                     blockchainManager.receiveHash(data.getAsString(), time.getAsLong(), blockId.getAsString());
                 }
                 else if (flagValue == 3)
@@ -97,7 +106,7 @@ public class CrypDist implements Observer{
             }
         }
         else
-            System.out.println("Err");
+            log.error("Unknown observable");
     }
 
     private void updateBlockchain()

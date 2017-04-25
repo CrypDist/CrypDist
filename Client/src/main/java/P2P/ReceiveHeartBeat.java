@@ -1,5 +1,7 @@
 package P2P;
 
+import org.apache.log4j.Logger;
+
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -12,6 +14,8 @@ import java.net.SocketTimeoutException;
  * Created by od on 3.03.2017.
  */
 public class ReceiveHeartBeat extends Thread {
+
+    private static Logger log = Client.log;
 
     private Client client;
 
@@ -51,7 +55,7 @@ public class ReceiveHeartBeat extends Thread {
                     }
                     if (b) {
                         Peer x = new Peer(addr,hbPort,swPort);
-                        System.out.println("New peer added.");
+                        log.info("New peer added.");
                         client.peerList.put(x,0);
                     }
                 }
@@ -63,10 +67,11 @@ public class ReceiveHeartBeat extends Thread {
                 hb.close();
             }
             catch (SocketTimeoutException s) {
-                System.err.println("Server socket timed out!");
+                log.error("Server socket timed out!");
+                log.trace(s);
             } catch (IOException e) {
-                System.err.println("IOException while receiving heartbeat!");
-                e.printStackTrace();
+                log.error("IOException while receiving server request!");
+                log.trace(e);
             }
         }
     }
