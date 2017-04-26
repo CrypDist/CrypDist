@@ -360,10 +360,10 @@ public class BlockchainManager extends Observable
                 }
                 System.out.println("DAMDAMDAMDAMDAMDAMDAMDAMDAMDAM");
             }
-
+            ArrayList<Pair> pairs = (ArrayList<Pair>) hashes.get(blockId).clone();
             long minTime = Long.MAX_VALUE;
             String minHash = "";
-            for (Pair p : hashes.get(blockId)){
+            for (Pair p : pairs){
                 System.out.println("HASH:\t" + p.frst);
                 if ((long)p.scnd < minTime)
                 {
