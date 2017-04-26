@@ -1,25 +1,22 @@
 package Blockchain;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.security.Timestamp;
-
-import java.net.InetAddress;
-import java.util.Date;
-
 import UploadUnit.ServerAccessor;
 import org.apache.commons.net.ntp.NTPUDPClient;
 import org.apache.commons.net.ntp.TimeInfo;
+import org.apache.log4j.Logger;
 
-import static java.lang.System.currentTimeMillis;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.Date;
 
 /**
  * Created by Kaan on 19-Feb-17.
  */
 public class Transaction implements Comparable<Transaction>
 {
+    private static Logger log = BlockchainManager.log;
+
     private final String TIME_SERVER = "nist1-macon.macon.ga.us";
     private final String amazonServer = "https://s3.eu-central-1.amazonaws.com/";
     private final String bucketName = System.getenv("BUCKET_NAME");
@@ -47,7 +44,7 @@ public class Transaction implements Comparable<Transaction>
             inetAddress = InetAddress.getByName(TIME_SERVER);
             TimeInfo timeInfo = timeClient.getTime(inetAddress);
             long returnTime = timeInfo.getMessage().getTransmitTimeStamp().getTime();
-            System.out.println("Time:" + returnTime);
+            log.trace("Time:" + returnTime);
             Date time = new Date(returnTime);
 
             this.timeStamp = time.getTime();

@@ -13,11 +13,15 @@ import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
 import org.apache.commons.io.FileUtils;
+import org.apache.log4j.Logger;
 
 import java.io.*;
 
 
 public class ServerAccessor {
+
+    private static Logger log = Logger.getLogger("UploadUnit");
+
     private String bucketName;
     private AmazonS3 s3client;
 
@@ -34,28 +38,28 @@ public class ServerAccessor {
             throw new Exception("file already exists!");
 
         try {
-            System.out.println("Uploading a new object to S3 from a file\n");
+            log.info("Uploading a new object to S3 from a file\n");
             File file = new File(filePath);
             s3client.putObject(new PutObjectRequest(
                     bucketName, fileName, file));
 
         } catch (AmazonServiceException ase) {
-            System.out.println("Caught an AmazonServiceException, which " +
+            log.error("Caught an AmazonServiceException, which " +
                     "means your request made it " +
                     "to Amazon S3, but was rejected with an error response" +
                     " for some reason.");
-            System.out.println("Error Message:    " + ase.getMessage());
-            System.out.println("HTTP Status Code: " + ase.getStatusCode());
-            System.out.println("AWS Error Code:   " + ase.getErrorCode());
-            System.out.println("Error Type:       " + ase.getErrorType());
-            System.out.println("Request ID:       " + ase.getRequestId());
+            log.error("Error Message:    " + ase.getMessage());
+            log.error("HTTP Status Code: " + ase.getStatusCode());
+            log.error("AWS Error Code:   " + ase.getErrorCode());
+            log.error("Error Type:       " + ase.getErrorType());
+            log.error("Request ID:       " + ase.getRequestId());
         } catch (AmazonClientException ace) {
-            System.out.println("Caught an AmazonClientException, which " +
+            log.error("Caught an AmazonClientException, which " +
                     "means the client encountered " +
                     "an internal error while trying to " +
                     "communicate with S3, " +
                     "such as not being able to access the network.");
-            System.out.println("Error Message: " + ace.getMessage());
+            log.error("Error Message: " + ace.getMessage());
         }
     }
 
