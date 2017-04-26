@@ -35,7 +35,7 @@ public class CrypDist implements Observer{
     @Override
     public void update(Observable o, Object arg) {
 
-        log.trace("BE NOTIFIED");
+        log.info("BE NOTIFIED");
         Gson gson = new Gson();
         String lastHash = blockchainManager.getBlockchain().getLastBlock();
         if( o instanceof BlockchainManager) {
@@ -47,7 +47,7 @@ public class CrypDist implements Observer{
                 client.broadCastMessage(obj.toString());
             }
             else if (flag == 2) {
-                log.trace("HASH BROADCAST IS IN PROCESS");
+                log.info("HASH BROADCAST IS IN PROCESS");
                 client.broadCastMessage(obj.toString());
             }
             else if (flag == 4) {
@@ -85,7 +85,7 @@ public class CrypDist implements Observer{
                     toReturn.addProperty("lastHash", hashValue);
                     client.sendMessage(ip, gson.toJson(toReturn));
 
-                    log.trace("DATA RECEIVED" + dataStr);
+                    log.info("DATA RECEIVED" + dataStr);
 
                     blockchainManager.addTransaction(dataStr);
                 }
@@ -94,7 +94,7 @@ public class CrypDist implements Observer{
                     JsonElement time = obj2.get("timeStamp");
                     JsonElement blockId = obj2.get("blockId");
 
-                    log.trace("HASH RECEIVED" + data.getAsString());
+                    log.info("HASH RECEIVED" + data.getAsString());
                     blockchainManager.receiveHash(data.getAsString(), time.getAsLong(), blockId.getAsString());
                 }
                 else if (flagValue == 3)

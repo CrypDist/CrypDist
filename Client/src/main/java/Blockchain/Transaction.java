@@ -44,7 +44,7 @@ public class Transaction implements Comparable<Transaction>
             inetAddress = InetAddress.getByName(TIME_SERVER);
             TimeInfo timeInfo = timeClient.getTime(inetAddress);
             long returnTime = timeInfo.getMessage().getTransmitTimeStamp().getTime();
-            log.trace("Time:" + returnTime);
+            log.info("Time:" + returnTime);
             Date time = new Date(returnTime);
 
             this.timeStamp = time.getTime();
@@ -60,6 +60,8 @@ public class Transaction implements Comparable<Transaction>
     public void execute(ServerAccessor serverAccessor)
     {
         try {
+            if (serverAccessor == null)
+                log.info("HEYYYYYYYYYYYYYYYYYOOOOOOOOOOOOOOOOOOOOOOOOO");
             serverAccessor.upload(fileName, filePath);
         } catch (Exception e) {
             e.printStackTrace();

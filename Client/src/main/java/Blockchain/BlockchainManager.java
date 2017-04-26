@@ -43,9 +43,6 @@ public class BlockchainManager extends Observable
     private ConcurrentHashMap<String, Pair> transactionPendingBucket;
     private PriorityBlockingQueue<Transaction> transactionBucket;
     private ArrayList<Transaction> transactionBucket_solid;
-    private boolean hashReceived;
-    private String lastHash;
-    private Long lastTime;
     private final String TIME_SERVER = "nist1-macon.macon.ga.us";
     // To collect hash values to given blockIds with time stamp
     // Mapping is like BlockId -> ArrayOf[(Hash, TimeStamp)]
@@ -57,7 +54,7 @@ public class BlockchainManager extends Observable
         Block genesis = new Block();
         dbManager = new PostgresDB("blockchain", "postgres", "", false);
         blockchain = new Blockchain(genesis);
-        //     serverAccessor = new ServerAccessor();
+        serverAccessor = new ServerAccessor();
         transactionPendingBucket = new ConcurrentHashMap<>();
         transactionBucket = new PriorityBlockingQueue<>();
         transactionBucket_solid = new ArrayList<>(BLOCK_SIZE);
@@ -76,20 +73,30 @@ public class BlockchainManager extends Observable
 
     public void uploadFile(String filePath)
     {
-        String[] path = filePath.split("/");
+        log.warn("FILE PATH CAME AS :" + filePath);
+        String[] path = filePath.substring(1).split("/");
         String fileName = path[path.length - 1];
 
-        Transaction upload = new Transaction(fileName, filePath);
+        Transaction upload = new Transaction(filePath, fileName);
         //upload.execute(serverAccessor);
 
         Gson gson = new Gson();
 
-        log.trace(gson.toJson(upload));
+        log.info(gson.toJson(upload));
         transactionPendingBucket.put(gson.toJson(upload), new Pair<Transaction, Integer>(upload, 0));
         log.info("Transaction added, being broadcasted.");
         broadcast(gson.toJson(upload), 1, null);
 
         log.info("Notified");
+    }
+
+    public void downloadFile(String fileName, String path)
+    {
+        try {
+            serverAccessor.download(fileName,path);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     // Transaction is serializable and taken from the p2p connection as it is
@@ -122,14 +129,13 @@ public class BlockchainManager extends Observable
 
 
     public void receiveHash(String data, Long timeStamp, String blockId) {
-        hashReceived = true;
-        lastHash = data;
-        lastTime = timeStamp;
         synchronized (this) {
-            if (!hashes.containsKey(blockId))
+            if (!hashes.containsKey(blockId)) {
                 hashes.put(blockId, new ArrayList<>());
-
-            hashes.get(blockId).add(new Pair<String, Long>(lastHash, timeStamp));
+                log.info("The first time a hash is in hashes for the block!");
+            }
+            hashes.get(blockId).add(new Pair<String, Long>(data, timeStamp));
+            log.info("the hash is added to the hashes");
         }
     }
 
@@ -150,9 +156,11 @@ public class BlockchainManager extends Observable
 
     public void createBlock()
     {
-        log.trace("Block is being created");
+        log.info("Block is being created");
         if (transactionBucket_solid.size() != BLOCK_SIZE)
         {
+            log.warn("RETURNED!");
+            log.warn("transactionBucket_solid size = " + transactionBucket_solid.size());
             return;
         }
         else
@@ -165,14 +173,14 @@ public class BlockchainManager extends Observable
             synchronized (this) {
                 if (!hashes.containsKey(blockId))
                     hashes.put(blockId, new ArrayList<>());
+                log.info("mineBlock is called, hashes size = " + hashes.get(blockId).size());
             }
 
             String hash = mineBlock(blockId, prevHash, timestamp, maxNonce);
-            hashReceived = false;
 
             Block block = null;
             try {
-                log.trace("Hash in block: " + hash);
+                log.info("Hash in block: " + hash);
                 block = new Block(prevHash, timestamp, hash, transactionBucket_solid, blockchain);
                 if (block == null)
                 {
@@ -262,17 +270,19 @@ public class BlockchainManager extends Observable
 
     public void markValid(String transaction)
     {
-        if(transactionPendingBucket.containsKey(transaction)) {
-            int count = (int)transactionPendingBucket.get(transaction).scnd;
-            transactionPendingBucket.get(transaction).scnd = count + 1;
-            if (count + 1 > numOfPairs / 2)
-            {
-                Transaction tr = ((Transaction)transactionPendingBucket.get(transaction).frst);
-                transactionBucket.add(tr);
-                transactionPendingBucket.remove(transaction);
+        synchronized (this) {
+            if (transactionPendingBucket.containsKey(transaction)) {
+                int count = (int) transactionPendingBucket.get(transaction).scnd;
+                transactionPendingBucket.get(transaction).scnd = count + 1;
+                if (count + 1 > numOfPairs / 2) {
+                    Transaction tr = ((Transaction) transactionPendingBucket.get(transaction).frst);
+                    transactionBucket.add(tr);
+                    transactionPendingBucket.remove(transaction);
+                    tr.execute(serverAccessor);
+                }
+                System.out.println("COUNT=\t" + (count + 1));
+                System.out.println("PAIR NUM=\t" + numOfPairs);
             }
-            System.out.println("COUNT=\t" + (count + 1));
-            System.out.println("PAIR NUM=\t" + numOfPairs);
         }
     }
 
@@ -307,14 +317,6 @@ public class BlockchainManager extends Observable
 
         public String call()
         {
-/*            Random rnd = new Random();
-            int sleepAmount = rnd.nextInt(200);
-            try {
-                Thread.sleep(sleepAmount + 300);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            */
             long score = Long.MAX_VALUE;
             long bestNonce = -1;
             byte[] hash = null;
@@ -327,15 +329,13 @@ public class BlockchainManager extends Observable
                 // Try all values as brute-force
                 for (int i = 0; i < maxNonce; i++)
                 {
-                    synchronized (this) {
-                        if (hashes.get(blockId).size() > numOfPairs / 2) {
-                            //                    Thread.currentThread().interrupt();
-                            System.out.println("THEY CAME BEFORE I PRODUCE");
-                            System.out.println("HASH_NUM_I_HAVE = " + hashes.get(blockId).size());
-                            System.out.println("GREATER THAN = " + numOfPairs / 2);
-                            String minHash = findMinHash(blockId);
-                            return minHash;
-                        }
+                    if (hashes.get(blockId).size() > numOfPairs / 2) {
+                        //                    Thread.currentThread().interrupt();
+                        System.out.println("THEY CAME BEFORE I PRODUCE");
+                        System.out.println("HASH_NUM_I_HAVE = " + hashes.get(blockId).size());
+                        System.out.println("GREATER THAN = " + numOfPairs / 2);
+                        String minHash = findMinHash(blockId);
+                        return minHash;
                     }
                     String dataWithNonce = blockData + ":" + i + "}";
                     hash = md.digest(dataWithNonce.getBytes("UTF-8"));
@@ -357,8 +357,15 @@ public class BlockchainManager extends Observable
             }
             catch (NoSuchAlgorithmException | UnsupportedEncodingException e) {}
 
-            log.trace("CALL TO NOTIFY OBSERVERS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-            log.trace("Produced Hash=\t" + new String(hash));
+            log.info("CALL TO NOTIFY OBSERVERS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+            log.info("Produced Hash=\t" + new String(hash));
+
+            Random rnd = new Random();
+            try {
+                Thread.sleep(rnd.nextInt(100));
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
 
             long timeStamp = broadcast(new String(hash), 2, blockId);
 
@@ -372,8 +379,8 @@ public class BlockchainManager extends Observable
         private String findMinHash(String blockId)
         {
 
-            log.trace("1\t# of hashes: " + hashes.get(blockId).size());
-            log.trace("1\t# of pairs: " + numOfPairs);
+            log.info("1\t# of hashes: " + hashes.get(blockId).size());
+            log.info("1\t# of pairs: " + numOfPairs);
 
             while (hashes.get(blockId).size() < numOfPairs/2 + 1) {
                 try {
@@ -381,22 +388,22 @@ public class BlockchainManager extends Observable
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-                log.trace("DAMDAMDAMDAMDAMDAMDAMDAMDAMDAM");
-                log.trace("# of hashes: " + hashes.get(blockId).size());
-                log.trace("# of pairs: " + numOfPairs);
+                log.info("DAMDAMDAMDAMDAMDAMDAMDAMDAMDAM");
+                log.info("# of hashes: " + hashes.get(blockId).size());
+                log.info("# of pairs: " + numOfPairs);
             }
             long minTime = Long.MAX_VALUE;
             String minHash = "";
 
             synchronized (this) {
                 for (Pair p : hashes.get(blockId)) {
-                    log.trace("HASH:\t" + p.frst);
+                    log.info("HASH:\t" + p.frst);
                     if ((long) p.scnd < minTime) {
                         minTime = (long) p.scnd;
                         minHash = (String) p.frst;
                     }
                 }
-                log.trace("Chosen hash= " + minHash);
+                log.info("Chosen hash= " + minHash);
                 hashes.remove(blockId);
                 return minHash;
             }
@@ -413,9 +420,7 @@ public class BlockchainManager extends Observable
                         transactionBucket_solid.add(transactionBucket.poll());
                         if (transactionBucket_solid.size() == BLOCK_SIZE)
                         {
-                            hashReceived = false;
                             createBlock();
-                            hashReceived = false;
                         }
                     }
                     else

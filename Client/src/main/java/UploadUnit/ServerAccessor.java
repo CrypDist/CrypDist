@@ -13,6 +13,7 @@ import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 
 import java.io.*;
@@ -34,14 +35,17 @@ public class ServerAccessor {
     }
 
     public void upload(String fileName, String filePath) throws Exception {
-        if (doesObjectExist(fileName))
-            throw new Exception("file already exists!");
+        if (doesObjectExist(fileName)) {
 
+            throw new Exception("file already exists!");
+        }
         try {
             log.info("Uploading a new object to S3 from a file\n");
+            log.warn("FILE_NAME_IN_UPLOAD:\t" + fileName);
+            log.warn("FILE_PATH_IN_UPLOAD:\t" + filePath);
+
             File file = new File(filePath);
-            s3client.putObject(new PutObjectRequest(
-                    bucketName, fileName, file));
+            s3client.putObject(new PutObjectRequest(bucketName, fileName, file));
 
         } catch (AmazonServiceException ase) {
             log.error("Caught an AmazonServiceException, which " +
@@ -66,9 +70,7 @@ public class ServerAccessor {
     public void download(String fileName, String toDirectory) throws IOException {
         S3Object object = s3client.getObject(new GetObjectRequest(bucketName, fileName));
         InputStream objectData = object.getObjectContent();
-
-        byte[] buffer = new byte[(int) object.getObjectMetadata().getContentLength()];
-        objectData.read(buffer);
+        byte[] buffer = IOUtils.toByteArray(objectData);
 
         FileUtils.writeByteArrayToFile(new File(toDirectory), buffer);
 
@@ -81,6 +83,8 @@ public class ServerAccessor {
 
     public boolean doesObjectExist(String fileName)
     {
+        System.out.println("BUCKET:" + bucketName);
+        System.out.println("FILE:" + fileName);
         return s3client.doesObjectExist(bucketName, fileName);
     }
 
