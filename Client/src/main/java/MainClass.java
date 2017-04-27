@@ -21,7 +21,7 @@ public class MainClass {
                 path = inputSplitted[2];
             switch (x) {
                 case "upload":
-                    c.blockchainManager.uploadFile(name);
+                    c.blockchainManager.uploadFile(name,"Summary");
                     break;
                 case "download":
                     c.blockchainManager.downloadFile(name, path);

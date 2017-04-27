@@ -8,6 +8,7 @@ import org.apache.commons.net.ntp.NTPUDPClient;
 import org.apache.commons.net.ntp.TimeInfo;
 import org.apache.log4j.Logger;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
@@ -71,13 +72,16 @@ public class BlockchainManager extends Observable
         return blockchain;
     }
 
-    public void uploadFile(String filePath)
+    public void uploadFile(String filePath, String dataSummary)
     {
         log.warn("FILE PATH CAME AS :" + filePath);
         String[] path = filePath.substring(1).split("/");
         String fileName = path[path.length - 1];
 
-        Transaction upload = new Transaction(filePath, fileName);
+
+        File file = new File(filePath);
+        long dataSize = file.length();
+        Transaction upload = new Transaction(fileName, filePath, dataSummary, dataSize);
         //upload.execute(serverAccessor);
 
         Gson gson = new Gson();
@@ -418,6 +422,7 @@ public class BlockchainManager extends Observable
                     if (transactionBucket.peek().getTimeStamp() < getTime() - MAX_TIMEOUT_MS)
                     {
                         transactionBucket_solid.add(transactionBucket.poll());
+                        log.trace("Transaction bucket size = " + transactionBucket.size());
                         if (transactionBucket_solid.size() == BLOCK_SIZE)
                         {
                             createBlock();
