@@ -64,16 +64,6 @@ public class HeartBeatTask extends TimerTask {
     private int swPort;
     private int size;
 
-    public HeartBeatTask(Client client, ConcurrentHashMap<Peer,Integer> peerList, int flag) {
-        this.peerList = peerList;
-        HeartBeatTask.client = client;
-        this.size =peerList.size();
-        if (size != 0) {
-            client.change();
-            client.notifyObservers("X////" + size);
-        }
-    }
-
 
     public HeartBeatTask(Client client, ConcurrentHashMap<Peer,Integer> peerList, int hbPort, int swPort) {
         this.peerList = peerList;
@@ -81,14 +71,6 @@ public class HeartBeatTask extends TimerTask {
         this.swPort = swPort;
         this.size =peerList.size();
         HeartBeatTask.client = client;
-        if(HeartBeatTask.client == null)
-        {
-            System.out.println("Helloooo!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-        }
-        if (size != 0) {
-            HeartBeatTask.client.change();
-            HeartBeatTask.client.notifyObservers("X////" + size);
-        }
     }
 
 
@@ -123,8 +105,7 @@ public class HeartBeatTask extends TimerTask {
         int a = peerList.size();
 
         if (size != a) {
-            HeartBeatTask.client.change();
-            HeartBeatTask.client.notifyObservers("X////" + a);
+            client.notify("X////" + a);
             size = a;
         }
     }

@@ -1,9 +1,12 @@
 package P2P;
 
 import Util.CrypDist;
+import Util.Config;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
+
 import com.google.gson.JsonObject;
+import jdk.nashorn.internal.codegen.CompilerConstants;
 import org.apache.log4j.Logger;
 
 import java.io.DataInputStream;
@@ -15,10 +18,16 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.Observable;
 import java.util.Set;
 import java.util.Timer;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 /**
  * Client is actual working class for peers.
@@ -51,10 +60,13 @@ public class Client extends Observable implements Runnable{
         lastSize = 0;
 
         initialization();
+
+        //To notify at the beginning
+        notify("X////" + peerList.size());
     }
 
-    public void change(){
-        setChanged();
+    public String notify(String msg){
+        return crypDist.updateByClient(msg);
     }
     public void initialization() {
 
@@ -82,6 +94,10 @@ public class Client extends Observable implements Runnable{
         }
     }
 
+    public void receiveBlockchain() {
+
+    }
+
     public void receivePeerList(DataInputStream in) throws IOException{
 
         try {
@@ -107,52 +123,93 @@ public class Client extends Observable implements Runnable{
 
     }
 
+
     public void broadCastMessage(String message) {
-        for(Peer p: peerList.keySet()) {
-            sendMessage(p,message,0);
-        }
-    }
 
-    public boolean sendMessage(String adr, String msg) {
-        for(Peer p: peerList.keySet()){
-            if(p.getAddress().toString().equals(adr)){
-                return sendMessage(p,msg,0);
-            }
+        ArrayList<Thread> threads = new ArrayList<>(peerList.size());
+        for(Peer peer: peerList.keySet()) {
+            Thread t = new Thread(new MessageTask(peer,message));
+            threads.add(t);
+            t.start();
         }
-        return false;
-    }
 
-    public boolean sendMessage(Peer p, String msg,int trials) {
-
-        if (trials > 4) {
-            log.error("Message cannot be sent after 5 trials");
-            log.trace(msg);
-        }
         try {
-            log.trace(p.getPeerServerPort());
-            log.trace(p.getAddress());
-            Socket messagedClient = new Socket(p.getAddress(),p.getPeerServerPort());
-            ObjectOutputStream out = new ObjectOutputStream(messagedClient.getOutputStream());
-            out.writeInt(200);
-            out.writeUTF(msg);
-            out.flush();
-
-            ObjectInputStream in = new ObjectInputStream(new DataInputStream(messagedClient.getInputStream()));
-            int ack = in.readInt();
-            messagedClient.close();
-            log.info("Message is sent!");
-
-            if(ack != 900) {
-                log.trace("Non flag read");
-                return sendMessage(p,msg,trials+1);
+            for(Thread t: threads) {
+                t.join();
             }
+        } catch (InterruptedException e) {
+            log.trace("Message interrupted.");
+        }
 
+    }
 
-            return true;
-        } catch (IOException e) {
-            return sendMessage(p,msg,trials+1);
+    public void sendMessage(String adr, String message) {
+
+        Thread t = null;
+        for(Peer peer: peerList.keySet()){
+            if(peer.getAddress().toString().equals(adr)){
+                 t = new Thread(new MessageTask(peer,message));
+                 t.start();
+            }
+        }
+        if(t == null){
+            log.error("Peer cannot found.");
+        } else {
+            try {
+                t.join();
+            } catch (InterruptedException e) {
+                log.error("Message sending is interrupted before success.");
+            }
         }
     }
+
+    public HashSet<String> broadCastMessageResponse(String message) {
+
+        ExecutorService executor = Executors.newCachedThreadPool();
+        ArrayList<Future<String>> futures = new ArrayList<>();
+
+        for(Peer peer:peerList.keySet()) {
+            Callable<String> task = new ResponsedMessageTask(peer,message);
+            Future<String> future = executor.submit(task);
+            futures.add(future);
+        }
+
+        HashSet<String> result = new HashSet<>();
+
+        try {
+            for(Future<String> future: futures) {
+                String res = future.get();
+                if(res != null && !res.equals(""))
+                    result.add(res);;
+            }
+        } catch (Exception e) {
+
+        }
+
+        return result;
+    }
+
+    public String sendMessageResponse(String adr, String message) {
+
+        Future<String> f = null;
+        ExecutorService executor = Executors.newCachedThreadPool();
+        for(Peer peer: peerList.keySet()){
+            if(peer.getAddress().toString().equals(adr)){
+                Callable<String> task = new ResponsedMessageTask(peer,message);
+                f = executor.submit(task);
+            }
+        }
+
+        if(f != null) {
+            try {
+                return f.get();
+            } catch (Exception e) {
+                return null;
+            }
+        }
+        return null; // OR "" can be returned.s
+    }
+
 
     public void run() {
 
@@ -174,13 +231,56 @@ public class Client extends Observable implements Runnable{
         return heartBeatPort;
     }
 
-    public HashSet<String> receiveKeySet()
-    {
-        return null;
+    public HashMap<String, String > receiveBlocks(Set<String> neededBlocks) {
+
+        log.info("RECEIVE BLOCKS ARE CALLED");
+
+        for(String s : neededBlocks)
+            log.info("STRING:" + s);
+
+        int peerSize = peerList.size();
+        Peer[] peers = new Peer[peerSize];
+        Iterator<Peer> i = peerList.keySet().iterator();
+        int count = 0;
+        while(i.hasNext()){
+            peers[count++] = i.next();
+        }
+
+        count = 0;
+        Iterator<String> iterator = neededBlocks.iterator();
+        HashMap<String, Future<String>> assignments = new HashMap<>();
+        ExecutorService executor = Executors.newCachedThreadPool();
+        while(iterator.hasNext()){
+            String hash = iterator.next();
+
+            //Message to be sent for requesting block
+            JsonObject obj = new JsonObject();
+            obj.addProperty("flag",Config.MESSAGE_REQUEST_BLOCK);
+            obj.addProperty("data", hash);
+
+            Callable<String> task = new ResponsedMessageTask(peers[count % peerSize], obj.toString());
+            Future<String> f = executor.submit(task);
+
+            assignments.put(hash,f);
+        }
+
+        HashMap<String,String> actualResults = new HashMap<>();
+
+        for(Map.Entry<String, Future<String>> entry : assignments.entrySet()) {
+            try {
+                String response = entry.getValue().get();
+                actualResults.put(entry.getKey(),response);
+            } catch (Exception e) {
+                log.fatal("RESPONSE CANNOT BE TAKEN.");
+            }
+        }
+
+        return actualResults;
     }
 
-    public HashMap<String, JsonObject> receiveBlocks(Set<String> neededBlocks)
-    {
-        return null;
+    public HashSet<String> receiveKeySet() {
+        JsonObject obj = new JsonObject();
+        obj.addProperty("flag",Config.MESSAGE_REQUEST_KEYSET);
+        return broadCastMessageResponse(obj.toString());
     }
 }

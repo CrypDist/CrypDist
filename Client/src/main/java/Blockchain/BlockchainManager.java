@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Observable;
 import java.util.Random;
 import java.util.Set;
@@ -37,7 +38,7 @@ import java.util.concurrent.PriorityBlockingQueue;
  * Created by Kaan on 18-Feb-17.
  */
 
-public class BlockchainManager extends Observable
+public class BlockchainManager
 {
     static transient Logger log = Logger.getLogger("Blockchain");
     private CrypDist crypDist;
@@ -89,6 +90,7 @@ public class BlockchainManager extends Observable
     {
         return blockchain;
     }
+
 
     public void uploadFile(String filePath, String dataSummary)
     {
@@ -262,10 +264,16 @@ public class BlockchainManager extends Observable
             time = getTime();
             obj.addProperty("timeStamp", time);
         }
-        setChanged();
-        notifyObservers(obj);
+
+        crypDist.updateByBlockchain(obj);
 
         return time;
+    }
+
+    public String getKeySet() {
+        Set<String> keys = blockchain.getKeySet();
+        Gson gson = new Gson();
+        return gson.toJson(keys);
     }
 
     public JsonObject getBlock(String hash)
@@ -475,8 +483,7 @@ public class BlockchainManager extends Observable
 //
 //                        BlockchainManager.this.setChanged();
 //                        BlockchainManager.this.notifyObservers(obj);
-                        HashMap<String, JsonObject> blocks = crypDist.updateBlockchain();
-                        addNewBlocks(blocks);
+                        crypDist.updateBlockchain();
                     }
                 }
 
@@ -495,11 +502,38 @@ public class BlockchainManager extends Observable
 
     public Set<String> getNeededBlocks(Set<String> keySet)
     {
-        return blockchain.getNeededBlocks(keySet);
+        int size = keySet.size();
+        Gson gson = new Gson();
+
+        HashMap<String, Integer> counts = new HashMap<>();
+
+        for(String str : keySet) {
+            HashSet<String> singleResponse = gson.fromJson(str,HashSet.class);
+
+            for(String hash: singleResponse){
+                if(counts.containsKey(hash)){
+                    counts.put(hash, counts.get(hash) + 1);
+                }
+                else {
+                    counts.put(hash, 1);
+                }
+            }
+        }
+
+        HashSet<String> resultingList = new HashSet<>();
+        for(Map.Entry<String,Integer> entry : counts.entrySet() ) {
+            if(entry.getValue() > size/2) {
+                resultingList.add(entry.getKey());
+            }
+        }
+
+        return blockchain.getNeededBlocks(resultingList);
     }
 
-    public void addNewBlocks(HashMap<String, JsonObject> blocks)
+    public void addNewBlocks(HashMap<String, String> blocks)
     {
+        Gson gson = new Gson();
+
         Set<String> keys = blocks.keySet();
         String lastHash = blockchain.getLastBlock();
         Iterator<String> iterator = keys.iterator();
@@ -508,7 +542,7 @@ public class BlockchainManager extends Observable
         while (iterator.hasNext())
         {
             String key = iterator.next();
-            JsonObject obj = blocks.get(key);
+            JsonObject obj = gson.fromJson(blocks.get(key), JsonObject.class);
             String prevHash = obj.get("prevHash").getAsString();
 
             if (prevHash.equals(lastHash))
@@ -523,9 +557,9 @@ public class BlockchainManager extends Observable
 
         while (blocks.size() > 0)
         {
-            JsonObject obj = blocks.get(currKey);
+            JsonObject obj = gson.fromJson(blocks.get(currKey), JsonObject.class);
             blocks.remove(currKey);
-            Block block = null;
+            Block block = gson.fromJson(obj, Block.class);
             try {
                 addBlockToBlockchain(block);
             } catch (Exception e) {

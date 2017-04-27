@@ -111,14 +111,31 @@ public class Blockchain implements Serializable
 
     public Set<String> getNeededBlocks(Set<String> keySet)
     {
+
+        log.info("KEYSET IS:");
+
+        for(String s : keySet) {
+            log.info("ITEM " + s);
+        }
+
+        log.info("BLOCKMAP IS:");
+
+        for(String s : blockMap.keySet()) {
+            log.info("MAP " + s);
+        }
+
         Set<String> neededBlocks = new HashSet<>();
-        Iterator iterator = keySet.iterator();
+        Iterator<String> iterator = keySet.iterator();
         while (iterator.hasNext())
         {
-            String key = (String) iterator.next();
+            String key = iterator.next();
             if (!blockMap.containsKey(key))
                 neededBlocks.add(key);
         }
         return neededBlocks;
+    }
+
+    public Set<String> getKeySet() {
+        return new HashSet<String>(blockMap.keySet());
     }
 }

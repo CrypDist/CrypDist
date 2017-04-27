@@ -1,5 +1,6 @@
 package P2P;
 
+import Util.Config;
 import org.apache.log4j.Logger;
 
 import java.io.DataInputStream;
@@ -48,14 +49,16 @@ public class ReceiveServerRequest extends Thread {
                         String str = in.readUTF();
 
                         str = server.getInetAddress().toString() + "////" + str;
+                        log.trace("Client is notifying with " + flag  + " | " + str);
+                        String response = client.notify(str);
 
                         ObjectOutputStream out = new ObjectOutputStream(new DataOutputStream(server.getOutputStream()));
-                        out.writeInt(900);
-                        out.flush();
 
-                        log.trace("Client is notifying with " + flag  + " | " + str);
-                        client.change();
-                        client.notifyObservers(str);
+                        out.writeInt(Config.MESSAGE_ACK);
+                        if(flag == Config.MESSAGE_OUTGOING_RESPONSE)
+                            out.writeUTF(response);
+
+                        out.flush();
 
                         server.close();
 
