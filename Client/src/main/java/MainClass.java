@@ -15,16 +15,29 @@ public class MainClass {
             String input = scan.nextLine();
             String[] inputSplitted = input.split(" /// ");
             String x = inputSplitted[0];
-            String name = inputSplitted[1];
+            String name = null;
             String path = null;
-            if (inputSplitted.length > 2)
-                path = inputSplitted[2];
+            if (inputSplitted.length > 1) {
+                name = inputSplitted[1];
+                if (inputSplitted.length > 2)
+                    path = inputSplitted[2];
+            }
             switch (x) {
                 case "upload":
-                    c.blockchainManager.uploadFile(name);
+                    if (inputSplitted.length == 1)
+                    {
+                        c.blockchainManager.uploadFile("SelaminAleykum/merhaba");
+                    }
+                    else {
+                        c.blockchainManager.uploadFile(name);
+                    }
                     break;
                 case "download":
                     c.blockchainManager.downloadFile(name, path);
+                case "save":
+                    c.blockchainManager.saveBlockchain();
+                case "fetch":
+                    c.blockchainManager.buildBlockchain();
             }
         }
     }

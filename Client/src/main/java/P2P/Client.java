@@ -63,80 +63,6 @@ public class Client extends Observable implements Runnable{
             out.flush();
 
             serverConnection.close();
-
-
-//
-//            /* Receive the keymap from one of the clients */
-//            try
-//            {
-//                Socket peerConnection = new Socket(swAdr, swPort);
-//                ObjectOutputStream pout = new ObjectOutputStream(new DataOutputStream(peerConnection.getOutputStream()));
-//                pout.writeInt(400);
-//                pout.flush();
-//
-//                ObjectInputStream pin = new ObjectInputStream(new DataInputStream(peerConnection.getInputStream()));
-//
-//                /* Get the keymap from a client */
-//                try
-//                {
-//                    Object o = pin.readObject();
-//
-//                    /* Ask one block from each client */
-//
-//                    for(P2P.Peer peer : peerList.keySet())
-//                    {
-//                        peer.writeObject(new ObjectOutputStream(out));
-//                    }
-//
-//                }
-//                catch(ClassNotFoundException e)
-//                {
-//                    System.err.println("Cannot convert to object");
-//                }
-//
-//            }
-//            catch (IOException e){
-//                System.out.println("Canno connected to peer");
-//            }
-//
-//            // TODO receive blockchain from the active peers
-//
-//                /*int index = 0;
-//
-//                *//* TODO Full blockchain'i nasil anliyorum *//*
-//                while( !this.bcm.getBlockchain().equals(bcm.getBlockchain()) )
-//                {
-//                    for(P2P.Peer peer : peerList.keySet())
-//                    {
-//                        if(peer.getAddress().isReachable(10000))
-//                        {
-//                            try
-//                            {
-//                                Socket peerConnection = new Socket(peer.getAddress(), peer.getPeerServerPort());
-//                                DataInputStream peerin = new DataInputStream(peerConnection.getInputStream());
-//
-//                                while(index < bcm.getBlockchain().getLength())
-//                                {
-//                                    try
-//                                    {
-//                                        Block block = Block.readObject(new ObjectInputStream(peerin));
-//                                        this.bcm.getBlockchain().addBlock(block);
-//                                        index++;
-//                                    }
-//                                    catch(ClassNotFoundException classException)
-//                                    {
-//                                        System.err.println("Block " + index + " cannot be resolved to an object.");
-//                                    }
-//                                }
-//                            }
-//                            catch(IOException e)
-//                            {
-//                                System.err.println("P2P.Peer connection is interrupted");
-//                            }
-//                        }
-//                    }
-//                }
-//*/
         }
         catch(IOException e)
         {
@@ -227,26 +153,6 @@ public class Client extends Observable implements Runnable{
 
         t1.start();
         t2.start();
-    /*
-        // Receive P2P.PeerNotifier request from the new node
-        while (this.isAlive())
-        {
-            new Thread(() -> {
-                try {
-                    Socket newConnection = serverSocket.accept();
-                    ObjectInputStream peerMessage = new ObjectInputStream(newConnection.getInputStream());
-
-                    int m1 = peerMessage.readInt();
-                    int m2 = peerMessage.readInt();
-                    int m3 = peerMessage.readInt();
-
-                    System.out.println(m1 + "\n" + m2 + "\n" + m3 + "\n");
-                    System.out.println("Socket timed out!");
-                } catch (IOException e) {
-                    System.err.println("Message did not delivered to the peer");
-                }
-            }).start();
-        }*/
     }
 
     public int getServerPort() {
