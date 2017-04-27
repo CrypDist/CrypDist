@@ -2,7 +2,9 @@ package Blockchain;
 
 import DbManager.PostgresDB;
 import UploadUnit.ServerAccessor;
+import Util.CrypDist;
 import com.google.gson.Gson;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import org.apache.commons.net.ntp.NTPUDPClient;
 import org.apache.commons.net.ntp.TimeInfo;
@@ -16,6 +18,9 @@ import java.net.UnknownHostException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Observable;
 import java.util.Random;
 import java.util.Set;
@@ -35,7 +40,7 @@ import java.util.concurrent.PriorityBlockingQueue;
 public class BlockchainManager extends Observable
 {
     static transient Logger log = Logger.getLogger("Blockchain");
-
+    private CrypDist crypDist;
     private final int BLOCK_SIZE = 4;
     private final int MAX_TIMEOUT_MS = 10000;
     private Blockchain blockchain;
@@ -50,8 +55,9 @@ public class BlockchainManager extends Observable
     private ConcurrentHashMap<String, ArrayList<Pair>> hashes;
     private int numOfPairs;
 
-    public BlockchainManager()
+    public BlockchainManager(CrypDist crypDist)
     {
+        this.crypDist = crypDist;
         Block genesis = new Block();
         dbManager = new PostgresDB("blockchain", "postgres", "", false);
         blockchain = new Blockchain(genesis);
@@ -262,6 +268,20 @@ public class BlockchainManager extends Observable
         return time;
     }
 
+    public JsonObject getBlock(String hash)
+    {
+        Gson gson = new Gson();
+        Block block = blockchain.getBlock(hash);
+        JsonObject obj = new JsonObject();
+        obj.addProperty("transactions", gson.toJson(block.getTransactions(), ArrayList.class));
+        obj.addProperty("data", gson.toJson(block.getData(), MerkleTree.class));
+        obj.addProperty("length", block.getLength());
+        obj.addProperty("indegree", block.getIndegree());
+        obj.addProperty("prevHash", block.getPreviousHash());
+        obj.addProperty("timestamp", block.getTimestamp());
+        return obj;
+    }
+
     public void markValid(String transaction)
     {
         synchronized (this) {
@@ -450,11 +470,13 @@ public class BlockchainManager extends Observable
                     Transaction trans = (Transaction)pair.frst;
                     if (trans.getTimeStamp() < getTime() - 1000)
                     {
-                        JsonObject obj = new JsonObject();
-                        obj.addProperty("flag", 4);
-
-                        BlockchainManager.this.setChanged();
-                        BlockchainManager.this.notifyObservers(obj);
+//                        JsonObject obj = new JsonObject();
+//                        obj.addProperty("flag", 4);
+//
+//                        BlockchainManager.this.setChanged();
+//                        BlockchainManager.this.notifyObservers(obj);
+                        HashMap<String, JsonObject> blocks = crypDist.updateBlockchain();
+                        addNewBlocks(blocks);
                     }
                 }
 
@@ -469,5 +491,47 @@ public class BlockchainManager extends Observable
 
     public void setNumOfPairs(int numOfPairs) {
         this.numOfPairs = numOfPairs;
+    }
+
+    public Set<String> getNeededBlocks(Set<String> keySet)
+    {
+        return blockchain.getNeededBlocks(keySet);
+    }
+
+    public void addNewBlocks(HashMap<String, JsonObject> blocks)
+    {
+        Set<String> keys = blocks.keySet();
+        String lastHash = blockchain.getLastBlock();
+        Iterator<String> iterator = keys.iterator();
+        String currKey = "";
+
+        while (iterator.hasNext())
+        {
+            String key = iterator.next();
+            JsonObject obj = blocks.get(key);
+            String prevHash = obj.get("prevHash").getAsString();
+
+            if (prevHash.equals(lastHash))
+            {
+                currKey = key;
+                break;
+            }
+        }
+
+        if (currKey.isEmpty())
+            return;
+
+        while (blocks.size() > 0)
+        {
+            JsonObject obj = blocks.get(currKey);
+            blocks.remove(currKey);
+            Block block = null;
+            try {
+                addBlockToBlockchain(block);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            currKey = block.getPreviousHash();
+        }
     }
 }

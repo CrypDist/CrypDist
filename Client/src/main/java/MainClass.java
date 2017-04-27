@@ -1,3 +1,5 @@
+import Util.CrypDist;
+
 import java.util.Scanner;
 
 /**

@@ -109,6 +109,11 @@ public class Block implements Serializable
         return merkleRoot;
     }
 
+    public MerkleTree getData()
+    {
+        return data;
+    }
+
     public void setPreviousHash(String prevHash)
     {
         this.prevHash = prevHash;

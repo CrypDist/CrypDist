@@ -1,37 +1,46 @@
+package Util;
+
+import Blockchain.Block;
 import Blockchain.BlockchainManager;
 import P2P.Client;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import net.sf.json.JSON;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Observable;
 import java.util.Observer;
+import java.util.Set;
 
 public class CrypDist implements Observer{
 
-    private static transient  Logger log = Logger.getLogger("CrypDist");
+    private static transient  Logger log = Logger.getLogger("Util.CrypDist");
 
     // Flag 1 = Transaction data
     // Flag 2 = Hash
     // Flag 3 = Valid transaction message
     // Flag 4 = Validate my blockchain (taken from blockchainManager)
 
-    BlockchainManager blockchainManager;
+    public BlockchainManager blockchainManager;
     Client client;
 
     public CrypDist(String swAdr, int swPort, int hbPort, int serverPort ) {
 
         PropertyConfigurator.configure(getClass().getResourceAsStream("log4j_custom.properties"));
 
-        blockchainManager = new BlockchainManager();
-        client = new Client(swAdr, swPort, hbPort,serverPort );
+        blockchainManager = new BlockchainManager(this);
+        client = new Client(swAdr, swPort, hbPort,serverPort, this);
         Thread t = new Thread(client);
         blockchainManager.addObserver(this);
         client.addObserver(this);
         t.start();
     }
+
     @Override
     public void update(Observable o, Object arg) {
 
@@ -109,8 +118,12 @@ public class CrypDist implements Observer{
             log.error("Unknown observable");
     }
 
-    private void updateBlockchain()
+    public HashMap<String, JsonObject> updateBlockchain()
     {
         // UPDATE BLOCKCHAIN
+        HashSet<String> keySet = client.receiveKeySet();
+        Set<String> neededBlocks = blockchainManager.getNeededBlocks(keySet);
+        HashMap<String, JsonObject> blocks = client.receiveBlocks(neededBlocks);
+        return blocks;
     }
 }

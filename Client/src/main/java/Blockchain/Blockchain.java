@@ -5,6 +5,9 @@ import org.apache.log4j.Logger;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
 
 public class Blockchain implements Serializable
 {
@@ -104,5 +107,18 @@ public class Blockchain implements Serializable
     public String getLastBlock()
     {
         return validBlock.getHash();
+    }
+
+    public Set<String> getNeededBlocks(Set<String> keySet)
+    {
+        Set<String> neededBlocks = new HashSet<>();
+        Iterator iterator = keySet.iterator();
+        while (iterator.hasNext())
+        {
+            String key = (String) iterator.next();
+            if (!blockMap.containsKey(key))
+                neededBlocks.add(key);
+        }
+        return neededBlocks;
     }
 }

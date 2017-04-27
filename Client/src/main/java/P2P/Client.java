@@ -1,5 +1,9 @@
 package P2P;
 
+import Util.CrypDist;
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import org.apache.log4j.Logger;
 
 import java.io.DataInputStream;
@@ -8,7 +12,11 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Observable;
+import java.util.Set;
 import java.util.Timer;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -21,6 +29,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class Client extends Observable implements Runnable{
 
     static transient  Logger log = Logger.getLogger("P2P");
+    private CrypDist crypDist;
 
     private String swAdr;
     private int swPort;
@@ -32,7 +41,9 @@ public class Client extends Observable implements Runnable{
     int lastSize;
 
 
-    public Client (String swAdr, int swPort,  int heartBeatPort , int serverPort) {
+    public Client (String swAdr, int swPort,  int heartBeatPort , int serverPort,
+                   CrypDist crypDist) {
+        this.crypDist = crypDist;
         this.heartBeatPort = heartBeatPort;
         this.serverPort = serverPort;
         this.swAdr = swAdr;
@@ -161,5 +172,15 @@ public class Client extends Observable implements Runnable{
 
     public int getHeartBeatPort() {
         return heartBeatPort;
+    }
+
+    public HashSet<String> receiveKeySet()
+    {
+        return null;
+    }
+
+    public HashMap<String, JsonObject> receiveBlocks(Set<String> neededBlocks)
+    {
+        return null;
     }
 }
