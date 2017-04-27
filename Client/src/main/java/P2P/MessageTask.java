@@ -50,6 +50,7 @@ public class MessageTask implements Runnable {
             } catch (IOException e) {
 
             }
+            trials++;
         }
         log.error("Message cannot be sent after 5 trials");
         log.trace(msg);

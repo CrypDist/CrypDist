@@ -55,8 +55,10 @@ public class ReceiveServerRequest extends Thread {
                         ObjectOutputStream out = new ObjectOutputStream(new DataOutputStream(server.getOutputStream()));
 
                         out.writeInt(Config.MESSAGE_ACK);
-                        if(flag == Config.MESSAGE_OUTGOING_RESPONSE)
+                        if(flag == Config.MESSAGE_OUTGOING_RESPONSE){
+                            log.info("RESPONSE IS WRITTEN.");
                             out.writeUTF(response);
+                        }
 
                         out.flush();
 

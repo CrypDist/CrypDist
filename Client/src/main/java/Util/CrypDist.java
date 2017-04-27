@@ -72,7 +72,7 @@ public class CrypDist {
             JsonElement data = obj2.get("data");
             String dataStr = data.getAsString();
 
-            return blockchainManager.getBlock(dataStr).toString();
+            return gson.toJson(blockchainManager.getBlock(dataStr),Block.class);
         }
 
         String hashValue = obj2.get("lastHash").getAsString();
@@ -145,6 +145,9 @@ public class CrypDist {
         if(neededBlocks.size() == 0)
             return;
         HashMap<String, String> blocks = client.receiveBlocks(neededBlocks);
+        for(String s : blocks.values())
+            log.info("BLOOCKS: " + s);
+
         blockchainManager.addNewBlocks(blocks);
     }
 }

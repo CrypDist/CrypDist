@@ -41,19 +41,22 @@ public class ResponsedMessageTask implements Callable<String> {
 
                 ObjectInputStream in = new ObjectInputStream(new DataInputStream(messagedClient.getInputStream()));
                 int ack = in.readInt();
-                messagedClient.close();
+
                 log.info("Message is sent!");
 
                 if (ack == Config.MESSAGE_ACK) {
                     String response = in.readUTF();
                     return response;
                 } else {
-                    log.trace("Non flag read");
+                    log.info("Non flag read");
                 }
+                messagedClient.close();
 
             } catch (IOException e) {
-
+                log.info("EXCEPTIOON\n\n\n");
+                log.info(e);
             }
+            trials++;
         }
         log.error("Message cannot be sent after 5 trials");
         log.trace(msg);

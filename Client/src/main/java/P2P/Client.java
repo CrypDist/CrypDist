@@ -262,6 +262,7 @@ public class Client extends Observable implements Runnable{
             Future<String> f = executor.submit(task);
 
             assignments.put(hash,f);
+            log.info("AN ASSIGNMENT IS DONE.");
         }
 
         HashMap<String,String> actualResults = new HashMap<>();
@@ -270,6 +271,7 @@ public class Client extends Observable implements Runnable{
             try {
                 String response = entry.getValue().get();
                 actualResults.put(entry.getKey(),response);
+                log.info("A RESULT IS TAKEN");
             } catch (Exception e) {
                 log.fatal("RESPONSE CANNOT BE TAKEN.");
             }

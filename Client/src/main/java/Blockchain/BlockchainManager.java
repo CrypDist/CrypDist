@@ -542,8 +542,9 @@ public class BlockchainManager
         while (iterator.hasNext())
         {
             String key = iterator.next();
-            JsonObject obj = gson.fromJson(blocks.get(key), JsonObject.class);
-            String prevHash = obj.get("prevHash").getAsString();
+
+            Block block = gson.fromJson(blocks.get(key), Block.class);
+            String prevHash = block.getPreviousHash();
 
             if (prevHash.equals(lastHash))
             {
@@ -557,14 +558,15 @@ public class BlockchainManager
 
         while (blocks.size() > 0)
         {
-            JsonObject obj = gson.fromJson(blocks.get(currKey), JsonObject.class);
+
+            Block block = gson.fromJson(blocks.get(currKey), Block.class);
             blocks.remove(currKey);
-            Block block = gson.fromJson(obj, Block.class);
             try {
                 addBlockToBlockchain(block);
             } catch (Exception e) {
                 e.printStackTrace();
             }
+
             currKey = block.getPreviousHash();
         }
     }
