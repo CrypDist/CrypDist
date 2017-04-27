@@ -79,15 +79,7 @@ public class Blockchain implements Serializable
         for (int i = 0; i < sinkBlocks.size(); i++)
         {
             String tmp = sinkBlocks.get(i);
-            if (tmp == null)
-                log.error("tmp is null");
             Block tmpBlock = blockMap.get(tmp);
-            if (tmpBlock == null)
-                log.error("BlockMap does not have tmpBlock");
-            if (block == null)
-                log.error(".Block is null!!!!!");
-            if (block.getHash() == null)
-                log.error("HASH VALUE IS NULL");
             if ((block.getHash()).equals(tmpBlock.getHash()))
                 return false;
             if (block.getPreviousHash().equals(tmpBlock.getHash()))
@@ -129,8 +121,10 @@ public class Blockchain implements Serializable
         while (iterator.hasNext())
         {
             String key = iterator.next();
-            if (!blockMap.containsKey(key))
+            if (!blockMap.containsKey(key)) {
                 neededBlocks.add(key);
+                log.info(key + " is added!!!!!!!!!!!!!!!!!");
+            }
         }
         return neededBlocks;
     }

@@ -258,7 +258,8 @@ public class Client extends Observable implements Runnable{
             obj.addProperty("flag",Config.MESSAGE_REQUEST_BLOCK);
             obj.addProperty("data", hash);
 
-            Callable<String> task = new ResponsedMessageTask(peers[count % peerSize], obj.toString());
+            Gson gson = new Gson();
+            Callable<String> task = new ResponsedMessageTask(peers[count % peerSize], gson.toJson(obj, JsonObject.class));
             Future<String> f = executor.submit(task);
 
             assignments.put(hash,f);

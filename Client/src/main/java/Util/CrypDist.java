@@ -144,6 +144,7 @@ public class CrypDist {
         Set<String> neededBlocks = blockchainManager.getNeededBlocks(keySet);
         if(neededBlocks.size() == 0)
             return;
+
         HashMap<String, String> blocks = client.receiveBlocks(neededBlocks);
         for(String s : blocks.values())
             log.info("BLOOCKS: " + s);

@@ -4,7 +4,6 @@ import DbManager.PostgresDB;
 import UploadUnit.ServerAccessor;
 import Util.CrypDist;
 import com.google.gson.Gson;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import org.apache.commons.net.ntp.NTPUDPClient;
 import org.apache.commons.net.ntp.TimeInfo;
@@ -22,7 +21,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Observable;
 import java.util.Random;
 import java.util.Set;
 import java.util.Timer;
@@ -130,18 +128,7 @@ public class BlockchainManager
     }
 
     private boolean addBlockToBlockchain(Block block) throws Exception {
-        Gson gson = new Gson();
-        if (blockchain.addBlock(block))
-            return true;
-
-        try {
-            throw new Exception("The block is added to the blockchain but the db could not be updated!");
-        }
-        catch (Exception ignored){
-            ignored.printStackTrace();
-        }
-
-        return false;
+        return blockchain.addBlock(block);
     }
 
 
@@ -276,18 +263,11 @@ public class BlockchainManager
         return gson.toJson(keys);
     }
 
-    public JsonObject getBlock(String hash)
+    public Block getBlock(String hash)
     {
         Gson gson = new Gson();
         Block block = blockchain.getBlock(hash);
-        JsonObject obj = new JsonObject();
-        obj.addProperty("transactions", gson.toJson(block.getTransactions(), ArrayList.class));
-        obj.addProperty("data", gson.toJson(block.getData(), MerkleTree.class));
-        obj.addProperty("length", block.getLength());
-        obj.addProperty("indegree", block.getIndegree());
-        obj.addProperty("prevHash", block.getPreviousHash());
-        obj.addProperty("timestamp", block.getTimestamp());
-        return obj;
+        return block;
     }
 
     public void markValid(String transaction)
@@ -500,7 +480,7 @@ public class BlockchainManager
         this.numOfPairs = numOfPairs;
     }
 
-    public Set<String> getNeededBlocks(Set<String> keySet)
+    public Set<String> getNeededBlocks(HashSet<String> keySet)
     {
         int size = keySet.size();
         Gson gson = new Gson();
@@ -556,13 +536,17 @@ public class BlockchainManager
         if (currKey.isEmpty())
             return;
 
-        while (blocks.size() > 0)
+        while (blocks.size() > 0 && currKey != null && blocks.containsKey(currKey))
         {
-
-            Block block = gson.fromJson(blocks.get(currKey), Block.class);
+            log.info("CURRKEY=\t" + currKey);
+            log.info("blocks.get=\t" + blocks.get(currKey));
+            Block block = null;
+            block = gson.fromJson(blocks.get(currKey), Block.class);
             blocks.remove(currKey);
             try {
-                addBlockToBlockchain(block);
+                boolean added = addBlockToBlockchain(block);
+                if (!added)
+                    log.warn("ALAAAAAAAAARMMMMMMMMMMMMMMMMM");
             } catch (Exception e) {
                 e.printStackTrace();
             }
