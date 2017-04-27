@@ -67,6 +67,18 @@ public class BlockchainManager extends Observable
         validation.start();
     }
 
+    public void buildBlockchain()
+    {
+        Gson gson = new Gson();
+        blockchain = gson.fromJson(dbManager.getBlockchain(), Blockchain.class);
+    }
+
+    public void saveBlockchain()
+    {
+        Gson gson = new Gson();
+        dbManager.saveBlockchain(gson.toJson(blockchain, Blockchain.class));
+    }
+
     public Blockchain getBlockchain()
     {
         return blockchain;
@@ -78,11 +90,9 @@ public class BlockchainManager extends Observable
         String[] path = filePath.substring(1).split("/");
         String fileName = path[path.length - 1];
 
-
         File file = new File(filePath);
         long dataSize = file.length();
         Transaction upload = new Transaction(fileName, filePath, dataSummary, dataSize);
-        //upload.execute(serverAccessor);
 
         Gson gson = new Gson();
 
@@ -103,12 +113,6 @@ public class BlockchainManager extends Observable
         }
     }
 
-    // Transaction is serializable and taken from the p2p connection as it is
-/*    public void addTransaction(Transaction transaction)
-    {
-        transactionBucket.add(transaction);
-    }
-*/
     public void addTransaction(String data)
     {
         Gson gson = new Gson();
@@ -120,13 +124,14 @@ public class BlockchainManager extends Observable
     private boolean addBlockToBlockchain(Block block) throws Exception {
         Gson gson = new Gson();
         if (blockchain.addBlock(block))
-            if (dbManager.addBlock(block.getHash(), gson.toJson(block, Block.class)))
-                return true;
+            return true;
 
         try {
             throw new Exception("The block is added to the blockchain but the db could not be updated!");
         }
-        catch (Exception ignored){}
+        catch (Exception ignored){
+            ignored.printStackTrace();
+        }
 
         return false;
     }
@@ -142,21 +147,6 @@ public class BlockchainManager extends Observable
             log.info("the hash is added to the hashes");
         }
     }
-
-    public int getBlockchainLength()
-    {
-        return blockchain.getLength();
-    }
-
-//    public ArrayList<Block> getLongestChain()
-//    {
-//        ArrayList<String> hashChain = blockchain.getBlockchain();
-//        ArrayList<Block> blocks = new ArrayList<Block>();
-//
-//        for (int i = 0; i < hashChain.size(); i++)
-//            blocks.add(blockchain.getBlock(hashChain.get(i)));
-//        return blocks;
-//    }
 
     public void createBlock()
     {
@@ -282,7 +272,7 @@ public class BlockchainManager extends Observable
                     Transaction tr = ((Transaction) transactionPendingBucket.get(transaction).frst);
                     transactionBucket.add(tr);
                     transactionPendingBucket.remove(transaction);
-                    tr.execute(serverAccessor);
+                    //tr.execute(serverAccessor);
                 }
                 System.out.println("COUNT=\t" + (count + 1));
                 System.out.println("PAIR NUM=\t" + numOfPairs);

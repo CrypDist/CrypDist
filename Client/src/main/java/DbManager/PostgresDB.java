@@ -79,7 +79,7 @@ public class PostgresDB {
         st = conn.createStatement();
 
 
-        query = "CREATE TABLE IF NOT EXISTS "+ TABLE_NAME + " (hash TEXT UNIQUE PRIMARY KEY NOT NULL, data TEXT);";
+        query = "CREATE TABLE IF NOT EXISTS "+ TABLE_NAME + " (blockchain JSON);";
 
         st.executeUpdate(query);
 
@@ -87,31 +87,6 @@ public class PostgresDB {
             deleteAllTable();
 
         st.close();
-        //System.out.println("blocks table is created!");
-    }
-
-    public boolean addBlock(String hash, String data)
-    {
-        String query = "INSERT INTO " + TABLE_NAME  + " VALUES(?, ?);";
-        PreparedStatement st = null;
-        
-        try {
-            st = conn.prepareStatement(query);
-            st.setString(1, processText(hash));
-            st.setString(2, processText(data));
-            st.executeUpdate();
-            return true;
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
-        }
-        finally {
-            try {
-                st.close();
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-        }
     }
 
     public void deleteAllTable()
@@ -121,7 +96,7 @@ public class PostgresDB {
         try {
             st = conn.prepareStatement(query);
             st.executeUpdate();
-            query = "CREATE TABLE " + TABLE_NAME + " (hash TEXT UNIQUE PRIMARY KEY NOT NULL, data TEXT);";
+            query = "CREATE TABLE " + TABLE_NAME + " (blockchain JSON);";
             st = conn.prepareStatement(query);
             st.executeUpdate();
         } catch (SQLException e) {
@@ -129,47 +104,24 @@ public class PostgresDB {
         }
     }
 
-    public boolean newHashForBlock(String oldHash, String newHash)
+    public void saveBlockchain(String blockchain)
     {
-        String query = "UPDATE " + TABLE_NAME + " SET hash=? WHERE hash=?;";
-
-        return executeQuery(prepareStatement(query,newHash, oldHash));    }
-
-    public boolean updateData(String hash, String data)
-    {
-        String query = "UPDATE " + TABLE_NAME + " SET data=? WHERE hash=?;";
-
-        return executeQuery(prepareStatement(query,data, hash));
-    }
-
-    private PreparedStatement prepareStatement(String query, String firstData, String secondData)
-    {
+        deleteAllTable();
+        String query = "Insert into " + TABLE_NAME + " (blockchain) VALUES (to_json(?::json))";
         PreparedStatement st = null;
+
         try {
             st = conn.prepareStatement(query);
-            st.setString(1,processText(firstData));
-            st.setString(2, processText(secondData));
-        } catch (SQLException e) {
+            st.setString(1, blockchain);
+        }catch (SQLException e) {
             e.printStackTrace();
         }
-        return st;
-    }
-    public String getData(String hash)
-    {
-        String query = "SELECT data FROM " + TABLE_NAME + " WHERE hash=?;";
-        PreparedStatement st = null;
-        try {
-            st = conn.prepareStatement(query);
-            st.setString(1, processText(hash));
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return dataFetcher(st);
+        executeQuery(st);
     }
 
-    public String getAllData()
+    public String getBlockchain()
     {
-        String query = "SELECT data FROM " + TABLE_NAME + ";";
+        String query = "SELECT blockchain FROM " + TABLE_NAME + ";";
         PreparedStatement st = null;
         try {
             st = conn.prepareStatement(query);
@@ -177,19 +129,6 @@ public class PostgresDB {
             e.printStackTrace();
         }
         return dataFetcher(st);
-    }
-    public int getSize()
-    {
-        String query = "SELECT count(*) FROM " + TABLE_NAME + ";";
-        PreparedStatement st = null;
-        try {
-            st = conn.prepareStatement(query);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        String output = dataFetcher(st);
-
-        return Integer.parseInt(output);
     }
 
     private String dataFetcher(PreparedStatement st)
@@ -198,10 +137,12 @@ public class PostgresDB {
             ResultSet rs = st.executeQuery();
             StringBuilder result = new StringBuilder();
 
-            while (rs.next())
+            while (rs.next()) {
                 result.append(rs.getString(1));
+                break;
+            }
 
-            return processTextReversed(result.toString());
+            return result.toString();
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -233,14 +174,5 @@ public class PostgresDB {
         }
 
         return false;
-    }
-
-    private String processText(String text)
-    {
-        return text.replaceAll("\0", "NONCHAR");
-    }
-    private String processTextReversed(String text)
-    {
-        return text.replaceAll("NONCHAR", "\0");
     }
 }
