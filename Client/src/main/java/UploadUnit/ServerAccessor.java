@@ -36,7 +36,6 @@ public class ServerAccessor {
 
     public void upload(String fileName, String filePath) throws Exception {
         if (doesObjectExist(fileName)) {
-
             throw new Exception("file already exists!");
         }
         try {

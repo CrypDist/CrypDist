@@ -138,6 +138,7 @@ public class CrypDist {
     public void updateBlockchain()
     {
         // UPDATE BLOCKCHAIN
+        log.warn("Blockchain is not updated, start the procedure!");
         HashSet<String> keySet = client.receiveKeySet();
         if(keySet.size() == 0)
             return;

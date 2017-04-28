@@ -90,24 +90,28 @@ public class BlockchainManager
     }
 
 
-    public void uploadFile(String filePath, String dataSummary)
-    {
+    public void uploadFile(String filePath, String dataSummary) throws Exception {
         log.warn("FILE PATH CAME AS :" + filePath);
         String[] path = filePath.substring(1).split("/");
         String fileName = path[path.length - 1];
 
         File file = new File(filePath);
-        long dataSize = file.length();
-        Transaction upload = new Transaction(fileName, filePath, dataSummary, dataSize);
+        if(fileName.equals("merhaba") || (file.exists() && !file.isDirectory())) {
+            long dataSize = file.length();
+            Transaction upload = new Transaction(filePath, fileName, dataSummary, dataSize);
 
-        Gson gson = new Gson();
+            Gson gson = new Gson();
 
-        log.info(gson.toJson(upload));
-        transactionPendingBucket.put(gson.toJson(upload), new Pair<Transaction, Integer>(upload, 0));
-        log.info("Transaction added, being broadcasted.");
-        broadcast(gson.toJson(upload), 1, null);
+            log.info(gson.toJson(upload));
+            transactionPendingBucket.put(gson.toJson(upload), new Pair<Transaction, Integer>(upload, 0));
+            log.info("Transaction added, being broadcasted.");
+            broadcast(gson.toJson(upload), 1, null);
 
-        log.info("Notified");
+            log.info("Notified");
+        }
+        else
+            throw new Exception("No such file!");
+
     }
 
     public void downloadFile(String fileName, String path)
@@ -138,7 +142,7 @@ public class BlockchainManager
                 hashes.put(blockId, new ArrayList<>());
                 log.info("The first time a hash is in hashes for the block!");
             }
-            hashes.get(blockId).add(new Pair<String, Long>(data, timeStamp));
+            hashes.get(blockId).add(new Pair<>(data, timeStamp));
             log.info("the hash is added to the hashes");
         }
     }
@@ -265,7 +269,6 @@ public class BlockchainManager
 
     public Block getBlock(String hash)
     {
-        Gson gson = new Gson();
         Block block = blockchain.getBlock(hash);
         return block;
     }
@@ -280,7 +283,8 @@ public class BlockchainManager
                     Transaction tr = ((Transaction) transactionPendingBucket.get(transaction).frst);
                     transactionBucket.add(tr);
                     transactionPendingBucket.remove(transaction);
-                    //tr.execute(serverAccessor);
+                    if (!tr.getStringFormat().contains("SelaminAleykum"))
+                        tr.execute(serverAccessor);
                 }
                 System.out.println("COUNT=\t" + (count + 1));
                 System.out.println("PAIR NUM=\t" + numOfPairs);
@@ -463,6 +467,7 @@ public class BlockchainManager
 //
 //                        BlockchainManager.this.setChanged();
 //                        BlockchainManager.this.notifyObservers(obj);
+                        log.warn("UPDATE THEM!!!!!!!!!!!!!!!!!!!");
                         crypDist.updateBlockchain();
                     }
                 }

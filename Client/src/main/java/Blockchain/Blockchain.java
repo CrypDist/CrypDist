@@ -37,6 +37,7 @@ public class Blockchain implements Serializable
             {
                 longest = tmpBlock.getLength();
                 validBlock = tmpBlock;
+                log.warn("LAST HASH IS NOW: " + validBlock.getHash());
             }
         }
     }

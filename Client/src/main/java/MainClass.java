@@ -1,6 +1,4 @@
 import Util.CrypDist;
-import org.apache.commons.io.FilenameUtils;
-import org.apache.log4j.PropertyConfigurator;
 
 import java.util.Scanner;
 
@@ -31,10 +29,18 @@ public class MainClass {
                 case "upload":
                     if (inputSplitted.length == 1)
                     {
-                        c.blockchainManager.uploadFile("SelaminAleykum/merhaba", "Summary");
+                        try {
+                            c.blockchainManager.uploadFile("SelaminAleykum/merhaba", "Summary");
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
                     }
                     else {
-                        c.blockchainManager.uploadFile(name, "Summary");
+                        try {
+                            c.blockchainManager.uploadFile(name, "Summary");
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
                     }
                     break;
                 case "download":
