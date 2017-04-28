@@ -107,7 +107,6 @@ public class BlockchainManager
         log.info("Transaction added, being broadcasted.");
         broadcast(gson.toJson(upload), 1, null);
 
-        log.info("Notified");
     }
 
     public void downloadFile(String fileName, String path)
@@ -480,7 +479,7 @@ public class BlockchainManager
         this.numOfPairs = numOfPairs;
     }
 
-    public Set<String> getNeededBlocks(HashSet<String> keySet)
+    public Set<String> getNeededBlocks(ArrayList<String> keySet)
     {
         int size = keySet.size();
         Gson gson = new Gson();
@@ -514,44 +513,63 @@ public class BlockchainManager
     {
         Gson gson = new Gson();
 
-        Set<String> keys = blocks.keySet();
         String lastHash = blockchain.getLastBlock();
-        Iterator<String> iterator = keys.iterator();
-        String currKey = "";
 
-        while (iterator.hasNext())
-        {
-            String key = iterator.next();
+        log.info("Size of adding: " + blocks.size());
+        log.info("1.Blockchain size is: " + blockchain.getLength());
+        log.info("1.Blockchain lasthash: " + blockchain.getLastBlock());
 
-            Block block = gson.fromJson(blocks.get(key), Block.class);
-            String prevHash = block.getPreviousHash();
+        while (blocks.size() > 0) {
 
-            if (prevHash.equals(lastHash))
+            Iterator<String> iterator = blocks.keySet().iterator();
+            while (iterator.hasNext())
             {
-                currKey = key;
-                break;
-            }
-        }
+                String key = iterator.next();
 
-        if (currKey.isEmpty())
-            return;
+                Block block = gson.fromJson(blocks.get(key), Block.class);
+                String prevHash = block.getPreviousHash();
 
-        while (blocks.size() > 0 && currKey != null && blocks.containsKey(currKey))
-        {
-            log.info("CURRKEY=\t" + currKey);
-            log.info("blocks.get=\t" + blocks.get(currKey));
-            Block block = null;
-            block = gson.fromJson(blocks.get(currKey), Block.class);
-            blocks.remove(currKey);
-            try {
-                boolean added = addBlockToBlockchain(block);
-                if (!added)
-                    log.warn("ALAAAAAAAAARMMMMMMMMMMMMMMMMM");
-            } catch (Exception e) {
-                e.printStackTrace();
+                if (prevHash.equals(lastHash))
+                {
+                    blocks.remove(key);
+                    lastHash = block.getHash();
+                    try {
+                        boolean added = addBlockToBlockchain(block);
+                        if (!added)
+                            log.warn("ALAAAAAAAAARMMMMMMMMMMMMMMMMM");
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    break;
+                }
             }
 
-            currKey = block.getPreviousHash();
         }
+
+
+//        if (currKey.isEmpty())
+//            return;
+//
+//        while (blocks.size() > 0 && currKey != null && blocks.containsKey(currKey))
+//        {
+//            log.info("CURRKEY=\t" + currKey);
+//            log.info("blocks.get=\t" + blocks.get(currKey));
+//            Block block = null;
+//            block = gson.fromJson(blocks.get(currKey), Block.class);
+//            blocks.remove(currKey);
+//            try {
+//                boolean added = addBlockToBlockchain(block);
+//                if (!added)
+//                    log.warn("ALAAAAAAAAARMMMMMMMMMMMMMMMMM");
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//            }
+//
+//            currKey = block.getPreviousHash();
+//        }
+
+
+        log.info("2.New blockchain size is: " + blockchain.getLength());
+        log.info("2.New blockchain lasthash: " + blockchain.getLastBlock());
     }
 }
