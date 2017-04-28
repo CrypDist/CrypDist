@@ -142,6 +142,7 @@ public class CrypDist {
         for(String str : blocks.values())
             log.info("BLOCK " + str);
 
+        blockchainManager.removeInvalidBlocks(keySet);
         blockchainManager.addNewBlocks(blocks);
     }
 }

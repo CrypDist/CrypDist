@@ -557,4 +557,9 @@ public class BlockchainManager
         transactionPendingBucket = new ConcurrentHashMap<String, Pair>();
         transactionBucket = new PriorityBlockingQueue<Transaction>();
     }
+
+    public void removeInvalidBlocks(ArrayList<String> keySet)
+    {
+        blockchain.removeInvalidBlocks(keySet);
+    }
 }

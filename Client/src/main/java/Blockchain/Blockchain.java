@@ -26,7 +26,7 @@ public class Blockchain implements Serializable
         sinkBlocks.add(genesis.getHash());
     }
 
-    public void updateConsensus()
+    private void updateConsensus()
     {
         int longest = 0;
         for (int i = 0; i < sinkBlocks.size(); i++)
@@ -42,7 +42,18 @@ public class Blockchain implements Serializable
         }
     }
 
-    public void removeOldBlocks()
+    public void removeInvalidBlocks(ArrayList<String> keySet)
+    {
+        Iterator<String> iterator = blockMap.keySet().iterator();
+        while (iterator.hasNext())
+        {
+            String key = iterator.next();
+            if (!keySet.contains(key))
+                blockMap.remove(key);
+        }
+    }
+
+    private void removeOldBlocks()
     {
         for (int i = 0; i < sinkBlocks.size(); i++)
         {
