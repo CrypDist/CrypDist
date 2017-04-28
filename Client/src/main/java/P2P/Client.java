@@ -21,6 +21,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Observable;
+import java.util.Random;
 import java.util.Set;
 import java.util.Timer;
 import java.util.concurrent.Callable;
@@ -252,39 +253,48 @@ public class Client extends Observable implements Runnable{
             peers[count++] = i.next();
         }
 
-        count = 0;
-        Iterator<String> iterator = neededBlocks.iterator();
-        HashMap<String, Future<String>> assignments = new HashMap<>();
-        ExecutorService executor = Executors.newCachedThreadPool();
-        while(iterator.hasNext()){
-            String hash = iterator.next();
-
-            //Message to be sent for requesting block
-            JsonObject obj = new JsonObject();
-            obj.addProperty("flag",Config.MESSAGE_REQUEST_BLOCK);
-            obj.addProperty("data", hash);
-
-            Gson gson = new Gson();
-            Callable<String> task = new ResponsedMessageTask(peers[count % peerSize], gson.toJson(obj, JsonObject.class));
-            Future<String> f = executor.submit(task);
-
-            assignments.put(hash,f);
-            log.info("AN ASSIGNMENT IS DONE.");
-
-            count++;
-        }
-
+        HashSet<String> remainingTasks = new HashSet<>(neededBlocks);
         HashMap<String,String> actualResults = new HashMap<>();
 
-        for(Map.Entry<String, Future<String>> entry : assignments.entrySet()) {
-            try {
-                String response = entry.getValue().get();
-                actualResults.put(entry.getKey(),response);
-                log.info("A RESULT IS TAKEN");
-            } catch (Exception e) {
-                log.fatal("RESPONSE CANNOT BE TAKEN.");
+        Random r = new Random();
+        while(remainingTasks.size() > 0) {
+            count = r.nextInt(peerSize);
+
+            Iterator<String> iterator = remainingTasks.iterator();
+            HashMap<String, Future<String>> assignments = new HashMap<>();
+            ExecutorService executor = Executors.newCachedThreadPool();
+            while(iterator.hasNext()){
+                String hash = iterator.next();
+
+                //Message to be sent for requesting block
+                JsonObject obj = new JsonObject();
+                obj.addProperty("flag",Config.MESSAGE_REQUEST_BLOCK);
+                obj.addProperty("data", hash);
+
+                Gson gson = new Gson();
+                Callable<String> task = new ResponsedMessageTask(peers[count % peerSize], gson.toJson(obj, JsonObject.class));
+                Future<String> f = executor.submit(task);
+
+                assignments.put(hash,f);
+                log.info("AN ASSIGNMENT IS DONE.");
+
+                count++;
+            }
+
+            for(Map.Entry<String, Future<String>> entry : assignments.entrySet()) {
+                try {
+                    String response = entry.getValue().get();
+                    if(response != null) {
+                        actualResults.put(entry.getKey(),response);
+                        remainingTasks.remove(entry.getKey());
+                    }
+                    log.info("A RESULT IS TAKEN");
+                } catch (Exception e) {
+                    log.fatal("RESPONSE CANNOT BE TAKEN.");
+                }
             }
         }
+
 
         return actualResults;
     }

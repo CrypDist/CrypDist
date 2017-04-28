@@ -57,8 +57,6 @@ public class CrypDist {
             return "";
         }
 
-        log.info("DATA IS" + str);
-
         JsonObject obj2 = gson.fromJson(str, JsonObject.class);
 
         int flagValue = obj2.get("flag").getAsInt();
@@ -96,7 +94,6 @@ public class CrypDist {
                 JsonElement time = obj2.get("timeStamp");
                 JsonElement blockId = obj2.get("blockId");
 
-                log.info("HASH RECEIVED" + data.getAsString());
                 blockchainManager.receiveHash(data.getAsString(), time.getAsLong(), blockId.getAsString());
             }
             else if (flagValue == 3)
@@ -126,8 +123,8 @@ public class CrypDist {
             client.broadCastMessage(obj.toString());
         }
         else if (flag == 4) {
+            log.warn("HASH UPDATE IS IN PROGRESS");
             updateBlockchain();
-            log.warn("HASH IS NOT UP TO DATE");
         }
         else
             log.error("Invalid flag");
@@ -139,7 +136,6 @@ public class CrypDist {
     {
         // UPDATE BLOCKCHAIN
         ArrayList<String> keySet = client.receiveKeySet();
-        log.info("KEYSET SIZE IS " + keySet.size());
         if(keySet.size() == 0)
             return;
         Set<String> neededBlocks = blockchainManager.getNeededBlocks(keySet);
@@ -147,6 +143,9 @@ public class CrypDist {
             return;
 
         HashMap<String, String> blocks = client.receiveBlocks(neededBlocks);
+
+        for(String str : blocks.values())
+            log.info("BLOCK " + str);
 
         blockchainManager.addNewBlocks(blocks);
     }

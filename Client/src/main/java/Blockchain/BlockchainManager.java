@@ -379,26 +379,18 @@ public class BlockchainManager
 
         private String findMinHash(String blockId)
         {
-
-            log.info("1\t# of hashes: " + hashes.get(blockId).size());
-            log.info("1\t# of pairs: " + numOfPairs);
-
             while (hashes.get(blockId).size() < numOfPairs/2 + 1) {
                 try {
                     Thread.sleep(200);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-                log.info("DAMDAMDAMDAMDAMDAMDAMDAMDAMDAM");
-                log.info("# of hashes: " + hashes.get(blockId).size());
-                log.info("# of pairs: " + numOfPairs);
             }
             long minTime = Long.MAX_VALUE;
             String minHash = "";
 
             synchronized (this) {
                 for (Pair p : hashes.get(blockId)) {
-                    log.info("HASH:\t" + p.frst);
                     if ((long) p.scnd < minTime) {
                         minTime = (long) p.scnd;
                         minHash = (String) p.frst;
@@ -515,16 +507,13 @@ public class BlockchainManager
 
         String lastHash = blockchain.getLastBlock();
 
-        log.info("Size of adding: " + blocks.size());
-        log.info("1.Blockchain size is: " + blockchain.getLength());
-        log.info("1.Blockchain lasthash: " + blockchain.getLastBlock());
-
         while (blocks.size() > 0) {
 
             Iterator<String> iterator = blocks.keySet().iterator();
             while (iterator.hasNext())
             {
                 String key = iterator.next();
+                log.info("KEY " + key);
 
                 Block block = gson.fromJson(blocks.get(key), Block.class);
                 String prevHash = block.getPreviousHash();
@@ -535,8 +524,6 @@ public class BlockchainManager
                     lastHash = block.getHash();
                     try {
                         boolean added = addBlockToBlockchain(block);
-                        if (!added)
-                            log.warn("ALAAAAAAAAARMMMMMMMMMMMMMMMMM");
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -545,31 +532,7 @@ public class BlockchainManager
             }
 
         }
-
-
-//        if (currKey.isEmpty())
-//            return;
-//
-//        while (blocks.size() > 0 && currKey != null && blocks.containsKey(currKey))
-//        {
-//            log.info("CURRKEY=\t" + currKey);
-//            log.info("blocks.get=\t" + blocks.get(currKey));
-//            Block block = null;
-//            block = gson.fromJson(blocks.get(currKey), Block.class);
-//            blocks.remove(currKey);
-//            try {
-//                boolean added = addBlockToBlockchain(block);
-//                if (!added)
-//                    log.warn("ALAAAAAAAAARMMMMMMMMMMMMMMMMM");
-//            } catch (Exception e) {
-//                e.printStackTrace();
-//            }
-//
-//            currKey = block.getPreviousHash();
-//        }
-
-
-        log.info("2.New blockchain size is: " + blockchain.getLength());
-        log.info("2.New blockchain lasthash: " + blockchain.getLastBlock());
+        log.info("New blockchain size is: " + blockchain.getLength());
+        log.info("New blockchain lasthash: " + blockchain.getLastBlock());
     }
 }
