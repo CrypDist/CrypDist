@@ -56,7 +56,6 @@ public class ReceiveServerRequest extends Thread {
 
                         out.writeInt(Config.MESSAGE_ACK);
                         if(flag == Config.MESSAGE_OUTGOING_RESPONSE){
-                            log.info("RESPONSE IS WRITTEN.");
                             out.writeUTF(response);
                         }
 

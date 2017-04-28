@@ -10,6 +10,7 @@ import net.sf.json.JSON;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -42,7 +43,6 @@ public class CrypDist {
 
     public String updateByClient(String arg) {
 
-        log.info("BE NOTIFIED");
         Gson gson = new Gson();
         String lastHash = blockchainManager.getBlockchain().getLastBlock();
 
@@ -87,7 +87,7 @@ public class CrypDist {
                 toReturn.addProperty("lastHash", hashValue);
                 client.sendMessage(ip, gson.toJson(toReturn));
 
-                log.info("DATA RECEIVED" + dataStr);
+                //log.info("DATA RECEIVED" + dataStr);
 
                 blockchainManager.addTransaction(dataStr);
             }
@@ -139,7 +139,8 @@ public class CrypDist {
     {
         // UPDATE BLOCKCHAIN
         log.warn("Blockchain is not updated, start the procedure!");
-        HashSet<String> keySet = client.receiveKeySet();
+        ArrayList<String> keySet = client.receiveKeySet();
+        log.info("KEYSET SIZE IS " + keySet.size());
         if(keySet.size() == 0)
             return;
         Set<String> neededBlocks = blockchainManager.getNeededBlocks(keySet);
@@ -147,8 +148,6 @@ public class CrypDist {
             return;
 
         HashMap<String, String> blocks = client.receiveBlocks(neededBlocks);
-        for(String s : blocks.values())
-            log.info("BLOOCKS: " + s);
 
         blockchainManager.addNewBlocks(blocks);
     }

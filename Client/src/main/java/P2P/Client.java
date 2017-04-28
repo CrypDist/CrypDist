@@ -163,27 +163,33 @@ public class Client extends Observable implements Runnable{
         }
     }
 
-    public HashSet<String> broadCastMessageResponse(String message) {
+    public ArrayList<String> broadCastMessageResponse(String message) {
 
         ExecutorService executor = Executors.newCachedThreadPool();
         ArrayList<Future<String>> futures = new ArrayList<>();
 
+        log.info("BROADCASTED TO " + peerList.size() + " PEERS");
         for(Peer peer:peerList.keySet()) {
             Callable<String> task = new ResponsedMessageTask(peer,message);
             Future<String> future = executor.submit(task);
             futures.add(future);
         }
 
-        HashSet<String> result = new HashSet<>();
+        ArrayList<String> result = new ArrayList<>();
 
         try {
             for(Future<String> future: futures) {
                 String res = future.get();
                 if(res != null && !res.equals(""))
-                    result.add(res);;
+                {
+                    log.info("RESULT IS ADDED: " + res);
+                    result.add(res);
+                }
+                else
+                    log.error("KEYSET CANNOT BE RECEIVED.");
             }
         } catch (Exception e) {
-
+            log.error("KEYSET CANNOT BE RECEIVED.");
         }
 
         return result;
@@ -264,6 +270,8 @@ public class Client extends Observable implements Runnable{
 
             assignments.put(hash,f);
             log.info("AN ASSIGNMENT IS DONE.");
+
+            count++;
         }
 
         HashMap<String,String> actualResults = new HashMap<>();
@@ -281,7 +289,8 @@ public class Client extends Observable implements Runnable{
         return actualResults;
     }
 
-    public HashSet<String> receiveKeySet() {
+    public ArrayList<String> receiveKeySet() {
+        log.info("KEY SET IS CALLED WITH " + peerList.size() + " PEERS");
         JsonObject obj = new JsonObject();
         obj.addProperty("flag",Config.MESSAGE_REQUEST_KEYSET);
         return broadCastMessageResponse(obj.toString());
