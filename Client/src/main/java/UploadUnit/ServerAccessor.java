@@ -4,19 +4,24 @@ package UploadUnit; /**
 
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
+import com.amazonaws.HttpMethod;
 import com.amazonaws.auth.EnvironmentVariableCredentialsProvider;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
-import com.amazonaws.services.s3.model.DeleteObjectRequest;
-import com.amazonaws.services.s3.model.GetObjectRequest;
-import com.amazonaws.services.s3.model.PutObjectRequest;
-import com.amazonaws.services.s3.model.S3Object;
+import com.amazonaws.services.s3.model.*;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStreamWriter;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 
 public class ServerAccessor {
@@ -34,18 +39,14 @@ public class ServerAccessor {
                 .withRegion(Regions.EU_CENTRAL_1).build();
     }
 
-    public void upload(String fileName, String filePath) throws Exception {
+    public void upload(URL url, String filePath, String fileName) throws Exception {
         if (doesObjectExist(fileName)) {
             throw new Exception("file already exists!");
         }
         try {
             log.info("Uploading a new object to S3 from a file\n");
-            log.warn("FILE_NAME_IN_UPLOAD:\t" + fileName);
-            log.warn("FILE_PATH_IN_UPLOAD:\t" + filePath);
 
-            File file = new File(filePath);
-            s3client.putObject(new PutObjectRequest(bucketName, fileName, file));
-
+            UploadObject(url, filePath);
         } catch (AmazonServiceException ase) {
             log.error("Caught an AmazonServiceException, which " +
                     "means your request made it " +
@@ -90,5 +91,34 @@ public class ServerAccessor {
     public void delete(String fileName)
     {
         s3client.deleteObject(new DeleteObjectRequest(bucketName, fileName));
+    }
+    public void UploadObject(URL url, String filePath) throws IOException
+    {
+        HttpURLConnection connection=(HttpURLConnection) url.openConnection();
+        connection.setDoOutput(true);
+        connection.setRequestMethod("PUT");
+        OutputStreamWriter out = new OutputStreamWriter(
+                connection.getOutputStream());
+        out.write(new String(Files.readAllBytes(Paths.get(filePath))));
+        out.close();
+        int responseCode = connection.getResponseCode();
+        System.out.println("Service returned response code " + responseCode);
+
+    }
+
+    public URL getURL(String fileName)
+    {
+        System.out.println("Generating pre-signed URL.");
+        java.util.Date expiration = new java.util.Date();
+        long milliSeconds = expiration.getTime();
+        milliSeconds += 1000 * 10; // Add 10 sec.
+        expiration.setTime(milliSeconds);
+
+        GeneratePresignedUrlRequest generatePresignedUrlRequest =
+                new GeneratePresignedUrlRequest(bucketName, fileName);
+        generatePresignedUrlRequest.setMethod(HttpMethod.PUT);
+        generatePresignedUrlRequest.setExpiration(expiration);
+
+        return s3client.generatePresignedUrl(generatePresignedUrlRequest);
     }
 }

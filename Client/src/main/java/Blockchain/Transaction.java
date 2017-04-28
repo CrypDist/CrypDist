@@ -7,6 +7,7 @@ import org.apache.log4j.Logger;
 
 import java.io.IOException;
 import java.net.InetAddress;
+import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.Date;
 
@@ -25,6 +26,7 @@ public class Transaction implements Comparable<Transaction>
     private Long timeStamp;
     private String dataSummary;
     private long dataSize;
+    private URL url;
 
     public int compareTo(Transaction t) {
         if (t.getTimeStamp() > this.timeStamp)
@@ -35,12 +37,13 @@ public class Transaction implements Comparable<Transaction>
             return 0;
     }
     public Transaction(String filePath, String fileName, String dataSummary,
-                       long dataSize)
+                       long dataSize, URL url)
     {
         this.filePath = filePath;
         this.fileName = fileName;
         this.dataSummary = dataSummary;
         this.dataSize = dataSize;
+        this.url = url;
         // TODO will be fixed
 
         NTPUDPClient timeClient = new NTPUDPClient();
@@ -67,7 +70,7 @@ public class Transaction implements Comparable<Transaction>
         try {
             if (serverAccessor == null)
                 log.info("HEYYYYYYYYYYYYYYYYYOOOOOOOOOOOOOOOOOOOOOOOOO");
-            serverAccessor.upload(fileName, filePath);
+            serverAccessor.upload(url, filePath, fileName);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -89,5 +92,13 @@ public class Transaction implements Comparable<Transaction>
     public long getDataSize()
     {
         return dataSize;
+    }
+
+    public URL getUrl() {
+        return url;
+    }
+
+    public void setUrl(URL url) {
+        this.url = url;
     }
 }

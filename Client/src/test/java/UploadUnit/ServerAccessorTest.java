@@ -21,7 +21,7 @@ public class ServerAccessorTest {
     private final String fileName = "tester.txt";
     private static final String filePath = "src/test/resources/tester.txt";
 
-    @org.junit.BeforeClass
+  /*  @org.junit.BeforeClass
     public static void setUpClass() throws Exception {
         serverAccessor = new ServerAccessor();
         Path fileToDeletePath = Paths.get(filePath + "_returned");
@@ -55,6 +55,6 @@ public class ServerAccessorTest {
         File f = new File(return_path);
         assert f.exists() && !f.isDirectory();
     }
-
+*/
 
 }

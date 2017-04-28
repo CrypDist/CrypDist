@@ -13,6 +13,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
+import java.net.URL;
 import java.net.UnknownHostException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -49,6 +50,8 @@ public class BlockchainManager
     private PriorityBlockingQueue<Transaction> transactionBucket;
     private ArrayList<Transaction> transactionBucket_solid;
     private final String TIME_SERVER = "nist1-macon.macon.ga.us";
+    private Long serverTime;
+    private Long systemTime;
     // To collect hash values to given blockIds with time stamp
     // Mapping is like BlockId -> ArrayOf[(Hash, TimeStamp)]
     private ConcurrentHashMap<String, ArrayList<Pair>> hashes;
@@ -66,6 +69,8 @@ public class BlockchainManager
         transactionBucket_solid = new ArrayList<>(BLOCK_SIZE);
         hashes = new ConcurrentHashMap<>();
         numOfPairs = 0;
+        serverTime = getServerTime();
+        systemTime = System.currentTimeMillis();
         Timer timer = new Timer();
         timer.schedule(new BlockchainBatch(),0, 8000);
         HashValidation validation = new HashValidation();
@@ -98,8 +103,8 @@ public class BlockchainManager
         File file = new File(filePath);
         if(fileName.equals("merhaba") || (file.exists() && !file.isDirectory())) {
             long dataSize = file.length();
-            Transaction upload = new Transaction(filePath, fileName, dataSummary, dataSize);
-
+            URL url = serverAccessor.getURL(fileName);
+            Transaction upload = new Transaction(filePath, fileName, dataSummary, dataSize, url);
             Gson gson = new Gson();
 
             log.info(gson.toJson(upload));
@@ -158,7 +163,9 @@ public class BlockchainManager
         }
         else
         {
+            log.warn("CALL TO LAST BLOCK");
             String prevHash = blockchain.getLastBlock();
+            log.warn("CALL TO GET TIME");
             long timestamp = getTime();
             long maxNonce = Long.MAX_VALUE;
 
@@ -168,8 +175,9 @@ public class BlockchainManager
                     hashes.put(blockId, new ArrayList<>());
                 log.info("mineBlock is called, hashes size = " + hashes.get(blockId).size());
             }
-
+            log.info("CAME TO MINE BLOCK");
             String hash = mineBlock(blockId, prevHash, timestamp, maxNonce);
+            log.info("OUT FROM MINE BLOCK");
 
             Block block = null;
             try {
@@ -206,7 +214,7 @@ public class BlockchainManager
         return blockId.toString();
     }
 
-    public long getTime()
+    public long getServerTime()
     {
         long timeL = 0;
         NTPUDPClient timeClient = new NTPUDPClient();
@@ -222,6 +230,11 @@ public class BlockchainManager
             e.printStackTrace();
         }
         return timeL;
+    }
+
+    private long getTime()
+    {
+        return serverTime + System.currentTimeMillis() - systemTime;
     }
 
     public boolean validateHash(String hash)
@@ -283,8 +296,8 @@ public class BlockchainManager
                     Transaction tr = ((Transaction) transactionPendingBucket.get(transaction).frst);
                     transactionBucket.add(tr);
                     transactionPendingBucket.remove(transaction);
-                    if (!tr.getStringFormat().contains("SelaminAleykum"))
-                        tr.execute(serverAccessor);
+//                    if (!tr.getStringFormat().contains("SelaminAleykum"))
+//                        tr.execute(serverAccessor);
                 }
                 System.out.println("COUNT=\t" + (count + 1));
                 System.out.println("PAIR NUM=\t" + numOfPairs);
@@ -473,7 +486,7 @@ public class BlockchainManager
                 }
 
                 try {
-                    Thread.sleep(1000);
+                    Thread.sleep(100);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -524,12 +537,14 @@ public class BlockchainManager
         log.info("Size of adding: " + blocks.size());
         log.info("1.Blockchain size is: " + blockchain.getLength());
         log.info("1.Blockchain lasthash: " + blockchain.getLastBlock());
-
+        boolean changed = false;
+        log.info("blocks size is: " + blocks.size());
         while (blocks.size() > 0) {
 
             Iterator<String> iterator = blocks.keySet().iterator();
             while (iterator.hasNext())
             {
+                log.info("in iterator!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
                 String key = iterator.next();
 
                 Block block = gson.fromJson(blocks.get(key), Block.class);
@@ -537,6 +552,8 @@ public class BlockchainManager
 
                 if (prevHash.equals(lastHash))
                 {
+                    changed = true;
+                    log.info("PREV HASH EQUALS TO THE LAST HASH");
                     blocks.remove(key);
                     lastHash = block.getHash();
                     try {
@@ -552,30 +569,9 @@ public class BlockchainManager
 
         }
 
-
-//        if (currKey.isEmpty())
-//            return;
-//
-//        while (blocks.size() > 0 && currKey != null && blocks.containsKey(currKey))
-//        {
-//            log.info("CURRKEY=\t" + currKey);
-//            log.info("blocks.get=\t" + blocks.get(currKey));
-//            Block block = null;
-//            block = gson.fromJson(blocks.get(currKey), Block.class);
-//            blocks.remove(currKey);
-//            try {
-//                boolean added = addBlockToBlockchain(block);
-//                if (!added)
-//                    log.warn("ALAAAAAAAAARMMMMMMMMMMMMMMMMM");
-//            } catch (Exception e) {
-//                e.printStackTrace();
-//            }
-//
-//            currKey = block.getPreviousHash();
-//        }
-
-
         log.info("2.New blockchain size is: " + blockchain.getLength());
         log.info("2.New blockchain lasthash: " + blockchain.getLastBlock());
+        transactionPendingBucket = new ConcurrentHashMap<String, Pair>();
+        transactionBucket = new PriorityBlockingQueue<Transaction>();
     }
 }

@@ -1,21 +1,15 @@
 package Util;
 
-import Blockchain.Block;
+import Blockchain.Blockchain;
 import Blockchain.BlockchainManager;
 import P2P.Client;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import net.sf.json.JSON;
 import org.apache.log4j.Logger;
-import org.apache.log4j.PropertyConfigurator;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Observable;
-import java.util.Observer;
 import java.util.Set;
 
 public class CrypDist {
@@ -72,7 +66,7 @@ public class CrypDist {
             JsonElement data = obj2.get("data");
             String dataStr = data.getAsString();
 
-            return gson.toJson(blockchainManager.getBlock(dataStr),Block.class);
+            return gson.toJson(blockchainManager.getBlock(dataStr));
         }
 
         String hashValue = obj2.get("lastHash").getAsString();
