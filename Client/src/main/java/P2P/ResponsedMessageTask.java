@@ -42,8 +42,6 @@ public class ResponsedMessageTask implements Callable<String> {
                 ObjectInputStream in = new ObjectInputStream(new DataInputStream(messagedClient.getInputStream()));
                 int ack = in.readInt();
 
-                log.info("Message-response is sent!");
-
                 if (ack == Config.MESSAGE_ACK) {
                     String response = in.readUTF();
                     return response;

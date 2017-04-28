@@ -101,4 +101,9 @@ public class Transaction implements Comparable<Transaction>
     public void setUrl(URL url) {
         this.url = url;
     }
+
+    public String getFileName() {
+        return fileName;
+    }
+
 }

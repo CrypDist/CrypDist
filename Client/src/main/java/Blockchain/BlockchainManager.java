@@ -296,11 +296,9 @@ public class BlockchainManager
                     Transaction tr = ((Transaction) transactionPendingBucket.get(transaction).frst);
                     transactionBucket.add(tr);
                     transactionPendingBucket.remove(transaction);
-//                    if (!tr.getStringFormat().contains("SelaminAleykum"))
-//                        tr.execute(serverAccessor);
+                    if (!tr.getFileName().equals("merhaba"))
+                        tr.execute(serverAccessor);
                 }
-                System.out.println("COUNT=\t" + (count + 1));
-                System.out.println("PAIR NUM=\t" + numOfPairs);
             }
         }
     }
@@ -349,10 +347,6 @@ public class BlockchainManager
                 for (int i = 0; i < maxNonce; i++)
                 {
                     if (hashes.get(blockId).size() > numOfPairs / 2) {
-                        //                    Thread.currentThread().interrupt();
-                        System.out.println("THEY CAME BEFORE I PRODUCE");
-                        System.out.println("HASH_NUM_I_HAVE = " + hashes.get(blockId).size());
-                        System.out.println("GREATER THAN = " + numOfPairs / 2);
                         String minHash = findMinHash(blockId);
                         return minHash;
                     }
@@ -397,26 +391,18 @@ public class BlockchainManager
 
         private String findMinHash(String blockId)
         {
-
-            log.info("1\t# of hashes: " + hashes.get(blockId).size());
-            log.info("1\t# of pairs: " + numOfPairs);
-
             while (hashes.get(blockId).size() < numOfPairs/2 + 1) {
                 try {
                     Thread.sleep(200);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-                log.info("DAMDAMDAMDAMDAMDAMDAMDAMDAMDAM");
-                log.info("# of hashes: " + hashes.get(blockId).size());
-                log.info("# of pairs: " + numOfPairs);
             }
             long minTime = Long.MAX_VALUE;
             String minHash = "";
 
             synchronized (this) {
                 for (Pair p : hashes.get(blockId)) {
-                    log.info("HASH:\t" + p.frst);
                     if ((long) p.scnd < minTime) {
                         minTime = (long) p.scnd;
                         minHash = (String) p.frst;
@@ -537,7 +523,6 @@ public class BlockchainManager
         log.info("Size of adding: " + blocks.size());
         log.info("1.Blockchain size is: " + blockchain.getLength());
         log.info("1.Blockchain lasthash: " + blockchain.getLastBlock());
-        boolean changed = false;
         log.info("blocks size is: " + blocks.size());
         while (blocks.size() > 0) {
 
@@ -546,20 +531,18 @@ public class BlockchainManager
             {
                 log.info("in iterator!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
                 String key = iterator.next();
+                log.info("KEY " + key);
 
                 Block block = gson.fromJson(blocks.get(key), Block.class);
                 String prevHash = block.getPreviousHash();
 
                 if (prevHash.equals(lastHash))
                 {
-                    changed = true;
                     log.info("PREV HASH EQUALS TO THE LAST HASH");
                     blocks.remove(key);
                     lastHash = block.getHash();
                     try {
                         boolean added = addBlockToBlockchain(block);
-                        if (!added)
-                            log.warn("ALAAAAAAAAARMMMMMMMMMMMMMMMMM");
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -569,8 +552,8 @@ public class BlockchainManager
 
         }
 
-        log.info("2.New blockchain size is: " + blockchain.getLength());
-        log.info("2.New blockchain lasthash: " + blockchain.getLastBlock());
+        log.info("New blockchain size is: " + blockchain.getLength());
+        log.info("New blockchain lasthash: " + blockchain.getLastBlock());
         transactionPendingBucket = new ConcurrentHashMap<String, Pair>();
         transactionBucket = new PriorityBlockingQueue<Transaction>();
     }

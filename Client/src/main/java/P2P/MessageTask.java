@@ -41,8 +41,6 @@ public class MessageTask implements Runnable {
                 ObjectInputStream in = new ObjectInputStream(new DataInputStream(messagedClient.getInputStream()));
                 int ack = in.readInt();
                 messagedClient.close();
-                log.info("Message is sent!");
-
                 if (ack == Config.MESSAGE_ACK) {
                     return;
                 }
