@@ -2,6 +2,7 @@ package UploadUnit; /**
  * Created by furkansahin on 05/04/2017.
  */
 
+import Util.Config;
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.HttpMethod;
@@ -28,11 +29,10 @@ public class ServerAccessor {
 
     private static Logger log = Logger.getLogger("UploadUnit");
 
-    private String bucketName;
+    private String bucketName = Config.UPLOAD_BUCKETNAME;
     private AmazonS3 s3client;
 
     public ServerAccessor(){
-        bucketName = System.getenv("BUCKET_NAME");
 
         s3client = AmazonS3ClientBuilder.standard()
                 .withCredentials(new EnvironmentVariableCredentialsProvider())
@@ -111,7 +111,7 @@ public class ServerAccessor {
         System.out.println("Generating pre-signed URL.");
         java.util.Date expiration = new java.util.Date();
         long milliSeconds = expiration.getTime();
-        milliSeconds += 1000 * 10; // Add 10 sec.
+        milliSeconds += Config.UPLOAD_EXPIRATION_TIME; // Add 10 sec.
         expiration.setTime(milliSeconds);
 
         GeneratePresignedUrlRequest generatePresignedUrlRequest =

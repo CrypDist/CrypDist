@@ -51,13 +51,13 @@ public class Client extends Observable implements Runnable{
     int lastSize;
 
 
-    public Client (String swAdr, int swPort,  int heartBeatPort , int serverPort,
-                   CrypDist crypDist) {
+    public Client (CrypDist crypDist) {
+
         this.crypDist = crypDist;
-        this.heartBeatPort = heartBeatPort;
-        this.serverPort = serverPort;
-        this.swAdr = swAdr;
-        this.swPort = swPort;
+        heartBeatPort = Config.CLIENT_HEARTBEAT_PORT;
+        serverPort = Config.CLIENT_SERVER_PORT;
+        swAdr = Config.SERVER_ADDRESS;
+        swPort = Config.SERVER_PORT;
         lastSize = 0;
 
         initialization();
@@ -74,7 +74,7 @@ public class Client extends Observable implements Runnable{
         //Establish a connection with server, get number of active peers and their information.
         try {
             Socket serverConnection = new Socket(swAdr, swPort);
-            serverConnection.setSoTimeout(3000);
+            serverConnection.setSoTimeout(Config.SERVER_TIMEOUT);
 
             DataInputStream in = new DataInputStream(serverConnection.getInputStream());
 
@@ -221,7 +221,7 @@ public class Client extends Observable implements Runnable{
     public void run() {
 
         Timer timer = new Timer();
-        timer.schedule(new HeartBeatTask(this, peerList, heartBeatPort,serverPort), 0, 5 * 1000);
+        timer.schedule(new HeartBeatTask(this, peerList, heartBeatPort,serverPort), 0, Config.HEARTBEAT_PERIOD);
 
         Thread t1 = new ReceiveHeartBeat(this);
         Thread t2 = new ReceiveServerRequest(this);

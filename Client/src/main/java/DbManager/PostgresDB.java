@@ -1,5 +1,6 @@
 package DbManager;
 
+import Util.Config;
 import org.apache.log4j.Logger;
 
 import java.sql.Connection;
@@ -18,7 +19,7 @@ public class PostgresDB {
     private static org.apache.log4j.Logger log = Logger.getLogger("DbManager");
 
     Connection conn;
-    final String TABLE_NAME = "blocks";
+    final String TABLE_NAME = Config.DB_TABLE_NAME;
     public PostgresDB(String dbName, String user, String secret, boolean reset)
     {
 

@@ -28,7 +28,7 @@ public class CrypDist {
     public CrypDist(String swAdr, int swPort, int hbPort, int serverPort ) {
 
         blockchainManager = new BlockchainManager(this);
-        client = new Client(swAdr, swPort, hbPort,serverPort, this);
+        client = new Client(this);
 
         Thread t = new Thread(client);
         t.start();
@@ -40,12 +40,12 @@ public class CrypDist {
         Gson gson = new Gson();
         String lastHash = blockchainManager.getBlockchain().getLastBlock();
 
-        String strToBeSplitted = (String) arg;
-        String[] elems = strToBeSplitted.split("////");
+        String strToBeSplitted = arg;
+        String[] elems = strToBeSplitted.split(Config.CLIENT_MESSAGE_SPLITTER);
         String ip = elems[0];
         String str = elems[1];
 
-        if(ip.equals("X")) {
+        if(ip.equals(Config.CLIENT_MESSAGE_PEERSIZE)) {
             log.info("Pair size is now " + str);
             blockchainManager.setNumOfPairs(Integer.parseInt(str));
             return "";
@@ -69,13 +69,13 @@ public class CrypDist {
 
         String hashValue = obj2.get("lastHash").getAsString();
         if (blockchainManager.validateHash(hashValue)) {
-            if (flagValue == 1) {
+            if (flagValue == Config.FLAG_BROADCAST_TRANSACTION) {
                 JsonObject toReturn = new JsonObject();
                 JsonElement data = obj2.get("data");
                 String dataStr = data.getAsString();
 
                 toReturn.addProperty("transaction", dataStr);
-                toReturn.addProperty("flag", 3);
+                toReturn.addProperty("flag", Config.FLAG_TRANSACTION_VALIDATION);
                 toReturn.addProperty("lastHash", hashValue);
                 client.sendMessage(ip, gson.toJson(toReturn));
 
@@ -83,14 +83,14 @@ public class CrypDist {
 
                 blockchainManager.addTransaction(dataStr);
             }
-            else if (flagValue == 2) {
+            else if (flagValue == Config.FLAG_BROADCAST_HASH) {
                 JsonElement data = obj2.get("data");
                 JsonElement time = obj2.get("timeStamp");
                 JsonElement blockId = obj2.get("blockId");
 
                 blockchainManager.receiveHash(data.getAsString(), time.getAsLong(), blockId.getAsString());
             }
-            else if (flagValue == 3)
+            else if (flagValue == Config.FLAG_TRANSACTION_VALIDATION)
             {
                 JsonElement transaction = obj2.get("transaction");
                 blockchainManager.markValid(transaction.getAsString());
@@ -109,14 +109,14 @@ public class CrypDist {
         obj.addProperty("lastHash", lastHash);
         int flag = obj.get("flag").getAsInt();
 
-        if(flag == 1) {
+        if(flag == Config.FLAG_BROADCAST_TRANSACTION) {
             client.broadCastMessage(obj.toString());
         }
-        else if (flag == 2) {
+        else if (flag == Config.FLAG_BROADCAST_HASH) {
             log.info("HASH BROADCAST IS IN PROCESS");
             client.broadCastMessage(obj.toString());
         }
-        else if (flag == 4) {
+        else if (flag == Config.FLAG_BLOCKCHAIN_INVALID) {
             log.warn("HASH UPDATE IS IN PROGRESS");
             updateBlockchain();
         }

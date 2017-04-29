@@ -28,7 +28,7 @@ public class ResponsedMessageTask implements Callable<String> {
     public String call() throws Exception {
 
         int trials = 0;
-        while(trials < Config.MAXIMUM_TRIALS_MSG) {
+        while(trials < Config.MESSAGE_MAX_TRIALS) {
 
             try {
                 log.trace(p.getPeerServerPort());
@@ -56,7 +56,7 @@ public class ResponsedMessageTask implements Callable<String> {
             }
             trials++;
         }
-        log.error("Message cannot be sent after 5 trials");
+        log.error("Message cannot be sent after " + Config.MESSAGE_MAX_TRIALS + " trials");
         log.trace(msg);
         return null;
     }

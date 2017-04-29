@@ -48,7 +48,7 @@ public class ReceiveServerRequest extends Thread {
                         int flag = in.readInt();
                         String str = in.readUTF();
 
-                        str = server.getInetAddress().toString() + "////" + str;
+                        str = server.getInetAddress().toString() + Config.CLIENT_MESSAGE_SPLITTER + str;
                         log.trace("Client is notifying with " + flag  + " | " + str);
                         String response = client.notify(str);
 

@@ -1,5 +1,6 @@
 package P2P;
 
+import Util.Config;
 import org.apache.log4j.Logger;
 
 import java.io.DataInputStream;
@@ -39,15 +40,15 @@ public class HeartBeatTask extends TimerTask {
                 DataOutputStream out = new DataOutputStream(clientSocket.getOutputStream());
                 DataInputStream in = new DataInputStream(clientSocket.getInputStream());
 
-                out.writeInt(101);  //0 for heartbeats
+                out.writeInt(Config.HEARTBEAT_FLAG_CLIENT);  //0 for heartbeats
                 out.writeInt(hbPort);
                 out.writeInt(swPort);
 
                 out.flush();
-                clientSocket.setSoTimeout(10000);
+                clientSocket.setSoTimeout(Config.HEARTBEAT_TIMEOUT);
 
                 int x = in.readInt();
-                if(x == 102) {
+                if(x == Config.HEARTBEAT_ACK) {
                     return peer;
                 }
             } catch (IOException e) {
@@ -76,7 +77,7 @@ public class HeartBeatTask extends TimerTask {
 
     public void run() {
         for(Map.Entry<Peer,Integer> entry : peerList.entrySet() ) {
-            if (entry.getValue() > 3) {
+            if (entry.getValue() > Config.HEARTBEAT_MAX_TRIALS) {
                 peerList.remove(entry.getKey());
             }
             else {
@@ -105,7 +106,7 @@ public class HeartBeatTask extends TimerTask {
         int a = peerList.size();
 
         if (size != a) {
-            client.notify("X////" + a);
+            client.notify(Config.CLIENT_MESSAGE_PEERSIZE + Config.CLIENT_MESSAGE_SPLITTER + a);
             size = a;
         }
     }

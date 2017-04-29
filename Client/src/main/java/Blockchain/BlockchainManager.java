@@ -2,6 +2,7 @@ package Blockchain;
 
 import DbManager.PostgresDB;
 import UploadUnit.ServerAccessor;
+import Util.Config;
 import Util.CrypDist;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
@@ -42,7 +43,7 @@ public class BlockchainManager
     static transient Logger log = Logger.getLogger("Blockchain");
     private CrypDist crypDist;
     private final int BLOCK_SIZE = 4;
-    private final int MAX_TIMEOUT_MS = 10000;
+    private final int MAX_TIMEOUT_MS = Config.BLOCKCHAIN_BATCH_TIMEOUT;
     private Blockchain blockchain;
     private PostgresDB dbManager;
     private ServerAccessor serverAccessor;
@@ -72,7 +73,7 @@ public class BlockchainManager
         serverTime = getServerTime();
         systemTime = System.currentTimeMillis();
         Timer timer = new Timer();
-        timer.schedule(new BlockchainBatch(),0, 8000);
+        timer.schedule(new BlockchainBatch(),0, Config.BLOCKCHAIN_BATCH_PERIOD);
         HashValidation validation = new HashValidation();
         validation.start();
     }
@@ -110,7 +111,7 @@ public class BlockchainManager
             log.info(gson.toJson(upload));
             transactionPendingBucket.put(gson.toJson(upload), new Pair<Transaction, Integer>(upload, 0));
             log.info("Transaction added, being broadcasted.");
-            broadcast(gson.toJson(upload), 1, null);
+            broadcast(gson.toJson(upload), Config.FLAG_BROADCAST_TRANSACTION, null);
 
             log.info("Notified");
         }
@@ -263,7 +264,7 @@ public class BlockchainManager
         JsonObject obj = new JsonObject();
         obj.addProperty("flag",flag);
         obj.addProperty("data", data);
-        if (flag == 2 ) {
+        if (flag == Config.FLAG_BROADCAST_HASH ) {
             obj.addProperty("blockId", blockId);
             time = getTime();
             obj.addProperty("timeStamp", time);
@@ -380,7 +381,7 @@ public class BlockchainManager
                 e.printStackTrace();
             }
 
-            long timeStamp = broadcast(new String(hash), 2, blockId);
+            long timeStamp = broadcast(new String(hash), Config.FLAG_BROADCAST_HASH, blockId);
 
             hashes.get(blockId).add(new Pair<String, Long>(new String(hash), timeStamp));
 
@@ -459,7 +460,7 @@ public class BlockchainManager
                 {
                     Pair pair = transactionPendingBucket.get(key);
                     Transaction trans = (Transaction)pair.frst;
-                    if (trans.getTimeStamp() < getTime() - 1000)
+                    if (trans.getTimeStamp() < getTime() - Config.TRANSACTION_VALIDATION_TIMEOUT)
                     {
 //                        JsonObject obj = new JsonObject();
 //                        obj.addProperty("flag", 4);

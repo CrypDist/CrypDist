@@ -27,7 +27,7 @@ public class MessageTask implements Runnable {
     public void run() {
 
         int trials = 0;
-        while(trials < Config.MAXIMUM_TRIALS_MSG) {
+        while(trials < Config.MESSAGE_MAX_TRIALS) {
 
             try {
                 log.trace(p.getPeerServerPort());
@@ -50,7 +50,7 @@ public class MessageTask implements Runnable {
             }
             trials++;
         }
-        log.error("Message cannot be sent after 5 trials");
+        log.error("Message cannot be sent after " + Config.MESSAGE_MAX_TRIALS + " trials");
         log.trace(msg);
     }
 }

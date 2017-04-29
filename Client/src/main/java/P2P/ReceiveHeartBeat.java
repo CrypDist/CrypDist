@@ -1,5 +1,6 @@
 package P2P;
 
+import Util.Config;
 import org.apache.log4j.Logger;
 
 import java.io.DataInputStream;
@@ -34,13 +35,13 @@ public class ReceiveHeartBeat extends Thread {
                 int flag = in.readInt();
 
 
-                if(flag != 100 && flag != 101) {
+                if(flag != Config.HEARTBEAT_FLAG_SERVER && flag != Config.HEARTBEAT_FLAG_CLIENT) {
                     hb.close();
                     return;
                 }
 
 
-                if(flag == 101) {
+                if(flag == Config.HEARTBEAT_FLAG_CLIENT) {
                     int hbPort = in.readInt();
                     int swPort = in.readInt();
 
@@ -61,7 +62,7 @@ public class ReceiveHeartBeat extends Thread {
                 }
 
                 DataOutputStream out = new DataOutputStream(hb.getOutputStream());
-                out.writeInt(102);
+                out.writeInt(Config.HEARTBEAT_ACK);
                 out.flush();
 
                 hb.close();
