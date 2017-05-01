@@ -1,3 +1,5 @@
+import javax.crypto.Cipher;
+import javax.crypto.NoSuchPaddingException;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -5,6 +7,15 @@ import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.security.InvalidKeyException;
+import java.security.KeyFactory;
+import java.security.NoSuchAlgorithmException;
+import java.security.interfaces.RSAPublicKey;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.X509EncodedKeySpec;
+import java.util.Base64;
 import java.util.Timer;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -24,7 +35,24 @@ public class Server extends Thread {
     private final static Object lock = new Object();
     private ServerSocket serverSocket;
 
+    private Cipher cipher;
+
     public Server(int port) throws IOException {
+
+        String publicKeyContent = new String(Files.readAllBytes(Paths.get("public.pem")));
+
+        try {
+            KeyFactory kf = KeyFactory.getInstance("RSA");
+            X509EncodedKeySpec keySpecX509 = new X509EncodedKeySpec(Base64.getDecoder().decode(publicKeyContent));
+            RSAPublicKey pubKey = (RSAPublicKey) kf.generatePublic(keySpecX509);
+            cipher = Cipher.getInstance("RSA");
+            cipher.init(Cipher.ENCRYPT_MODE,pubKey);
+        } catch (Exception e){
+            throw new IOException("Something is wrong with Encryption.");
+        }
+
+
+
         peerList = new ConcurrentHashMap<>();
 
         //Opening serverSocket
@@ -73,6 +101,21 @@ public class Server extends Thread {
                             DataInputStream in = new DataInputStream(newConnection.getInputStream());
                             int port = in.readInt();
                             int port2 = in.readInt();
+                            boolean valid = false;
+                            String id = "";
+                            try {
+                                id = in.readUTF();
+                                String pass = in.readUTF();
+                                valid = Authentication.Authenticate(id,pass);
+                            } catch (IOException e) {
+
+                            }
+                            if (valid) {
+                                byte [] msg = genererateKey(newConnection.getInetAddress().toString(),id);
+                                out.writeInt(msg.length);
+                                out.write(msg);
+                                out.flush();
+                            }
                             p = new Peer(newConnection.getInetAddress(),port,port2 );
 
                             peerList.put(p,0);
@@ -98,5 +141,15 @@ public class Server extends Thread {
                 break;
             }
         }
+    }
+
+    public byte[] genererateKey(String ip, String username) {
+        try {
+            String s = ip + username;
+            return cipher.doFinal(s.getBytes());
+        } catch (Exception e) {
+            return null;
+        }
+
     }
 }
