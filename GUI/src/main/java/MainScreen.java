@@ -1,8 +1,7 @@
-import sun.applet.Main;
-
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -71,7 +70,7 @@ public class MainScreen extends JPanel {
             if (defaults.get("Table.alternateRowColor") == null)
                 defaults.put("Table.alternateRowColor", new Color(240, 240, 240));
             Object columnNames[] = {"blockId", "timestamp"};
-            blockTable = new JTable(blocklist, columnNames);
+            blockTable = new JTable(new NonEditableModel(blocklist,columnNames));
             blockTable.setGridColor(Color.white);
             blockTable.setRowHeight(getHeight()/15);
             blockTable.setSelectionModel(new ForcedListSelectionModel());
@@ -82,7 +81,7 @@ public class MainScreen extends JPanel {
                 public void valueChanged(ListSelectionEvent event) {
                     if (blockTable.getSelectedRow() > -1) {
                         // print first column value from selected row
-                        System.out.println(blockTable.getValueAt(blockTable.getSelectedRow(), 0).toString());
+                        // System.out.println(blockTable.getValueAt(blockTable.getSelectedRow(), 0).toString());
                         String blockId = blockTable.getValueAt(blockTable.getSelectedRow(), 0).toString();
                         displayBlockContent(blockId);
                     }
@@ -146,7 +145,6 @@ public class MainScreen extends JPanel {
 
     }
     class ForcedListSelectionModel extends DefaultListSelectionModel {
-
         public ForcedListSelectionModel () {
             setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         }
@@ -160,6 +158,16 @@ public class MainScreen extends JPanel {
         }
 
     }
+    public class NonEditableModel extends DefaultTableModel {
 
+        NonEditableModel(Object[][] data, Object[] columnNames) {
+            super(data, columnNames);
+        }
+
+        @Override
+        public boolean isCellEditable(int row, int column) {
+            return false;
+        }
+    }
 
 }
