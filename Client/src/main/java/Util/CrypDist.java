@@ -6,6 +6,7 @@ import P2P.Client;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import org.apache.commons.codec.binary.Base64;
 import org.apache.log4j.Logger;
 
 import java.util.ArrayList;
@@ -16,7 +17,7 @@ public class CrypDist {
 
     private static transient  Logger log = Logger.getLogger("CrypDist");
     private byte[] session_key;
-    private int session_key_size;
+
     // Flag 1 = Transaction data
     // Flag 2 = Hash
     // Flag 3 = Valid transaction message
@@ -27,8 +28,9 @@ public class CrypDist {
 
     public CrypDist(String swAdr, int swPort, int hbPort, int serverPort ) {
 
-        blockchainManager = new BlockchainManager(this);
         client = new Client(this);
+        blockchainManager = new BlockchainManager(this,session_key);
+
 
         Thread t = new Thread(client);
         t.start();
@@ -81,12 +83,14 @@ public class CrypDist {
 
                 //log.info("DATA RECEIVED" + dataStr);
 
-                blockchainManager.addTransaction(dataStr);
+                blockchainManager.addTransaction(dataStr,ip);
             }
             else if (flagValue == Config.FLAG_BROADCAST_HASH) {
                 JsonElement data = obj2.get("data");
                 JsonElement time = obj2.get("timeStamp");
                 JsonElement blockId = obj2.get("blockId");
+                byte[] key = Base64.decodeBase64(obj2.get("key").getAsString());
+
 
                 blockchainManager.receiveHash(data.getAsString(), time.getAsLong(), blockId.getAsString());
             }
@@ -148,9 +152,5 @@ public class CrypDist {
 
     public void setSession_key(byte[] session_key) {
         this.session_key = session_key;
-    }
-
-    public void setSession_key_size(int session_key_size) {
-        this.session_key_size = session_key_size;
     }
 }

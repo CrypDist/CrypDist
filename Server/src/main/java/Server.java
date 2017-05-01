@@ -139,7 +139,7 @@ public class Server extends Thread {
 
     public byte[] generateKey(String ip, String username) {
         try {
-            String s = ip + username;
+            String s = ip + "/////" + username;
             return cipher.doFinal(s.getBytes());
         } catch (Exception e) {
             return "".getBytes();

@@ -24,15 +24,11 @@ public class Decryption {
 
         KeyFactory kf = KeyFactory.getInstance("RSA");
 
-
         PKCS8EncodedKeySpec keySpecPKCS8 = new PKCS8EncodedKeySpec(Base64.getDecoder().decode(privateKeyContent));
         PrivateKey privKey = kf.generatePrivate(keySpecPKCS8);
 
-
         cipher = Cipher.getInstance("RSA");
         cipher.init(Cipher.DECRYPT_MODE, privKey);
-
-
     }
 
     public static boolean initialization(){
@@ -50,6 +46,19 @@ public class Decryption {
             return new String(utf8, "UTF8");
         } catch (Exception e ) {
             return "";
+        }
+    }
+
+    public static String decryptGetIp(byte[] secret) {
+        try {
+            byte[] utf8 = cipher.doFinal(secret);
+            String[] splitted = Decryption.decrypt(utf8).split(Config.TRANSACTION_KEY_SPLITTER);
+            if(splitted.length<2)
+                return null;
+
+            return splitted[0];
+        } catch (Exception e ) {
+            return null;
         }
     }
 

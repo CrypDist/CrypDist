@@ -4,6 +4,7 @@ import DbManager.PostgresDB;
 import UploadUnit.ServerAccessor;
 import Util.Config;
 import Util.CrypDist;
+import Util.Decryption;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import org.apache.commons.net.ntp.NTPUDPClient;
@@ -34,6 +35,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.PriorityBlockingQueue;
 
+import static Util.Config.TRANSACTION_KEY_SPLITTER;
+
 /**
  * Created by Kaan on 18-Feb-17.
  */
@@ -57,10 +60,12 @@ public class BlockchainManager
     // Mapping is like BlockId -> ArrayOf[(Hash, TimeStamp)]
     private ConcurrentHashMap<String, ArrayList<Pair>> hashes;
     private int numOfPairs;
+    private byte[] session_key;
 
-    public BlockchainManager(CrypDist crypDist)
+    public BlockchainManager(CrypDist crypDist, byte[] session_key)
     {
         this.crypDist = crypDist;
+        this.session_key = session_key;
         Block genesis = new Block();
         dbManager = new PostgresDB("blockchain", "postgres", "", false);
         blockchain = new Blockchain(genesis);
@@ -105,7 +110,7 @@ public class BlockchainManager
         if(fileName.equals("merhaba") || (file.exists() && !file.isDirectory())) {
             long dataSize = file.length();
             URL url = serverAccessor.getURL(fileName);
-            Transaction upload = new Transaction(filePath, fileName, dataSummary, dataSize, url);
+            Transaction upload = new Transaction(filePath, fileName, dataSummary, dataSize, url,session_key);
             Gson gson = new Gson();
 
             log.info(gson.toJson(upload));
@@ -129,10 +134,16 @@ public class BlockchainManager
         }
     }
 
-    public void addTransaction(String data)
+    public void addTransaction(String data, String ip)
     {
         Gson gson = new Gson();
         Transaction transaction = gson.fromJson(data, Transaction.class);
+
+        String givenIp = Decryption.decryptGetIp(transaction.getSignature());
+
+        if(!ip.equals(givenIp))
+            return;
+
         transactionBucket.add(transaction);
         System.out.println("My bucket size is:" + transactionBucket.size());
     }
@@ -558,6 +569,7 @@ public class BlockchainManager
         transactionPendingBucket = new ConcurrentHashMap<String, Pair>();
         transactionBucket = new PriorityBlockingQueue<Transaction>();
     }
+
 
     public void removeInvalidBlocks(ArrayList<String> keySet)
     {

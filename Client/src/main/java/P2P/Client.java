@@ -91,8 +91,6 @@ public class Client extends Observable implements Runnable{
             int size = in.readInt();
             byte[] key_array = new byte[size];
             in.read(key_array);
-
-            crypDist.setSession_key_size(size);
             crypDist.setSession_key(key_array);
 
             serverConnection.close();
