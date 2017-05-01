@@ -106,12 +106,17 @@ public class Server extends Thread {
 
                             boolean valid = Authentication.Authenticate(id,pass);
 
-                            if (valid) {
-                                byte [] msg = generateKey(newConnection.getInetAddress().toString(),id);
-                                out.writeInt(msg.length);
-                                out.write(msg);
-                                out.flush();
-                            }
+                            byte [] msg;
+                            if (valid)
+                                 msg = generateKey(newConnection.getInetAddress().toString(),id);
+                            else
+                                msg = generateKey("None", "N");
+
+                            out.writeBoolean(valid);
+                            out.writeInt(msg.length);
+                            out.write(msg);
+                            out.flush();
+
                             p = new Peer(newConnection.getInetAddress(),port,port2 );
 
                             peerList.put(p,0);

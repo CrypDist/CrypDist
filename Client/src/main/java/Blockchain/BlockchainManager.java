@@ -101,6 +101,10 @@ public class BlockchainManager
 
 
     public void uploadFile(String filePath, String dataSummary) throws Exception {
+
+        if(!crypDist.isAuthenticated())
+            return;
+
         log.warn("FILE PATH CAME AS :" + filePath);
         String[] path = filePath.substring(1).split("/");
         String fileName = path[path.length - 1];

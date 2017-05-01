@@ -16,7 +16,7 @@ public class CrypDist {
 
     private static transient  Logger log = Logger.getLogger("CrypDist");
     private byte[] sessionKey;
-
+    private boolean authenticated;
     // Flag 1 = Transaction data
     // Flag 2 = Hash
     // Flag 3 = Valid transaction message
@@ -168,5 +168,13 @@ public class CrypDist {
 
     public byte[] getSessionKey() {
         return sessionKey;
+    }
+
+    public void setAuthenticated(boolean authenticated) {
+        this.authenticated = authenticated;
+    }
+
+    public boolean isAuthenticated() {
+        return authenticated;
     }
 }

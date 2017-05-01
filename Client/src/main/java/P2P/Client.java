@@ -85,10 +85,13 @@ public class Client extends Observable implements Runnable{
             out.writeUTF("Pass1");
             out.flush();
 
+            boolean authenticated = in.readBoolean();
             int size = in.readInt();
             byte[] key_array = new byte[size];
             in.read(key_array);
+
             crypDist.setSessionKey(key_array);
+            crypDist.setAuthenticated(authenticated);
 
             serverConnection.close();
         }
