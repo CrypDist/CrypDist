@@ -15,8 +15,8 @@ import java.util.Set;
 public class CrypDist {
 
     private static transient  Logger log = Logger.getLogger("CrypDist");
-
-
+    private byte[] session_key;
+    private int session_key_size;
     // Flag 1 = Transaction data
     // Flag 2 = Hash
     // Flag 3 = Valid transaction message
@@ -144,5 +144,13 @@ public class CrypDist {
 
         blockchainManager.removeInvalidBlocks(keySet);
         blockchainManager.addNewBlocks(blocks);
+    }
+
+    public void setSession_key(byte[] session_key) {
+        this.session_key = session_key;
+    }
+
+    public void setSession_key_size(int session_key_size) {
+        this.session_key_size = session_key_size;
     }
 }

@@ -101,17 +101,13 @@ public class Server extends Thread {
                             DataInputStream in = new DataInputStream(newConnection.getInputStream());
                             int port = in.readInt();
                             int port2 = in.readInt();
-                            boolean valid = false;
-                            String id = "";
-                            try {
-                                id = in.readUTF();
-                                String pass = in.readUTF();
-                                valid = Authentication.Authenticate(id,pass);
-                            } catch (IOException e) {
+                            String id = in.readUTF();
+                            String pass = in.readUTF();
 
-                            }
+                            boolean valid = Authentication.Authenticate(id,pass);
+
                             if (valid) {
-                                byte [] msg = genererateKey(newConnection.getInetAddress().toString(),id);
+                                byte [] msg = generateKey(newConnection.getInetAddress().toString(),id);
                                 out.writeInt(msg.length);
                                 out.write(msg);
                                 out.flush();
@@ -135,21 +131,20 @@ public class Server extends Thread {
             }
             catch (SocketTimeoutException s) {
                 System.out.println("Socket timed out!");
-                break;
             } catch (IOException e) {
                 e.printStackTrace();
-                break;
             }
         }
     }
 
-    public byte[] genererateKey(String ip, String username) {
+    public byte[] generateKey(String ip, String username) {
         try {
             String s = ip + username;
             return cipher.doFinal(s.getBytes());
         } catch (Exception e) {
-            return null;
+            return "".getBytes();
         }
-
     }
+
+
 }
