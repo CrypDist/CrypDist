@@ -81,7 +81,10 @@ public class BlockchainManager
     public void buildBlockchain()
     {
         Gson gson = new Gson();
-        blockchain = gson.fromJson(dbManager.getBlockchain(), Blockchain.class);
+        Blockchain blockchain_db = gson.fromJson(dbManager.getBlockchain(), Blockchain.class);
+        if (blockchain_db != null)
+            blockchain = blockchain_db;
+
     }
 
     public void saveBlockchain()

@@ -4,7 +4,6 @@ package Util;
  * Created by od on 27.04.2017.
  */
 public class Config {
-
     public static int MESSAGE_OUTGOING = 200;
     public static int MESSAGE_OUTGOING_RESPONSE = 201;
     public static int MESSAGE_MAX_TRIALS = 4;
@@ -17,7 +16,7 @@ public class Config {
     public static int BLOCKCHAIN_BATCH_PERIOD = 8000;
     public static int TRANSACTION_VALIDATION_TIMEOUT = 1000;
 
-    public static String DB_TABLE_NAME;
+    public static String DB_TABLE_NAME="blockchain";
 
     public static String SERVER_ADDRESS = "207.154.219.184";
     public static int SERVER_PORT = 4141;

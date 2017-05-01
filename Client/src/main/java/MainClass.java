@@ -45,10 +45,13 @@ public class MainClass {
                     break;
                 case "download":
                     c.blockchainManager.downloadFile(name, path);
+                    break;
                 case "save":
                     c.blockchainManager.saveBlockchain();
+                    break;
                 case "fetch":
                     c.blockchainManager.buildBlockchain();
+                    break;
             }
         }
     }

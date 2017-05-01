@@ -32,6 +32,7 @@ public class CrypDist {
 
         Thread t = new Thread(client);
         t.start();
+        blockchainManager.buildBlockchain();
         updateBlockchain();
     }
 
@@ -128,21 +129,23 @@ public class CrypDist {
 
     public void updateBlockchain()
     {
-        // UPDATE BLOCKCHAIN
-        log.warn("Blockchain is not updated, start the procedure!");
-        ArrayList<String> keySet = client.receiveKeySet();
-        if(keySet.size() == 0)
-            return;
-        Set<String> neededBlocks = blockchainManager.getNeededBlocks(keySet);
-        if(neededBlocks.size() == 0)
-            return;
+        synchronized (this) {
+            // UPDATE BLOCKCHAIN
+            log.warn("Blockchain is not updated, start the procedure!");
+            ArrayList<String> keySet = client.receiveKeySet();
+            if (keySet.size() == 0)
+                return;
+            Set<String> neededBlocks = blockchainManager.getNeededBlocks(keySet);
+            if (neededBlocks.size() == 0)
+                return;
 
-        HashMap<String, String> blocks = client.receiveBlocks(neededBlocks);
+            HashMap<String, String> blocks = client.receiveBlocks(neededBlocks);
 
-        for(String str : blocks.values())
-            log.info("BLOCK " + str);
+            for (String str : blocks.values())
+                log.info("BLOCK " + str);
 
-        blockchainManager.removeInvalidBlocks(keySet);
-        blockchainManager.addNewBlocks(blocks);
+            blockchainManager.removeInvalidBlocks(keySet);
+            blockchainManager.addNewBlocks(blocks);
+        }
     }
 }
