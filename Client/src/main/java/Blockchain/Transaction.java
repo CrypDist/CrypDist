@@ -27,6 +27,7 @@ public class Transaction implements Comparable<Transaction>
     private String dataSummary;
     private long dataSize;
     private URL url;
+    private byte[] signature;
 
     public int compareTo(Transaction t) {
         if (t.getTimeStamp() > this.timeStamp)
@@ -37,13 +38,14 @@ public class Transaction implements Comparable<Transaction>
             return 0;
     }
     public Transaction(String filePath, String fileName, String dataSummary,
-                       long dataSize, URL url)
+                       long dataSize, URL url, byte[] signature)
     {
         this.filePath = filePath;
         this.fileName = fileName;
         this.dataSummary = dataSummary;
         this.dataSize = dataSize;
         this.url = url;
+        this.signature = signature;
         // TODO will be fixed
 
         NTPUDPClient timeClient = new NTPUDPClient();
@@ -106,4 +108,7 @@ public class Transaction implements Comparable<Transaction>
         return fileName;
     }
 
+    public byte[] getSignature() {
+        return signature;
+    }
 }

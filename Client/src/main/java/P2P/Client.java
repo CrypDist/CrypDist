@@ -84,7 +84,14 @@ public class Client extends Observable implements Runnable{
             DataOutputStream out = new DataOutputStream(serverConnection.getOutputStream());
             out.writeInt(heartBeatPort);
             out.writeInt(serverPort);
+            out.writeUTF("Client1");
+            out.writeUTF("Pass1");
             out.flush();
+
+            int size = in.readInt();
+            byte[] key_array = new byte[size];
+            in.read(key_array);
+            crypDist.setSession_key(key_array);
 
             serverConnection.close();
         }
@@ -93,10 +100,6 @@ public class Client extends Observable implements Runnable{
             log.fatal("Cannot connect to the server, terminated.");
             log.trace(e);
         }
-    }
-
-    public void receiveBlockchain() {
-
     }
 
     public void receivePeerList(DataInputStream in) throws IOException{
