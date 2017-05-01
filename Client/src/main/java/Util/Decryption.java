@@ -49,14 +49,14 @@ public class Decryption {
         }
     }
 
-    public static String decryptGetIp(byte[] secret) {
+    public static String[] decryptGet(byte[] secret) {
         try {
             byte[] utf8 = cipher.doFinal(secret);
             String[] splitted = Decryption.decrypt(utf8).split(Config.TRANSACTION_KEY_SPLITTER);
-            if(splitted.length<2)
+            if(splitted.length<2 || splitted.length>2)
                 return null;
 
-            return splitted[0];
+            return splitted;
         } catch (Exception e ) {
             return null;
         }

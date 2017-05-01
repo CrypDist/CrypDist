@@ -1,22 +1,21 @@
 package Util;
 
-import Blockchain.Blockchain;
 import Blockchain.BlockchainManager;
 import P2P.Client;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import org.apache.commons.codec.binary.Base64;
 import org.apache.log4j.Logger;
 
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.Set;
 
 public class CrypDist {
 
     private static transient  Logger log = Logger.getLogger("CrypDist");
-    private byte[] session_key;
+    private byte[] sessionKey;
 
     // Flag 1 = Transaction data
     // Flag 2 = Hash
@@ -29,7 +28,7 @@ public class CrypDist {
     public CrypDist(String swAdr, int swPort, int hbPort, int serverPort ) {
 
         client = new Client(this);
-        blockchainManager = new BlockchainManager(this,session_key);
+        blockchainManager = new BlockchainManager(this, sessionKey);
 
 
         Thread t = new Thread(client);
@@ -71,7 +70,16 @@ public class CrypDist {
         }
 
         String hashValue = obj2.get("lastHash").getAsString();
-        if (blockchainManager.validateHash(hashValue)) {
+
+        byte[] key = Base64.getDecoder().decode(obj2.get("key").getAsString());
+        String[] credentials = Decryption.decryptGet(key);
+        if(credentials == null)
+            return "";
+
+        String messageIp = credentials[0];
+        String username = credentials[1];
+
+        if (blockchainManager.validateHash(hashValue) && ip.equals(messageIp)) {
             if (flagValue == Config.FLAG_BROADCAST_TRANSACTION) {
                 JsonObject toReturn = new JsonObject();
                 JsonElement data = obj2.get("data");
@@ -80,6 +88,7 @@ public class CrypDist {
                 toReturn.addProperty("transaction", dataStr);
                 toReturn.addProperty("flag", Config.FLAG_TRANSACTION_VALIDATION);
                 toReturn.addProperty("lastHash", hashValue);
+                toReturn.addProperty("key", Base64.getEncoder().encodeToString(sessionKey));
                 client.sendMessage(ip, gson.toJson(toReturn));
 
                 //log.info("DATA RECEIVED" + dataStr);
@@ -90,17 +99,16 @@ public class CrypDist {
                 JsonElement data = obj2.get("data");
                 JsonElement time = obj2.get("timeStamp");
                 JsonElement blockId = obj2.get("blockId");
-                byte[] key = Base64.decodeBase64(obj2.get("key").getAsString());
-
 
                 blockchainManager.receiveHash(data.getAsString(), time.getAsLong(), blockId.getAsString());
             }
             else if (flagValue == Config.FLAG_TRANSACTION_VALIDATION)
             {
                 JsonElement transaction = obj2.get("transaction");
-                blockchainManager.markValid(transaction.getAsString());
-            }
 
+                if (username.length() > 2)
+                    blockchainManager.markValid(transaction.getAsString(),username);
+            }
         }
         return "";
     }
@@ -112,6 +120,7 @@ public class CrypDist {
 
         JsonObject obj = (JsonObject) arg;
         obj.addProperty("lastHash", lastHash);
+        obj.addProperty("key", Base64.getEncoder().encodeToString(sessionKey));
         int flag = obj.get("flag").getAsInt();
 
         if(flag == Config.FLAG_BROADCAST_TRANSACTION) {
@@ -153,7 +162,11 @@ public class CrypDist {
         }
     }
 
-    public void setSession_key(byte[] session_key) {
-        this.session_key = session_key;
+    public void setSessionKey(byte[] sessionKey) {
+        this.sessionKey = sessionKey;
+    }
+
+    public byte[] getSessionKey() {
+        return sessionKey;
     }
 }
