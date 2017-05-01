@@ -117,7 +117,7 @@ public class BlockchainManager
             Gson gson = new Gson();
 
             log.info(gson.toJson(upload));
-            transactionPendingBucket.put(gson.toJson(upload), new Pair<Transaction, Integer>(upload, 0));
+            transactionPendingBucket.put(gson.toJson(upload), new Pair<Transaction, HashSet>(upload, new HashSet<String>()));
             log.info("Transaction added, being broadcasted.");
             broadcast(gson.toJson(upload), Config.FLAG_BROADCAST_TRANSACTION, null);
 
@@ -301,12 +301,12 @@ public class BlockchainManager
         return block;
     }
 
-    public void markValid(String transaction)
+    public void markValid(String transaction, String username)
     {
         synchronized (this) {
             if (transactionPendingBucket.containsKey(transaction)) {
-                int count = (int) transactionPendingBucket.get(transaction).scnd;
-                transactionPendingBucket.get(transaction).scnd = count + 1;
+                int count = ((HashSet) (transactionPendingBucket.get(transaction).scnd)).size();
+                ((HashSet) transactionPendingBucket.get(transaction).scnd ).add(username);
                 if (count + 1 > numOfPairs / 2) {
                     Transaction tr = ((Transaction) transactionPendingBucket.get(transaction).frst);
                     transactionBucket.add(tr);
