@@ -15,6 +15,7 @@ public class Config {
     public static int BLOCKCHAIN_BATCH_TIMEOUT = 10000;
     public static int BLOCKCHAIN_BATCH_PERIOD = 8000;
     public static int TRANSACTION_VALIDATION_TIMEOUT = 1000;
+    public static int BLOCK_CREATION_TIMEOUT = 300000;
     public static String TRANSACTION_KEY_SPLITTER = "////";
 
     public static String DB_TABLE_NAME="blockchain";

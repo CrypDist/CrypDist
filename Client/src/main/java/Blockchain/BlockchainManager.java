@@ -172,14 +172,14 @@ public class BlockchainManager
     public void createBlock()
     {
         log.info("Block is being created");
-        if (transactionBucket_solid.size() != BLOCK_SIZE)
-        {
-            log.warn("RETURNED!");
-            log.warn("transactionBucket_solid size = " + transactionBucket_solid.size());
-            return;
-        }
-        else
-        {
+//        if (transactionBucket_solid.size() != BLOCK_SIZE)
+//        {
+//            log.warn("RETURNED!");
+//            log.warn("transactionBucket_solid size = " + transactionBucket_solid.size());
+//            return;
+//        }
+//        else
+//        {
             log.warn("CALL TO LAST BLOCK");
             String prevHash = blockchain.getLastBlock();
             log.warn("CALL TO GET TIME");
@@ -221,7 +221,7 @@ public class BlockchainManager
             } catch (Exception e) {
                 e.printStackTrace();
             }
-        }
+//        }
     }
 
     private String generateBlockId(ArrayList<Transaction> transactionBucket_solid) {
@@ -450,6 +450,13 @@ public class BlockchainManager
                         break;
                 }
 
+                if (!transactionBucket_solid.isEmpty())
+                {
+                    if (transactionBucket_solid.get(0).getTimeStamp() < getTime() - Config.BLOCK_CREATION_TIMEOUT)
+                    {
+                        createBlock();
+                    }
+                }
             }
         }
     }
