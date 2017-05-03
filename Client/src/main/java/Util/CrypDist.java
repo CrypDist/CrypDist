@@ -7,6 +7,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import org.apache.log4j.Logger;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.HashMap;
@@ -69,9 +70,10 @@ public class CrypDist {
 
             return gson.toJson(blockchainManager.getBlock(dataStr));
         }
+        byte[] dummy = new byte[1];
 
         String hashValue = obj2.get("lastHash").getAsString();
-        byte[] key = Base64.getDecoder().decode(obj2.get("key").getAsString());
+        byte[] key = Base64.getDecoder().decode( gson.fromJson(obj2.get("key").getAsString(),dummy.getClass()));
         String[] credentials = Decryption.decryptGet(key);
         if(credentials == null){
             log.error("The incoming message includes false key");
@@ -127,10 +129,9 @@ public class CrypDist {
 
         JsonObject obj = (JsonObject) arg;
         obj.addProperty("lastHash", lastHash);
-        obj.addProperty("key", Base64.getEncoder().encodeToString(sessionKey));
+        byte [] keyStr = Base64.getEncoder().encode(sessionKey);
+        obj.addProperty("key", gson.toJson(keyStr));
 
-        log.error("Key " + sessionKey);
-        log.error("Key byte " + Base64.getEncoder().encodeToString(sessionKey));
         int flag = obj.get("flag").getAsInt();
 
         if(flag == Config.FLAG_BROADCAST_TRANSACTION) {
