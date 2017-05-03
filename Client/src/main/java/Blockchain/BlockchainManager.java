@@ -306,19 +306,15 @@ public class BlockchainManager
         return block;
     }
 
-    public void markValid(String transaction, String username)
+    public void markValid(String transaction)
     {
         synchronized (this) {
             if (transactionPendingBucket.containsKey(transaction)) {
-                int count = ((HashSet) (transactionPendingBucket.get(transaction).scnd)).size();
-                ((HashSet) transactionPendingBucket.get(transaction).scnd ).add(username);
-                if (count + 1 > numOfPairs / 2) {
-                    Transaction tr = ((Transaction) transactionPendingBucket.get(transaction).frst);
-                    transactionBucket.add(tr);
-                    transactionPendingBucket.remove(transaction);
-                    if (!tr.getFileName().equals("merhaba"))
-                        tr.execute(serverAccessor);
-                }
+                Transaction tr = ((Transaction) transactionPendingBucket.get(transaction).frst);
+                transactionBucket.add(tr);
+                transactionPendingBucket.remove(transaction);
+                if (!tr.getFileName().equals("merhaba"))
+                    tr.execute(serverAccessor);
             }
         }
     }
