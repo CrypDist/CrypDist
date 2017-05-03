@@ -115,7 +115,6 @@ public class CrypDist {
             log.error("Incoming message has wrong key or invalid hash.");
             return "";
         }
-
     }
 
     public String updateByBlockchain(Object arg) {
@@ -167,6 +166,7 @@ public class CrypDist {
 
             blockchainManager.removeInvalidBlocks(keySet);
             blockchainManager.addNewBlocks(blocks);
+            blockchainManager.setUpdated();
         }
     }
 

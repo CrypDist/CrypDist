@@ -58,6 +58,7 @@ public class BlockchainManager
     // Mapping is like BlockId -> ArrayOf[(Hash, TimeStamp)]
     private ConcurrentHashMap<String, ArrayList<Pair>> hashes;
     private int numOfPairs;
+    private boolean updating;
 
     public BlockchainManager(CrypDist crypDist, byte[] session_key)
     {
@@ -73,6 +74,7 @@ public class BlockchainManager
         numOfPairs = 0;
         serverTime = getServerTime();
         systemTime = System.currentTimeMillis();
+        updating = false;
         Timer timer = new Timer();
         timer.schedule(new BlockchainBatch(),0, Config.BLOCKCHAIN_BATCH_PERIOD);
         HashValidation validation = new HashValidation();
@@ -479,30 +481,36 @@ public class BlockchainManager
         {
             while(true)
             {
-                Set<String> keys = transactionPendingBucket.keySet();
-                for (String key : keys)
-                {
-                    Pair pair = transactionPendingBucket.get(key);
-                    Transaction trans = (Transaction)pair.frst;
-                    if (trans.getTimeStamp() < getTime() - Config.TRANSACTION_VALIDATION_TIMEOUT)
-                    {
+                if (!updating) {
+                    Set<String> keys = transactionPendingBucket.keySet();
+                    for (String key : keys) {
+                        Pair pair = transactionPendingBucket.get(key);
+                        Transaction trans = (Transaction) pair.frst;
+                        if (trans.getTimeStamp() < getTime() - Config.TRANSACTION_VALIDATION_TIMEOUT) {
 //                        JsonObject obj = new JsonObject();
 //                        obj.addProperty("flag", 4);
 //
 //                        BlockchainManager.this.setChanged();
 //                        BlockchainManager.this.notifyObservers(obj);
-                        log.warn("UPDATE THEM!!!!!!!!!!!!!!!!!!!");
-                        crypDist.updateBlockchain();
+                            log.warn("UPDATE THEM!!!!!!!!!!!!!!!!!!!");
+                            updating = true;
+                            crypDist.updateBlockchain();
+                        }
                     }
-                }
 
-                try {
-                    Thread.sleep(100);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
+                    try {
+                        Thread.sleep(100);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
                 }
             }
         }
+    }
+
+    public void setUpdated()
+    {
+        updating = false;
     }
 
     public void setNumOfPairs(int numOfPairs) {

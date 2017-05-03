@@ -8,18 +8,19 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class Blockchain implements Serializable
 {
     private static Logger log = BlockchainManager.log;
 
-    private HashMap<String, Block> blockMap;
+    private ConcurrentHashMap<String, Block> blockMap;
     private ArrayList<String> sinkBlocks;
     private Block validBlock;
 
     public Blockchain(Block genesis)
     {
-        blockMap = new HashMap<String, Block>();
+        blockMap = new ConcurrentHashMap<String, Block>();
         sinkBlocks = new ArrayList<String>();
         validBlock = genesis;
         blockMap.put(genesis.getHash(), genesis);
