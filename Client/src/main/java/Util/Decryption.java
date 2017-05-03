@@ -1,8 +1,6 @@
 package Util;
 
 import javax.crypto.Cipher;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.security.KeyFactory;
 import java.security.PrivateKey;
 import java.security.spec.PKCS8EncodedKeySpec;
@@ -18,9 +16,7 @@ public class Decryption {
 
     public Decryption() throws Exception{
 
-        String privateKeyContent = new String(Files.readAllBytes(Paths.get("private.pem")));
-
-        privateKeyContent = privateKeyContent.replaceAll("\\n", "").replace("-----BEGIN PRIVATE KEY-----", "").replace("-----END PRIVATE KEY-----", "");
+        String privateKeyContent = Config.PRIVATE_KEY.replaceAll("\\n", "").replaceAll("\\r", "").replace("-----BEGIN PRIVATE KEY-----", "").replace("-----END PRIVATE KEY-----", "");
 
         KeyFactory kf = KeyFactory.getInstance("RSA");
 
@@ -40,22 +36,13 @@ public class Decryption {
         }
     }
 
-    public static String decrypt(byte[] secret) {
-        try {
-            byte[] utf8 = cipher.doFinal(secret);
-            return new String(utf8, "UTF8");
-        } catch (Exception e ) {
-            return "";
-        }
-    }
-
     public static String[] decryptGet(byte[] secret) {
         try {
-            byte[] utf8 = cipher.doFinal(secret);
-            String[] splitted = Decryption.decrypt(utf8).split(Config.TRANSACTION_KEY_SPLITTER);
-            if(splitted.length<2 || splitted.length>2)
+            String result  = new String(cipher.doFinal(secret), "UTF8");
+            String[] splitted = result.split(Config.TRANSACTION_KEY_SPLITTER);
+            if(splitted.length<2 || splitted.length>2){
                 return null;
-
+            }
             return splitted;
         } catch (Exception e ) {
             return null;

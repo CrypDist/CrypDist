@@ -4,6 +4,10 @@ package Util;
  * Created by od on 27.04.2017.
  */
 public class Config {
+
+    public static String USER_NAME = "Client1";
+    public static String USER_PASS = "Pass1";
+
     public static int MESSAGE_OUTGOING = 200;
     public static int MESSAGE_OUTGOING_RESPONSE = 201;
     public static int MESSAGE_MAX_TRIALS = 4;
@@ -14,7 +18,7 @@ public class Config {
     public static int UPLOAD_EXPIRATION_TIME = 10000;
     public static int BLOCKCHAIN_BATCH_TIMEOUT = 10000;
     public static int BLOCKCHAIN_BATCH_PERIOD = 8000;
-    public static int TRANSACTION_VALIDATION_TIMEOUT = 1000;
+    public static int TRANSACTION_VALIDATION_TIMEOUT = 5000;
     public static int BLOCK_CREATION_TIMEOUT = 300000;
     public static String TRANSACTION_KEY_SPLITTER = "////";
 
@@ -45,5 +49,7 @@ public class Config {
 
 
     public static String MESSAGE_BROADCAST_SPLITTER = "%%%%";
+
+    public static String PRIVATE_KEY = "";
 
 }

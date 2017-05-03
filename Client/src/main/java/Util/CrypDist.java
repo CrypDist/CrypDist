@@ -25,12 +25,12 @@ public class CrypDist {
     public BlockchainManager blockchainManager;
     Client client;
 
-    public CrypDist(String swAdr, int swPort, int hbPort, int serverPort ) {
+    public CrypDist() {
+        if(!Decryption.initialization())
+            log.info("Decryption service cannot be created.");
 
         client = new Client(this);
         blockchainManager = new BlockchainManager(this, sessionKey);
-
-
         Thread t = new Thread(client);
         t.start();
         blockchainManager.buildBlockchain();
@@ -70,11 +70,13 @@ public class CrypDist {
         }
 
         String hashValue = obj2.get("lastHash").getAsString();
-
         byte[] key = Base64.getDecoder().decode(obj2.get("key").getAsString());
         String[] credentials = Decryption.decryptGet(key);
-        if(credentials == null)
+        if(credentials == null){
+            log.error("The incoming message includes false key");
             return "";
+        }
+
 
         String messageIp = credentials[0];
         String username = credentials[1];
@@ -109,8 +111,11 @@ public class CrypDist {
                 if (username.length() > 2)
                     blockchainManager.markValid(transaction.getAsString(),username);
             }
+        } else {
+            log.error("Incoming message has wrong key or invalid hash.");
+            return "";
         }
-        return "";
+
     }
 
     public String updateByBlockchain(Object arg) {
@@ -121,6 +126,9 @@ public class CrypDist {
         JsonObject obj = (JsonObject) arg;
         obj.addProperty("lastHash", lastHash);
         obj.addProperty("key", Base64.getEncoder().encodeToString(sessionKey));
+
+        log.error("Key " + sessionKey);
+        log.error("Key byte " + Base64.getEncoder().encodeToString(sessionKey));
         int flag = obj.get("flag").getAsInt();
 
         if(flag == Config.FLAG_BROADCAST_TRANSACTION) {

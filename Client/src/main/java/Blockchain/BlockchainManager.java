@@ -280,6 +280,7 @@ public class BlockchainManager
         JsonObject obj = new JsonObject();
         obj.addProperty("flag",flag);
         obj.addProperty("data", data);
+
         if (flag == Config.FLAG_BROADCAST_HASH ) {
             obj.addProperty("blockId", blockId);
             time = getTime();

@@ -1,5 +1,6 @@
+import org.apache.commons.io.IOUtils;
+
 import javax.crypto.Cipher;
-import javax.crypto.NoSuchPaddingException;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -7,13 +8,8 @@ import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.security.InvalidKeyException;
 import java.security.KeyFactory;
-import java.security.NoSuchAlgorithmException;
 import java.security.interfaces.RSAPublicKey;
-import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
 import java.util.Timer;
@@ -39,7 +35,10 @@ public class Server extends Thread {
 
     public Server(int port) throws IOException {
 
-        String publicKeyContent = new String(Files.readAllBytes(Paths.get("public.pem")));
+        Authentication.initalization();
+
+        String publicKeyContent = new String(IOUtils.toByteArray(getClass().getResourceAsStream("public.pem")));
+        publicKeyContent = publicKeyContent.replaceAll("\\n", "").replaceAll("\\r", "").replace("-----BEGIN PUBLIC KEY-----", "").replace("-----END PUBLIC KEY-----", "");
 
         try {
             KeyFactory kf = KeyFactory.getInstance("RSA");
@@ -51,10 +50,7 @@ public class Server extends Thread {
             throw new IOException("Something is wrong with Encryption.");
         }
 
-
-
         peerList = new ConcurrentHashMap<>();
-
         //Opening serverSocket
         serverSocket = new ServerSocket(port);
 

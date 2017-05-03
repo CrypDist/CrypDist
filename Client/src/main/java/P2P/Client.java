@@ -58,9 +58,6 @@ public class Client extends Observable implements Runnable{
         lastSize = 0;
 
         initialization();
-
-        //To notify at the beginning
-        notify("X////" + peerList.size());
     }
 
     public String notify(String msg){
@@ -81,8 +78,8 @@ public class Client extends Observable implements Runnable{
             DataOutputStream out = new DataOutputStream(serverConnection.getOutputStream());
             out.writeInt(heartBeatPort);
             out.writeInt(serverPort);
-            out.writeUTF("Client1");
-            out.writeUTF("Pass1");
+            out.writeUTF(Config.USER_NAME);
+            out.writeUTF(Config.USER_PASS);
             out.flush();
 
             boolean authenticated = in.readBoolean();
@@ -222,6 +219,8 @@ public class Client extends Observable implements Runnable{
 
 
     public void run() {
+        //To notify at the beginning
+        notify(Config.CLIENT_MESSAGE_PEERSIZE + Config.CLIENT_MESSAGE_SPLITTER + peerList.size());
 
         Timer timer = new Timer();
         timer.schedule(new HeartBeatTask(this, peerList, heartBeatPort,serverPort), 0, Config.HEARTBEAT_PERIOD);
