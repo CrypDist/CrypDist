@@ -54,6 +54,8 @@ public class ResponsedMessageTask implements Callable<String> {
             } catch (IOException e) {
                 log.info("EXCEPTIOON\n\n\n");
                 log.info(e);
+                trials++;
+                continue;
             }
             trials++;
         }

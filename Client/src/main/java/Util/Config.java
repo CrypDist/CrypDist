@@ -24,7 +24,8 @@ public class Config {
     public static int BLOCKCHAIN_BATCH_PERIOD = 8000;
     public static int TRANSACTION_VALIDATION_TIMEOUT = 5000;
     public static int BLOCK_CREATION_TIMEOUT = 300000;
-    public static String TRANSACTION_KEY_SPLITTER = "////";
+
+    public static String KEY_SPLITTER = "////";
 
     public static String DB_TABLE_NAME="blockchain";
 
@@ -46,13 +47,11 @@ public class Config {
 
     public static int FLAG_BROADCAST_TRANSACTION = 1;
     public static int FLAG_BROADCAST_HASH = 2;
-    public static int FLAG_TRANSACTION_VALIDATION = 3;
     public static int FLAG_BLOCKCHAIN_INVALID = 4;
 
     public static String UPLOAD_BUCKETNAME = "crypdist-trial-bucket-mfs";
 
 
-    public static String MESSAGE_BROADCAST_SPLITTER = "%%%%";
 
     public static String PRIVATE_KEY = "";
 

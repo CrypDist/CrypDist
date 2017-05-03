@@ -34,12 +34,12 @@ public class HeartBeatTask extends TimerTask {
                 DataOutputStream out = new DataOutputStream(clientSocket.getOutputStream());
                 DataInputStream in = new DataInputStream(clientSocket.getInputStream());
 
-                out.writeInt(100);  //0 for heartbeats
+                out.writeInt(Config.HEARTBEAT_FLAG_SERVER);  //0 for heartbeats
                 out.flush();
-                clientSocket.setSoTimeout(10000);
+                clientSocket.setSoTimeout(Config.HEARTBEAT_TIMEOUT);
 
                 int x = in.readInt();
-                if(x == 102) {
+                if(x == Config.HEARTBEAT_ACK) {
                     return peer;
                 }
             } catch (IOException e) {
@@ -62,7 +62,7 @@ public class HeartBeatTask extends TimerTask {
         int size = peerList.size();
 
         for(Map.Entry<Peer,Integer> entry : peerList.entrySet() ) {
-            if (entry.getValue() > 3) {
+            if (entry.getValue() > Config.HEARTBEAT_MAX_TRIALS) {
                 peerList.remove(entry.getKey());
             }
             else {

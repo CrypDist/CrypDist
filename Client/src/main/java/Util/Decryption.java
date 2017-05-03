@@ -44,7 +44,7 @@ public class Decryption {
             try {
                 String result = new String(cipher.doFinal(secret), "UTF8");
                 log.info(result);
-                String[] splitted = result.split(Config.TRANSACTION_KEY_SPLITTER);
+                String[] splitted = result.split(Config.KEY_SPLITTER);
                 if (splitted.length < 2 || splitted.length > 2) {
                     log.error("SPLITTED SIZE=\t" + splitted.length);
                     for (String str : splitted)
