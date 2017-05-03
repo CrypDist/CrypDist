@@ -73,14 +73,16 @@ public class CrypDist {
         String hashValue = obj2.get("lastHash").getAsString();
         byte[] key = Base64.getDecoder().decode(obj2.get("key").getAsString());
         String[] credentials = Decryption.decryptGet(key);
+        String messageIp;
         if(credentials == null){
             log.error("The incoming message includes false key");
-            return "";
+            messageIp = "";
+        }
+        else {
+            messageIp = credentials[0];
         }
 
 
-        String messageIp = credentials[0];
-        String username = credentials[1];
 
         JsonObject toReturn = new JsonObject();
         toReturn.addProperty("key", Base64.getEncoder().encodeToString(sessionKey));
@@ -134,8 +136,11 @@ public class CrypDist {
         int flag = obj.get("flag").getAsInt();
 
         if(flag == Config.FLAG_BROADCAST_TRANSACTION) {
+
+            log.trace("TRANSACTION IS SENDING");
             HashMap<String,String> results = client.broadCastMessageResponseWithIp(obj.toString());
 
+            log.trace("RESULT SIZE IS " + results);
             int totalValidResponses = 0;
             int totalValidations = 0;
             int totalInvalidKeysResponses = 0;
@@ -174,6 +179,8 @@ public class CrypDist {
                     totalValidResponses++;
                 }
             }
+
+            log.info(totalValidations + " vs  " + totalValidResponses);
 
             if(totalValidations > totalValidResponses/2+1)
                 blockchainManager.markValid(transaction);

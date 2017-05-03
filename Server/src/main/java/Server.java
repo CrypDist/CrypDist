@@ -33,7 +33,7 @@ public class Server extends Thread {
 
     private Cipher cipher;
 
-    public Server(int port) throws IOException {
+    public Server() throws IOException {
 
         Authentication.initalization();
 
@@ -52,7 +52,7 @@ public class Server extends Thread {
 
         peerList = new ConcurrentHashMap<>();
         //Opening serverSocket
-        serverSocket = new ServerSocket(port);
+        serverSocket = new ServerSocket(Config.SERVER_PORT);
 
     }
 
@@ -60,7 +60,7 @@ public class Server extends Thread {
 
         //Timer action is used for periodical heartbeats to clients.
         Timer timer = new Timer();
-        timer.schedule(new HeartBeatTask(peerList), 1000, 5 * 1000);
+        timer.schedule(new HeartBeatTask(peerList), Config.HEARTBEAT_DELAY, Config.HEARTBEAT_PERIOD);
 
         //Server constantly accepts for new client connections.
         //Recall that serverSocket.accept() is a blocking call.
@@ -140,7 +140,7 @@ public class Server extends Thread {
 
     public byte[] generateKey(String ip, String username) {
         try {
-            String s = ip + "/////" + username;
+            String s = ip + Config.KEY_SPLITTER + username;
             return cipher.doFinal(s.getBytes());
         } catch (Exception e) {
             return "".getBytes();

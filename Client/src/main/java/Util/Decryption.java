@@ -39,7 +39,7 @@ public class Decryption {
     public static String[] decryptGet(byte[] secret) {
         try {
             String result  = new String(cipher.doFinal(secret), "UTF8");
-            String[] splitted = result.split(Config.TRANSACTION_KEY_SPLITTER);
+            String[] splitted = result.split(Config.KEY_SPLITTER);
             if(splitted.length<2 || splitted.length>2){
                 return null;
             }
