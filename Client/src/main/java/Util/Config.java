@@ -15,6 +15,10 @@ public class Config {
     public static int MESSAGE_REQUEST_KEYSET = 301;
     public static int MESSAGE_REQUEST_BLOCK = 302;
 
+    public static int MESSAGE_RESPONSE_INVALIDKEY = 401;
+    public static int MESSAGE_RESPONSE_INVALIDHASH = 402;
+    public static int MESSAGE_RESPONSE_VALID = 403;
+
     public static int UPLOAD_EXPIRATION_TIME = 10000;
     public static int BLOCKCHAIN_BATCH_TIMEOUT = 10000;
     public static int BLOCKCHAIN_BATCH_PERIOD = 8000;
