@@ -7,6 +7,7 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Vector;
 
 /**
  * Created by gizem on 06.04.2017.
@@ -19,7 +20,9 @@ public class MainScreen extends JPanel {
     GlossyButton upload;
     GlossyButton query;
     GlossyButton authenticate;
+    GlossyButton refresh;
     ScreenManager controller;
+    NonEditableModel tableModel;
 
     // blocklist numberOfBlocksX2 blocklist[i][0] id of ith block, blocklist[i][1] timestamp of ith block
     public  MainScreen(ScreenManager controller) {
@@ -34,6 +37,7 @@ public class MainScreen extends JPanel {
         upload = new GlossyButton("Upload");
         query = new GlossyButton("Query");
         authenticate = new GlossyButton("Authenticate");
+        refresh = new GlossyButton("Refresh");
 
         ButtonListener listener = new ButtonListener();
         update.addActionListener(listener);
@@ -41,9 +45,10 @@ public class MainScreen extends JPanel {
         upload.addActionListener(listener);
         query.addActionListener(listener);
         authenticate.addActionListener(listener);
+        refresh.addActionListener(listener);
 
         FlowLayout buttonsLayout = new FlowLayout(FlowLayout.CENTER);
-        buttonsLayout.setHgap(80);
+        buttonsLayout.setHgap(60);
         buttonsLayout.setVgap(10);
         buttonsPanel.setLayout(buttonsLayout);
         buttonsPanel.setBackground(Color.white);
@@ -52,6 +57,7 @@ public class MainScreen extends JPanel {
         buttonsPanel.add(upload);
         buttonsPanel.add(query);
         buttonsPanel.add(authenticate);
+        buttonsPanel.add(refresh);
         buttonsPanel.setComponentOrientation(
                 ComponentOrientation.LEFT_TO_RIGHT);
 
@@ -72,7 +78,8 @@ public class MainScreen extends JPanel {
             if (defaults.get("Table.alternateRowColor") == null)
                 defaults.put("Table.alternateRowColor", new Color(240, 240, 240));
             Object columnNames[] = {"blockId", "timestamp"};
-            blockTable = new JTable(new NonEditableModel(blocklist,columnNames));
+            tableModel = new NonEditableModel(blocklist, columnNames);
+            blockTable = new JTable(tableModel);
             blockTable.setGridColor(Color.white);
             blockTable.setRowHeight(getHeight()/15);
             blockTable.setSelectionModel(new ForcedListSelectionModel());
@@ -139,8 +146,22 @@ public class MainScreen extends JPanel {
                 controller.setCurrentView(new QueryScreen(controller));
                 controller.setSize((new Dimension(1000,600)));
             }
-            else {  // authenticate
+            else if (e.getSource() == authenticate){  // authenticate
                 controller.showLogin();
+            }
+            else if (e.getSource() == refresh)
+            {
+                String[][] blocklist = controller.getBlockList();
+                tableModel.setRowCount(0);
+
+                for (int i = 0; i < blocklist.length; i++)
+                {
+                    Vector<String> rowVector = new Vector<>();
+                    rowVector.add(blocklist[i][0]);
+                    rowVector.add(blocklist[i][1]);
+                    tableModel.addRow(rowVector);
+                }
+                tableModel.fireTableDataChanged();
             }
             repaint();
         }

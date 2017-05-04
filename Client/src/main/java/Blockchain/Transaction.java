@@ -28,6 +28,7 @@ public class Transaction implements Comparable<Transaction>
     private long dataSize;
     private URL url;
     private byte[] signature;
+    private int version;
 
     public int compareTo(Transaction t) {
         if (t.getTimeStamp() > this.timeStamp)
@@ -63,8 +64,36 @@ public class Transaction implements Comparable<Transaction>
         } catch (IOException e) {
             e.printStackTrace();
         }
+        version = 1;
+    }
 
+    public Transaction(String filePath, String fileName, String dataSummary,
+                       long dataSize, URL url, byte[] signature, int version)
+    {
+        this.filePath = filePath;
+        this.fileName = fileName;
+        this.dataSummary = dataSummary;
+        this.dataSize = dataSize;
+        this.url = url;
+        this.signature = signature;
+        this.version = version;
+        // TODO will be fixed
 
+        NTPUDPClient timeClient = new NTPUDPClient();
+        InetAddress inetAddress = null;
+        try {
+            inetAddress = InetAddress.getByName(TIME_SERVER);
+            TimeInfo timeInfo = timeClient.getTime(inetAddress);
+            long returnTime = timeInfo.getMessage().getTransmitTimeStamp().getTime();
+            log.info("Time:" + returnTime);
+            Date time = new Date(returnTime);
+
+            this.timeStamp = time.getTime();
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public void execute(ServerAccessor serverAccessor)

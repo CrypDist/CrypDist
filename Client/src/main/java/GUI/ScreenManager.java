@@ -63,15 +63,14 @@ public class ScreenManager extends JFrame{
     }
 
     public String getBlockContent(String blockId) {
-//        Block block = crypDist.blockchainManager.getBlock(blockId);
-//        ArrayList<Transaction> transactions = block.getTransactions();
-//        String result = "";
-//        for (int i = 0; i < transactions.size(); i++)
-//        {
-//            Transaction transaction = transactions.get(i);
-//            result += transaction.getDataSummary() + "\n";
-//        }
+        Block block = crypDist.blockchainManager.getBlock(blockId);
+        ArrayList<Transaction> transactions = block.getTransactions();
         String result = "";
+        for (int i = 0; i < transactions.size(); i++)
+        {
+            Transaction transaction = transactions.get(i);
+            result += transaction.getDataSummary() + "\n";
+        }
         return result;
     }
 
@@ -129,25 +128,25 @@ public class ScreenManager extends JFrame{
 
     public String[][] getBlockList() {
         // TODO
-        String[][] blockList = {
-                {"#id1", "2017-04-11T18:46:07+00:00 "},
-                {"#id2", "2016-04-11T18:46:07+00:00 "},
-                {"#id3", "2015-04-11T18:46:07+00:00 "},
-                {"#id4", "2014-04-11T18:46:07+00:00 "},
-                {"#id5", "2013-04-11T18:46:07+00:00 "}
-        };
-//        Blockchain blockchain = crypDist.blockchainManager.getBlockchain();
-//        Set<String> keySet = blockchain.getKeySet();
-//        String[][] blockList = new String[keySet.size()][2];
-//        Iterator<String> iterator = keySet.iterator();
-//        int index = 0;
-//
-//        while (iterator.hasNext())
-//        {
-//            Block block = blockchain.getBlock(iterator.next());
-//            blockList[index][0] = block.getHash();
-//            blockList[index++][1] = block.getTimestamp() + "";
-//        }
+//        String[][] blockList = {
+//                {"#id1", "2017-04-11T18:46:07+00:00 "},
+//                {"#id2", "2016-04-11T18:46:07+00:00 "},
+//                {"#id3", "2015-04-11T18:46:07+00:00 "},
+//                {"#id4", "2014-04-11T18:46:07+00:00 "},
+//                {"#id5", "2013-04-11T18:46:07+00:00 "}
+//        };
+        Blockchain blockchain = crypDist.blockchainManager.getBlockchain();
+        Set<String> keySet = blockchain.getKeySet();
+        String[][] blockList = new String[keySet.size()][2];
+        Iterator<String> iterator = keySet.iterator();
+        int index = 0;
+
+        while (iterator.hasNext())
+        {
+            Block block = blockchain.getBlock(iterator.next());
+            blockList[index][0] = block.getHash();
+            blockList[index++][1] = block.getTimestamp() + "";
+        }
         return blockList;
     }
 
@@ -159,11 +158,11 @@ public class ScreenManager extends JFrame{
 
     public void uploadData(String filePath, String dataSummary) throws InterruptedException {
         /* upload data  */
-//        try {
-//            crypDist.blockchainManager.uploadFile(filePath, dataSummary);
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
+        try {
+            crypDist.blockchainManager.uploadFile(filePath, dataSummary);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         TimeUnit.SECONDS.sleep(5);
     }
 
@@ -266,6 +265,9 @@ public class ScreenManager extends JFrame{
         while (iterator.hasNext())
         {
             Block block = blockchain.getBlock(iterator.next());
+            System.out.println(block != null);
+            System.out.println(block.getTransactions() != null);
+
             ArrayList<Transaction> transactions = block.getTransactions();
             int index = 0;
             ArrayList<Transaction> selected = new ArrayList<>();
@@ -286,11 +288,11 @@ public class ScreenManager extends JFrame{
         return file.exists();
     }
 
-    // TODO remove
-    public static void main(String[] args)
-    {
-        CrypDist crypDist = null;
-        ScreenManager screenManager = new ScreenManager(crypDist);
-        screenManager.setCurrentView(new MainScreen(screenManager));
-    }
+//    // TODO remove
+//    public static void main(String[] args)
+//    {
+//        CrypDist crypDist = new ;
+//        ScreenManager screenManager = new ScreenManager(crypDist);
+//        screenManager.setCurrentView(new MainScreen(screenManager));
+//    }
 }

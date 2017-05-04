@@ -32,7 +32,9 @@ public class CrypDist {
             log.info("Decryption service cannot be created.");
 
         client = new Client(this);
+        System.out.println("y");
         blockchainManager = new BlockchainManager(this, sessionKey);
+        System.out.println("z");
         Thread t = new Thread(client);
         t.start();
         blockchainManager.buildBlockchain();

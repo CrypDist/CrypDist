@@ -19,7 +19,7 @@ public class Config {
     public static int MESSAGE_RESPONSE_INVALIDHASH = 402;
     public static int MESSAGE_RESPONSE_VALID = 403;
 
-    public static int UPLOAD_EXPIRATION_TIME = 10000;
+    public static int UPLOAD_EXPIRATION_TIME = 100000;
     public static int BLOCKCHAIN_BATCH_TIMEOUT = 10000;
     public static int BLOCKCHAIN_BATCH_PERIOD = 8000;
     public static int TRANSACTION_VALIDATION_TIMEOUT = 5000;

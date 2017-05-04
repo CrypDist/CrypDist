@@ -43,6 +43,7 @@ public class Block implements Serializable
         indegree = 0;
         hash = "0x0";
         timestamp = 0L;
+        transactions = new ArrayList<Transaction>();
     }
 
     public Block(String prevHash, long timestamp, String hash,
