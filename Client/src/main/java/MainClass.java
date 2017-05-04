@@ -3,6 +3,9 @@ import GUI.ScreenManager;
 import Util.CrypDist;
 
 import javax.swing.*;
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.Socket;
 import java.util.Scanner;
 
 /**
@@ -11,6 +14,15 @@ import java.util.Scanner;
 public class MainClass {
 
     public static void main (String [] args) {
+
+        try {
+            Socket conn = new Socket();
+            conn.bind(new InetSocketAddress("localhost", 8080));
+            conn.connect(new InetSocketAddress());
+            System.out.println("BOOOO");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
         Property p = new Property();
         CrypDist c = new CrypDist();

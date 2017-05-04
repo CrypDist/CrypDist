@@ -70,6 +70,7 @@ public class Client extends Observable implements Runnable{
         //Establish a connection with server, get number of active peers and their information.
         try {
             Socket serverConnection = new Socket(swAdr, swPort);
+            serverConnection.getReuseAddress(true);
             serverConnection.setSoTimeout(Config.SERVER_TIMEOUT);
 
             DataInputStream in = new DataInputStream(serverConnection.getInputStream());

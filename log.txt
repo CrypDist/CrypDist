@@ -1282,3 +1282,17 @@ a0a9282273254b02ce4ce1419b080d3021395a9b48fabe3be0eb33f8970e99d2"
 2017-05-04 21:58:53 DEBUG PoolingHttpClientConnectionManager:401 - Closing connections idle longer than 60000 MILLISECONDS
 2017-05-04 21:59:53 DEBUG PoolingHttpClientConnectionManager:401 - Closing connections idle longer than 60000 MILLISECONDS
 2017-05-04 22:00:53 DEBUG PoolingHttpClientConnectionManager:401 - Closing connections idle longer than 60000 MILLISECONDS
+2017-05-04 22:14:46 INFO  P2P:125 - Client initialized with size: 3
+2017-05-04 22:14:47 DEBUG AmazonWebServiceClient:80 - Internal logging successfully configured to commons logger: true
+2017-05-04 22:14:47 DEBUG AwsSdkMetrics:406 - Admin mbean registered under com.amazonaws.management:type=AwsSdkMetrics
+2017-05-04 22:14:48 INFO  CrypDist:55 - Pair size is now 3
+2017-05-04 22:14:48 WARN  CrypDist:215 - Blockchain update procedure is started!
+2017-05-04 22:14:48 INFO  P2P:336 - KEY SET IS CALLED WITH 3 PEERS
+2017-05-04 22:14:48 INFO  P2P:174 - BROADCASTED TO 3 PEERS
+2017-05-04 22:14:48 TRACE P2P:34 - 4142
+2017-05-04 22:14:48 TRACE P2P:35 - /139.179.206.15
+2017-05-04 22:14:48 TRACE P2P:34 - 4142
+2017-05-04 22:14:48 TRACE P2P:35 - /207.154.225.67
+2017-05-04 22:14:48 TRACE P2P:34 - 4142
+2017-05-04 22:14:48 TRACE P2P:35 - /207.154.225.237
+2017-05-04 22:18:35 INFO  P2P:125 - Client initialized with size: 3
