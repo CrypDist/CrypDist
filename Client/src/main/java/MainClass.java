@@ -1,5 +1,8 @@
+import GUI.MainScreen;
+import GUI.ScreenManager;
 import Util.CrypDist;
 
+import javax.swing.*;
 import java.util.Scanner;
 
 /**
@@ -11,6 +14,9 @@ public class MainClass {
 
         Property p = new Property();
         CrypDist c = new CrypDist();
+
+        ScreenManager screenManager = new ScreenManager(c);
+        screenManager.setCurrentView(new MainScreen(screenManager));
 
         Scanner scan = new Scanner(System.in);
         while(true) {

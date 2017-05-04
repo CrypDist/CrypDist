@@ -1,4 +1,4 @@
-/**
+package GUI; /**
  * Created by gizem on 12.04.2017.
  */
 import java.awt.Color;

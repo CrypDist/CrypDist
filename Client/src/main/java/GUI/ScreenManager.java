@@ -1,9 +1,22 @@
+package GUI;
+
+import Blockchain.Block;
+import Blockchain.Blockchain;
+import Blockchain.Transaction;
+import Util.CrypDist;
+import sun.awt.X11.Screen;
+
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -11,13 +24,15 @@ import java.util.concurrent.TimeUnit;
  */
 public class ScreenManager extends JFrame{
 
+    private CrypDist crypDist;
     JPanel currentView;
 
     private final int dimensionX = 1000;
     private final int dimensionY = 600;
     private boolean authenticated = false;
 
-    public ScreenManager() {
+    public ScreenManager(CrypDist crypDist) {
+        this.crypDist = crypDist;
         Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
         this.setLocation(dim.width/2-this.getSize().width/2, dim.height/2-this.getSize().height/2);
         setSize(new Dimension(dimensionX,dimensionY));
@@ -47,15 +62,17 @@ public class ScreenManager extends JFrame{
         return currentView;
     }
 
-    public static void main(String [ ] args)
-    {
-        ScreenManager sm = new ScreenManager();
-        sm.setCurrentView(new MainScreen(sm));
-    }
-
     public String getBlockContent(String blockId) {
-        // TODO
-        return "hi";
+//        Block block = crypDist.blockchainManager.getBlock(blockId);
+//        ArrayList<Transaction> transactions = block.getTransactions();
+//        String result = "";
+//        for (int i = 0; i < transactions.size(); i++)
+//        {
+//            Transaction transaction = transactions.get(i);
+//            result += transaction.getDataSummary() + "\n";
+//        }
+        String result = "";
+        return result;
     }
 
     public void showLogin() {
@@ -106,19 +123,32 @@ public class ScreenManager extends JFrame{
     }
 
     public boolean getAuthenticated() {
-        return authenticated;
+        //return crypDist.isAuthenticated();
+        return true;
     }
 
     public String[][] getBlockList() {
         // TODO
-        String[][] blocklist = {
+        String[][] blockList = {
                 {"#id1", "2017-04-11T18:46:07+00:00 "},
                 {"#id2", "2016-04-11T18:46:07+00:00 "},
                 {"#id3", "2015-04-11T18:46:07+00:00 "},
                 {"#id4", "2014-04-11T18:46:07+00:00 "},
                 {"#id5", "2013-04-11T18:46:07+00:00 "}
         };
-        return blocklist;
+//        Blockchain blockchain = crypDist.blockchainManager.getBlockchain();
+//        Set<String> keySet = blockchain.getKeySet();
+//        String[][] blockList = new String[keySet.size()][2];
+//        Iterator<String> iterator = keySet.iterator();
+//        int index = 0;
+//
+//        while (iterator.hasNext())
+//        {
+//            Block block = blockchain.getBlock(iterator.next());
+//            blockList[index][0] = block.getHash();
+//            blockList[index++][1] = block.getTimestamp() + "";
+//        }
+        return blockList;
     }
 
     public void abortUpload() throws InterruptedException {
@@ -127,9 +157,13 @@ public class ScreenManager extends JFrame{
         TimeUnit.SECONDS.sleep(1);
     }
 
-    public void uploadData(String text) throws InterruptedException {
+    public void uploadData(String filePath, String dataSummary) throws InterruptedException {
         /* upload data  */
-        // TODO
+//        try {
+//            crypDist.blockchainManager.uploadFile(filePath, dataSummary);
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
         TimeUnit.SECONDS.sleep(5);
     }
 
@@ -214,13 +248,49 @@ public class ScreenManager extends JFrame{
         // TODO interrupt download
     }
 
-    public String query(String text) {
+    public HashMap<String, ArrayList<String>> query(String text) {
         // TODO query();
-        return "queryResults";
+        HashMap<String, ArrayList<String>> queryResults = new HashMap<>();
+        ArrayList<String> arr1 = new ArrayList<>();
+        arr1.add("A");
+        arr1.add("B");
+        ArrayList<String> arr2 = new ArrayList<>();
+        arr1.add("C");
+        arr1.add("D");
+        queryResults.put("Hash1", arr1);
+        queryResults.put("Hash2", arr2);
+
+//        Blockchain blockchain = crypDist.blockchainManager.getBlockchain();
+//        Set<String> keySet = blockchain.getKeySet();
+//        Iterator<String> iterator = keySet.iterator();
+//        while (iterator.hasNext())
+//        {
+//            Block block = blockchain.getBlock(iterator.next());
+//            ArrayList<Transaction> transactions = block.getTransactions();
+//            int index = 0;
+//            ArrayList<Transaction> selected = new ArrayList<>();
+//            for (int i = 0; i < transactions.size(); i++)
+//            {
+//                String summary = transactions.get(i).getDataSummary();
+//                if (summary.contains(text))
+//                    selected.add(transactions.get(i));
+//            }
+//            if (selected.size() > 0)
+//                queryResults.put(block.getHash(), selected);
+//        }
+        return queryResults;
     }
 
     public boolean isPathExist(String text) {
         File file = new File(text);
         return file.exists();
+    }
+
+    // TODO remove
+    public static void main(String[] args)
+    {
+        CrypDist crypDist = null;
+        ScreenManager screenManager = new ScreenManager(crypDist);
+        screenManager.setCurrentView(new MainScreen(screenManager));
     }
 }

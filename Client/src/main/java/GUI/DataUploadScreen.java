@@ -1,3 +1,5 @@
+package GUI;
+
 import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
@@ -100,7 +102,7 @@ public class DataUploadScreen extends JPanel implements ActionListener{
                             public void run() {
 
                                 try {
-                                    controller.uploadData(pathField.getText());
+                                    controller.uploadData(pathField.getText(), "summary");
                                     pathField.setEditable(true);
                                     browse.setEnabled(true);
                                     back.setEnabled(true);

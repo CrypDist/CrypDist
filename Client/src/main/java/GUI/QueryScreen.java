@@ -1,33 +1,49 @@
+package GUI;
+
+import Blockchain.Transaction;
+
 import javax.swing.*;
 import javax.swing.border.Border;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreeNode;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Set;
 
 /**
  * Created by gizem on 06.04.2017.
  */
 public class QueryScreen extends JPanel {
 
-    JTextArea query;
-    JTextArea results;
+    JTextField query;
+    //JTextArea results;
     GlossyButton run;
     GlossyButton back;
     ScreenManager controller;
+    JTable results;
+    DefaultTableModel resultsModel;
 
     public QueryScreen(ScreenManager controller) {
         this.controller = controller;
         setSize((new Dimension(1000,600)));
         setBackground(Color.white);
 
-        query = new JTextArea();
-        results = new JTextArea();
+        query = new JTextField();
+        results = new JTable();
+        resultsModel = (DefaultTableModel) results.getModel();
         run = new GlossyButton("Run");
         back = new GlossyButton("Back");
 
-        results.setEditable(false);
 
         ButtonListener l = new ButtonListener();
+        query.addActionListener(l);
         run.addActionListener(l);
         back.addActionListener(l);
 
@@ -95,15 +111,52 @@ public class QueryScreen extends JPanel {
 
         public void actionPerformed(ActionEvent e) {
 
-            if(e.getSource() == run) {
+            if(e.getSource() == run || e.getSource() == query) {
                 back.setEnabled(false);
                 // TODO: Check if query statement is correct
                 if(query.getText().equals("")) {
                     JOptionPane.showMessageDialog(QueryScreen.this, "Please enter a query statement!", "Warning",
                             JOptionPane.WARNING_MESSAGE);
+                    return;
                 }
-                String result = controller.query(query.getText());
-                results.setText(result);
+
+                for (int i = resultsModel.getRowCount() - 1; i >= 0; i--)
+                    resultsModel.removeRow(i);
+                //String result = controller.query(query.getText());
+                HashMap<String, ArrayList<String>> queryResults = controller.query(query.getText());
+                Set<String> keySet = queryResults.keySet();
+                Iterator<String> iterator = keySet.iterator();
+                while (iterator.hasNext())
+                {
+                    String key = iterator.next();
+                    ArrayList<String> transactions = queryResults.get(key);
+
+                    for (int i = 0; i < transactions.size(); i++)
+                    {
+                        Object[] rowData = {transactions.get(i)};
+                        resultsModel.addRow(rowData);
+                        resultsModel.fireTableStructureChanged();
+                    }
+                }
+
+
+
+//                HashMap<String, ArrayList<Transaction>> queryResults = controller.query(query.getText());
+//                Set<String> keySet = queryResults.keySet();
+//                Iterator<String> iterator = keySet.iterator();
+//                while (iterator.hasNext())
+//                {
+//                    String key = iterator.next();
+//                    DefaultMutableTreeNode parent = new DefaultMutableTreeNode(key);
+//                    ArrayList<Transaction> transactions = queryResults.get(key);
+//
+//                    for (int i = 0; i < transactions.size(); i++)
+//                    {
+//                        Object[] rowData = {transactions.get(i).getDataSummary()};
+//                        resultsModel.addRow(rowData);
+//                        resultsModel.fireTableDataChanged();
+//                    }
+//                }
                 back.setEnabled(true);
             }
             else {  // back
