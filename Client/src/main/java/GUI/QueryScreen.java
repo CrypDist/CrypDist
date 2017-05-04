@@ -4,6 +4,7 @@ import Blockchain.Transaction;
 
 import javax.swing.*;
 import javax.swing.border.Border;
+import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
@@ -11,11 +12,14 @@ import javax.swing.tree.TreeNode;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.Vector;
 
 /**
  * Created by gizem on 06.04.2017.
@@ -29,6 +33,7 @@ public class QueryScreen extends JPanel {
     ScreenManager controller;
     JTable results;
     DefaultTableModel resultsModel;
+    ArrayList<Transaction> currTransactions;
 
     public QueryScreen(ScreenManager controller) {
         this.controller = controller;
@@ -36,8 +41,16 @@ public class QueryScreen extends JPanel {
         setBackground(Color.white);
 
         query = new JTextField();
-        results = new JTable();
-        resultsModel = (DefaultTableModel) results.getModel();
+        resultsModel = new DefaultTableModel() {
+            public boolean isCellEditable(int row, int col)
+            {
+                return false;
+            }
+        };
+        resultsModel.addColumn("");
+        results = new JTable(resultsModel);
+        currTransactions = new ArrayList<>();
+
         run = new GlossyButton("Run");
         back = new GlossyButton("Back");
 
@@ -107,6 +120,7 @@ public class QueryScreen extends JPanel {
         repaint();
         setVisible(true);
     }
+
     class ButtonListener implements ActionListener {
 
         public void actionPerformed(ActionEvent e) {
@@ -120,43 +134,42 @@ public class QueryScreen extends JPanel {
                     return;
                 }
 
-                for (int i = resultsModel.getRowCount() - 1; i >= 0; i--)
-                    resultsModel.removeRow(i);
+                resultsModel.setRowCount(0);
+                currTransactions.clear();
                 //String result = controller.query(query.getText());
-                HashMap<String, ArrayList<String>> queryResults = controller.query(query.getText());
-                Set<String> keySet = queryResults.keySet();
-                Iterator<String> iterator = keySet.iterator();
-                while (iterator.hasNext())
-                {
-                    String key = iterator.next();
-                    ArrayList<String> transactions = queryResults.get(key);
-
-                    for (int i = 0; i < transactions.size(); i++)
-                    {
-                        Object[] rowData = {transactions.get(i)};
-                        resultsModel.addRow(rowData);
-                        resultsModel.fireTableStructureChanged();
-                    }
-                }
-
-
-
-//                HashMap<String, ArrayList<Transaction>> queryResults = controller.query(query.getText());
+//                HashMap<String, ArrayList<String>> queryResults = controller.query(query.getText());
 //                Set<String> keySet = queryResults.keySet();
 //                Iterator<String> iterator = keySet.iterator();
 //                while (iterator.hasNext())
 //                {
 //                    String key = iterator.next();
-//                    DefaultMutableTreeNode parent = new DefaultMutableTreeNode(key);
-//                    ArrayList<Transaction> transactions = queryResults.get(key);
+//                    ArrayList<String> transactions = queryResults.get(key);
 //
 //                    for (int i = 0; i < transactions.size(); i++)
 //                    {
-//                        Object[] rowData = {transactions.get(i).getDataSummary()};
+//                        Vector<String> rowData = new Vector<>();
+//                        rowData.add(transactions.get(i));
 //                        resultsModel.addRow(rowData);
-//                        resultsModel.fireTableDataChanged();
 //                    }
 //                }
+
+
+                HashMap<String, ArrayList<Transaction>> queryResults = controller.query(query.getText());
+                Set<String> keySet = queryResults.keySet();
+                Iterator<String> iterator = keySet.iterator();
+                while (iterator.hasNext())
+                {
+                    String key = iterator.next();
+                    ArrayList<Transaction> transactions = queryResults.get(key);
+
+                    for (int i = 0; i < transactions.size(); i++)
+                    {
+                        Object[] rowData = {transactions.get(i).getDataSummary()};
+                        resultsModel.addRow(rowData);
+                        resultsModel.fireTableDataChanged();
+                        currTransactions.add(transactions.get(i));
+                    }
+                }
                 back.setEnabled(true);
             }
             else {  // back
@@ -166,5 +179,16 @@ public class QueryScreen extends JPanel {
             repaint();
         }
 
+        class TableListener extends MouseAdapter
+        {
+            public void mouseClicked(MouseEvent event)
+            {
+                int row = results.rowAtPoint(event.getPoint());
+                if (row >= 0 && row < currTransactions.size())
+                {
+                    // TODO execute transaction
+                }
+            }
+        }
     }
 }

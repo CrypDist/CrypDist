@@ -248,36 +248,36 @@ public class ScreenManager extends JFrame{
         // TODO interrupt download
     }
 
-    public HashMap<String, ArrayList<String>> query(String text) {
+    public HashMap<String, ArrayList<Transaction>> query(String text) {
         // TODO query();
-        HashMap<String, ArrayList<String>> queryResults = new HashMap<>();
-        ArrayList<String> arr1 = new ArrayList<>();
-        arr1.add("A");
-        arr1.add("B");
-        ArrayList<String> arr2 = new ArrayList<>();
-        arr1.add("C");
-        arr1.add("D");
-        queryResults.put("Hash1", arr1);
-        queryResults.put("Hash2", arr2);
+        HashMap<String, ArrayList<Transaction>> queryResults = new HashMap<>();
+//        ArrayList<String> arr1 = new ArrayList<>();
+//        arr1.add("A");
+//        arr1.add("B");
+//        ArrayList<String> arr2 = new ArrayList<>();
+//        arr1.add("C");
+//        arr1.add("D");
+//        queryResults.put("Hash1", arr1);
+//        queryResults.put("Hash2", arr2);
 
-//        Blockchain blockchain = crypDist.blockchainManager.getBlockchain();
-//        Set<String> keySet = blockchain.getKeySet();
-//        Iterator<String> iterator = keySet.iterator();
-//        while (iterator.hasNext())
-//        {
-//            Block block = blockchain.getBlock(iterator.next());
-//            ArrayList<Transaction> transactions = block.getTransactions();
-//            int index = 0;
-//            ArrayList<Transaction> selected = new ArrayList<>();
-//            for (int i = 0; i < transactions.size(); i++)
-//            {
-//                String summary = transactions.get(i).getDataSummary();
-//                if (summary.contains(text))
-//                    selected.add(transactions.get(i));
-//            }
-//            if (selected.size() > 0)
-//                queryResults.put(block.getHash(), selected);
-//        }
+        Blockchain blockchain = crypDist.blockchainManager.getBlockchain();
+        Set<String> keySet = blockchain.getKeySet();
+        Iterator<String> iterator = keySet.iterator();
+        while (iterator.hasNext())
+        {
+            Block block = blockchain.getBlock(iterator.next());
+            ArrayList<Transaction> transactions = block.getTransactions();
+            int index = 0;
+            ArrayList<Transaction> selected = new ArrayList<>();
+            for (int i = 0; i < transactions.size(); i++)
+            {
+                String summary = transactions.get(i).getDataSummary();
+                if (summary.contains(text))
+                    selected.add(transactions.get(i));
+            }
+            if (selected.size() > 0)
+                queryResults.put(block.getHash(), selected);
+        }
         return queryResults;
     }
 
