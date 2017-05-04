@@ -77,8 +77,8 @@ public class BlockchainManager
         updating = false;
         Timer timer = new Timer();
         timer.schedule(new BlockchainBatch(),0, Config.BLOCKCHAIN_BATCH_PERIOD);
-        HashValidation validation = new HashValidation();
-        validation.start();
+//        HashValidation validation = new HashValidation();
+//        validation.start();
     }
 
     public void buildBlockchain()
@@ -194,25 +194,19 @@ public class BlockchainManager
 
             Block block = null;
             try {
-                log.info("Hash in block: " + hash);
-                block = new Block(prevHash, timestamp, hash, transactionBucket_solid, blockchain);
-                if (block == null)
-                {
-                    log.fatal("BLOCK COULD NOT BE CREATED");
-                    return;
+                synchronized (this) {
+                    log.info("Hash in block: " + hash);
+                    block = new Block(prevHash, timestamp, hash, transactionBucket_solid, blockchain);
+                    for (Transaction t : block.getTransactions()) {
+                        transactionBucket.remove(t);
+                        transactionBucket_solid.remove(t);
+                    }
                 }
-                for (Transaction t : block.getTransactions()) {
-                    transactionBucket.remove(t);
-                    transactionBucket_solid.remove(t);
-                }
-
-            } catch (NoSuchAlgorithmException e) {
-                e.printStackTrace();
-            } catch (UnsupportedEncodingException e) {
+            } catch (NoSuchAlgorithmException | UnsupportedEncodingException e) {
                 e.printStackTrace();
             }
 
-            try {
+        try {
                 addBlockToBlockchain(block);
             } catch (Exception e) {
                 e.printStackTrace();
@@ -290,6 +284,9 @@ public class BlockchainManager
 
     public String getKeySet() {
         Set<String> keys = blockchain.getKeySet();
+        if (keys.size() == 0)
+            return "";
+
         Gson gson = new Gson();
         return gson.toJson(keys);
     }
@@ -466,36 +463,38 @@ public class BlockchainManager
         }
     }
 
-    private class HashValidation extends Thread{
 
-        public void run()
-        {
-            while(true)
-            {
-                if (!updating) {
-                    Set<String> keys = transactionPendingBucket.keySet();
-                    for (String key : keys) {
-                        Transaction trans = transactionPendingBucket.get(key);
-                        if (trans.getTimeStamp() < getTime() - Config.TRANSACTION_VALIDATION_TIMEOUT) {
-                            log.warn("UPDATE THEM!!!!!!!!!!!!!!!!!!!");
-                            updating = true;
-                            crypDist.updateBlockchain();
-                        }
-                    }
+    // TODO This class can be used to trace the hashes taken but not yet started to the respective block mining
+//    private class HashValidation extends Thread{
+//
+//        public void run()
+//        {
+//            while(true)
+//            {
+//                if (!updating) {
+//                    Set<String> keys = transactionPendingBucket.keySet();
+//                    for (String key : keys) {
+//                        Transaction trans = transactionPendingBucket.get(key);
+//                        if (trans.getTimeStamp() < getTime() - Config.TRANSACTION_VALIDATION_TIMEOUT) {
+//                            log.warn("UPDATE THEM!!!!!!!!!!!!!!!!!!!");
+//                            updating = true;
+//                            crypDist.updateBlockchain();
+//                        }
+//                    }
+//
+//                    try {
+//                        Thread.sleep(100);
+//                    } catch (InterruptedException e) {
+//                        e.printStackTrace();
+//                    }
+//                }
+//            }
+//        }
+//    }
 
-                    try {
-                        Thread.sleep(100);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-        }
-    }
-
-    public void setUpdated()
+    public void setUpdating(boolean updating)
     {
-        updating = false;
+        this.updating = updating;
     }
 
     public void setNumOfPairs(int numOfPairs) {

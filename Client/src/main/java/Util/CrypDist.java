@@ -60,6 +60,7 @@ public class CrypDist {
         int flagValue = obj2.get("flag").getAsInt();
 
         if(flagValue == Config.MESSAGE_REQUEST_KEYSET) {
+            log.info("BlockchainManager Key Set size: " + blockchainManager.getKeySet());
             return blockchainManager.getKeySet();
         }
 
@@ -115,7 +116,6 @@ public class CrypDist {
             } else {
                 toReturn.addProperty("response", Config.MESSAGE_RESPONSE_INVALIDHASH);
                 log.error("Incoming message has invalid hash.");
-                return "";
             }
         }
         else  {
@@ -182,9 +182,14 @@ public class CrypDist {
             }
 
             log.info(totalValidations + " vs  " + totalValidResponses);
+            log.info("Invalid:" + totalInvalidHashResponses + " vs  " + totalValidResponses);
 
-            if(totalValidations > totalValidResponses/2+1)
+            if(totalValidations >= totalValidResponses/2+1)
                 blockchainManager.markValid(transaction);
+            else if(totalInvalidHashResponses >= totalValidResponses/2 +1)
+            {
+                updateBlockchain();
+            }
         }
         else if (flag == Config.FLAG_BROADCAST_HASH) {
             log.info("HASH BROADCAST IS IN PROCESS");
@@ -203,23 +208,30 @@ public class CrypDist {
     public void updateBlockchain()
     {
         synchronized (this) {
+            blockchainManager.setUpdating(true);
             // UPDATE BLOCKCHAIN
-            log.warn("Blockchain is not updated, start the procedure!");
+            log.warn("Blockchain update procedure is started!");
             ArrayList<String> keySet = client.receiveKeySet();
-            if (keySet.size() == 0)
+            log.info("keySet.size = " + keySet.size());
+            if (keySet.size() == 0) {
+                blockchainManager.removeInvalidBlocks(keySet);
                 return;
+            }
             Set<String> neededBlocks = blockchainManager.getNeededBlocks(keySet);
-            if (neededBlocks.size() == 0)
+            log.info("neededBlocks.size = " + keySet.size());
+            if (neededBlocks.size() == 0) {
+                blockchainManager.removeInvalidBlocks(keySet);
+                blockchainManager.setUpdating(false);
                 return;
+            }
 
             HashMap<String, String> blocks = client.receiveBlocks(neededBlocks);
 
             for (String str : blocks.values())
                 log.info("BLOCK " + str);
 
-            blockchainManager.removeInvalidBlocks(keySet);
             blockchainManager.addNewBlocks(blocks);
-            blockchainManager.setUpdated();
+            blockchainManager.setUpdating(false);
         }
     }
 
