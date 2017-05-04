@@ -1,5 +1,7 @@
 package Util;
 
+import org.apache.log4j.Logger;
+
 import javax.crypto.Cipher;
 import java.security.KeyFactory;
 import java.security.PrivateKey;
@@ -10,9 +12,10 @@ import java.util.Base64;
  * Created by od on 1.05.2017.
  */
 public class Decryption {
-
+    private static transient Logger log = Logger.getLogger("Decryption");
     public static Decryption instance;
     public static Cipher cipher;
+    public static final Object lock = new Object();
 
     public Decryption() throws Exception{
 
@@ -37,15 +40,22 @@ public class Decryption {
     }
 
     public static String[] decryptGet(byte[] secret) {
-        try {
-            String result  = new String(cipher.doFinal(secret), "UTF8");
-            String[] splitted = result.split(Config.TRANSACTION_KEY_SPLITTER);
-            if(splitted.length<2 || splitted.length>2){
+        synchronized (lock) {
+            try {
+                String result = new String(cipher.doFinal(secret), "UTF8");
+                log.info(result);
+                String[] splitted = result.split(Config.KEY_SPLITTER);
+                if (splitted.length < 2 || splitted.length > 2) {
+                    log.error("SPLITTED SIZE=\t" + splitted.length);
+                    for (String str : splitted)
+                        log.error("SPLITTED\t" + str);
+                    return null;
+                }
+                return splitted;
+            } catch (Exception e) {
+                e.printStackTrace();
                 return null;
             }
-            return splitted;
-        } catch (Exception e ) {
-            return null;
         }
     }
 

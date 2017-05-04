@@ -7,9 +7,11 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import org.apache.log4j.Logger;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 public class CrypDist {
@@ -58,6 +60,7 @@ public class CrypDist {
         int flagValue = obj2.get("flag").getAsInt();
 
         if(flagValue == Config.MESSAGE_REQUEST_KEYSET) {
+            log.info("BlockchainManager Key Set size: " + blockchainManager.getKeySet());
             return blockchainManager.getKeySet();
         }
 
@@ -68,53 +71,57 @@ public class CrypDist {
 
             return gson.toJson(blockchainManager.getBlock(dataStr));
         }
+        byte[] dummy = new byte[1];
 
         String hashValue = obj2.get("lastHash").getAsString();
-        byte[] key = Base64.getDecoder().decode(obj2.get("key").getAsString());
+        byte[] key = Base64.getDecoder().decode( gson.fromJson(obj2.get("key").getAsString(),dummy.getClass()));
         String[] credentials = Decryption.decryptGet(key);
+        String messageIp;
         if(credentials == null){
             log.error("The incoming message includes false key");
-            return "";
+            messageIp = "";
+        }
+        else {
+            messageIp = credentials[0];
         }
 
 
-        String messageIp = credentials[0];
-        String username = credentials[1];
 
-        if (blockchainManager.validateHash(hashValue) && ip.equals(messageIp)) {
-            if (flagValue == Config.FLAG_BROADCAST_TRANSACTION) {
-                JsonObject toReturn = new JsonObject();
-                JsonElement data = obj2.get("data");
-                String dataStr = data.getAsString();
+        JsonObject toReturn = new JsonObject();
+        toReturn.addProperty("key", Base64.getEncoder().encodeToString(sessionKey));
 
-                toReturn.addProperty("transaction", dataStr);
-                toReturn.addProperty("flag", Config.FLAG_TRANSACTION_VALIDATION);
-                toReturn.addProperty("lastHash", hashValue);
-                toReturn.addProperty("key", Base64.getEncoder().encodeToString(sessionKey));
-                client.sendMessage(ip, gson.toJson(toReturn));
+        if(ip.equals(messageIp)) {
+            if (blockchainManager.validateHash(hashValue)) {
 
-                //log.info("DATA RECEIVED" + dataStr);
+                if (flagValue == Config.FLAG_BROADCAST_TRANSACTION) {
 
-                blockchainManager.addTransaction(dataStr,ip);
+                    JsonElement data = obj2.get("data");
+                    String dataStr = data.getAsString();
+
+                    toReturn.addProperty("response", Config.MESSAGE_RESPONSE_VALID);
+                    toReturn.addProperty("transaction", dataStr);
+                    toReturn.addProperty("lastHash", hashValue);
+
+                    blockchainManager.addTransaction(dataStr, ip);
+
+                } else if (flagValue == Config.FLAG_BROADCAST_HASH) {
+                    toReturn.addProperty("response", Config.MESSAGE_RESPONSE_VALID);
+
+                    JsonElement data = obj2.get("data");
+                    JsonElement time = obj2.get("timeStamp");
+                    JsonElement blockId = obj2.get("blockId");
+                    blockchainManager.receiveHash(data.getAsString(), time.getAsLong(), blockId.getAsString());
+                }
+
+            } else {
+                toReturn.addProperty("response", Config.MESSAGE_RESPONSE_INVALIDHASH);
+                log.error("Incoming message has invalid hash.");
             }
-            else if (flagValue == Config.FLAG_BROADCAST_HASH) {
-                JsonElement data = obj2.get("data");
-                JsonElement time = obj2.get("timeStamp");
-                JsonElement blockId = obj2.get("blockId");
-
-                blockchainManager.receiveHash(data.getAsString(), time.getAsLong(), blockId.getAsString());
-            }
-            else if (flagValue == Config.FLAG_TRANSACTION_VALIDATION)
-            {
-                JsonElement transaction = obj2.get("transaction");
-
-                if (username.length() > 2)
-                    blockchainManager.markValid(transaction.getAsString(),username);
-            }
-        } else {
-            log.error("Incoming message has wrong key or invalid hash.");
-            return "";
         }
+        else  {
+            toReturn.addProperty("response", Config.MESSAGE_RESPONSE_INVALIDKEY);
+        }
+        return gson.toJson(toReturn);
     }
 
     public String updateByBlockchain(Object arg) {
@@ -124,14 +131,65 @@ public class CrypDist {
 
         JsonObject obj = (JsonObject) arg;
         obj.addProperty("lastHash", lastHash);
-        obj.addProperty("key", Base64.getEncoder().encodeToString(sessionKey));
+        byte [] keyStr = Base64.getEncoder().encode(sessionKey);
+        obj.addProperty("key", gson.toJson(keyStr));
 
-        log.error("Key " + sessionKey);
-        log.error("Key byte " + Base64.getEncoder().encodeToString(sessionKey));
         int flag = obj.get("flag").getAsInt();
 
         if(flag == Config.FLAG_BROADCAST_TRANSACTION) {
-            client.broadCastMessage(obj.toString());
+
+            log.trace("TRANSACTION IS SENDING");
+            HashMap<String,String> results = client.broadCastMessageResponseWithIp(obj.toString());
+
+            log.trace("RESULT SIZE IS " + results);
+            int totalValidResponses = 0;
+            int totalValidations = 0;
+            int totalInvalidKeysResponses = 0;
+            int totalInvalidHashResponses = 0;
+            String transaction = null;
+
+            for(Map.Entry<String,String> entry : results.entrySet()) {
+
+                JsonObject result = gson.fromJson(entry.getValue(), JsonObject.class);
+                byte[] key = Base64.getDecoder().decode(result.get("key").getAsString());
+                String[] credentials = Decryption.decryptGet(key);
+                if (credentials == null) {
+                    continue;
+                }
+                String messageIp = credentials[0];
+                String username = credentials[1];
+
+
+                if (messageIp.equals(entry.getKey()) && username.length() > 2) {
+                    int response = result.get("response").getAsInt();
+
+                    if (response == Config.MESSAGE_RESPONSE_INVALIDKEY) {
+                        totalInvalidKeysResponses++;
+                    }
+                    if (response == Config.MESSAGE_RESPONSE_VALID) {
+
+                        if(transaction != null && !transaction.equals(result.get("transaction").getAsString()))
+                            log.error("WRONG RESPONSE");
+
+                        transaction = result.get("transaction").getAsString();
+                        totalValidations++;
+                    }
+                    if (response == Config.MESSAGE_RESPONSE_INVALIDHASH)
+                        totalInvalidHashResponses++;
+
+                    totalValidResponses++;
+                }
+            }
+
+            log.info(totalValidations + " vs  " + totalValidResponses);
+            log.info("Invalid:" + totalInvalidHashResponses + " vs  " + totalValidResponses);
+
+            if(totalValidations >= totalValidResponses/2+1)
+                blockchainManager.markValid(transaction);
+            else if(totalInvalidHashResponses >= totalValidResponses/2 +1)
+            {
+                updateBlockchain();
+            }
         }
         else if (flag == Config.FLAG_BROADCAST_HASH) {
             log.info("HASH BROADCAST IS IN PROCESS");
@@ -150,23 +208,30 @@ public class CrypDist {
     public void updateBlockchain()
     {
         synchronized (this) {
+            blockchainManager.setUpdating(true);
             // UPDATE BLOCKCHAIN
-            log.warn("Blockchain is not updated, start the procedure!");
+            log.warn("Blockchain update procedure is started!");
             ArrayList<String> keySet = client.receiveKeySet();
-            if (keySet.size() == 0)
+            log.info("keySet.size = " + keySet.size());
+            if (keySet.size() == 0) {
+                blockchainManager.removeInvalidBlocks(keySet);
                 return;
+            }
             Set<String> neededBlocks = blockchainManager.getNeededBlocks(keySet);
-            if (neededBlocks.size() == 0)
+            log.info("neededBlocks.size = " + keySet.size());
+            if (neededBlocks.size() == 0) {
+                blockchainManager.removeInvalidBlocks(keySet);
+                blockchainManager.setUpdating(false);
                 return;
+            }
 
             HashMap<String, String> blocks = client.receiveBlocks(neededBlocks);
 
             for (String str : blocks.values())
                 log.info("BLOCK " + str);
 
-            blockchainManager.removeInvalidBlocks(keySet);
             blockchainManager.addNewBlocks(blocks);
-            blockchainManager.setUpdated();
+            blockchainManager.setUpdating(false);
         }
     }
 

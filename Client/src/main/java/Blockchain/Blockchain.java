@@ -49,7 +49,7 @@ public class Blockchain implements Serializable
         while (iterator.hasNext())
         {
             String key = iterator.next();
-            if (!keySet.contains(key))
+            if (!keySet.contains(key) && !key.equals("0x0"))
                 blockMap.remove(key);
         }
     }

@@ -48,7 +48,7 @@ public class BlockchainManager
     private Blockchain blockchain;
     private PostgresDB dbManager;
     private ServerAccessor serverAccessor;
-    private ConcurrentHashMap<String, Pair> transactionPendingBucket;
+    private ConcurrentHashMap<String, Transaction> transactionPendingBucket;
     private PriorityBlockingQueue<Transaction> transactionBucket;
     private ArrayList<Transaction> transactionBucket_solid;
     private final String TIME_SERVER = "nist1-macon.macon.ga.us";
@@ -77,8 +77,8 @@ public class BlockchainManager
         updating = false;
         Timer timer = new Timer();
         timer.schedule(new BlockchainBatch(),0, Config.BLOCKCHAIN_BATCH_PERIOD);
-        HashValidation validation = new HashValidation();
-        validation.start();
+//        HashValidation validation = new HashValidation();
+//        validation.start();
     }
 
     public void buildBlockchain()
@@ -119,7 +119,7 @@ public class BlockchainManager
             Gson gson = new Gson();
 
             log.info(gson.toJson(upload));
-            transactionPendingBucket.put(gson.toJson(upload), new Pair<Transaction, HashSet>(upload, new HashSet<String>()));
+            transactionPendingBucket.put(gson.toJson(upload), upload);
             log.info("Transaction added, being broadcasted.");
             broadcast(gson.toJson(upload), Config.FLAG_BROADCAST_TRANSACTION, null);
 
@@ -144,15 +144,9 @@ public class BlockchainManager
         Gson gson = new Gson();
         Transaction transaction = gson.fromJson(data, Transaction.class);
 
-        String[] credentials = Decryption.decryptGet(transaction.getSignature());
-        if(credentials != null){
-            String messageIp = credentials[0];
+        transactionBucket.add(transaction);
+        System.out.println("My bucket size is:" + transactionBucket.size());
 
-            if(ip.equals(messageIp)){
-                transactionBucket.add(transaction);
-                System.out.println("My bucket size is:" + transactionBucket.size());
-            }
-        }
     }
 
     private boolean addBlockToBlockchain(Block block) throws Exception {
@@ -200,25 +194,19 @@ public class BlockchainManager
 
             Block block = null;
             try {
-                log.info("Hash in block: " + hash);
-                block = new Block(prevHash, timestamp, hash, transactionBucket_solid, blockchain);
-                if (block == null)
-                {
-                    log.fatal("BLOCK COULD NOT BE CREATED");
-                    return;
+                synchronized (this) {
+                    log.info("Hash in block: " + hash);
+                    block = new Block(prevHash, timestamp, hash, transactionBucket_solid, blockchain);
+                    for (Transaction t : block.getTransactions()) {
+                        transactionBucket.remove(t);
+                        transactionBucket_solid.remove(t);
+                    }
                 }
-                for (Transaction t : block.getTransactions()) {
-                    transactionBucket.remove(t);
-                    transactionBucket_solid.remove(t);
-                }
-
-            } catch (NoSuchAlgorithmException e) {
-                e.printStackTrace();
-            } catch (UnsupportedEncodingException e) {
+            } catch (NoSuchAlgorithmException | UnsupportedEncodingException e) {
                 e.printStackTrace();
             }
 
-            try {
+        try {
                 addBlockToBlockchain(block);
             } catch (Exception e) {
                 e.printStackTrace();
@@ -296,6 +284,9 @@ public class BlockchainManager
 
     public String getKeySet() {
         Set<String> keys = blockchain.getKeySet();
+        if (keys.size() == 0)
+            return "";
+
         Gson gson = new Gson();
         return gson.toJson(keys);
     }
@@ -306,19 +297,16 @@ public class BlockchainManager
         return block;
     }
 
-    public void markValid(String transaction, String username)
+    public void markValid(String transaction)
     {
         synchronized (this) {
             if (transactionPendingBucket.containsKey(transaction)) {
-                int count = ((HashSet) (transactionPendingBucket.get(transaction).scnd)).size();
-                ((HashSet) transactionPendingBucket.get(transaction).scnd ).add(username);
-                if (count + 1 > numOfPairs / 2) {
-                    Transaction tr = ((Transaction) transactionPendingBucket.get(transaction).frst);
-                    transactionBucket.add(tr);
-                    transactionPendingBucket.remove(transaction);
-                    if (!tr.getFileName().equals("merhaba"))
-                        tr.execute(serverAccessor);
-                }
+                Transaction tr = transactionPendingBucket.get(transaction);
+                transactionBucket.add(tr);
+                transactionPendingBucket.remove(transaction);
+                if (!tr.getFileName().equals("merhaba"))
+                    tr.execute(serverAccessor);
+                log.info("VALIDATED");
             }
         }
     }
@@ -475,42 +463,38 @@ public class BlockchainManager
         }
     }
 
-    private class HashValidation extends Thread{
 
-        public void run()
-        {
-            while(true)
-            {
-                if (!updating) {
-                    Set<String> keys = transactionPendingBucket.keySet();
-                    for (String key : keys) {
-                        Pair pair = transactionPendingBucket.get(key);
-                        Transaction trans = (Transaction) pair.frst;
-                        if (trans.getTimeStamp() < getTime() - Config.TRANSACTION_VALIDATION_TIMEOUT) {
-//                        JsonObject obj = new JsonObject();
-//                        obj.addProperty("flag", 4);
+    // TODO This class can be used to trace the hashes taken but not yet started to the respective block mining
+//    private class HashValidation extends Thread{
 //
-//                        BlockchainManager.this.setChanged();
-//                        BlockchainManager.this.notifyObservers(obj);
-                            log.warn("UPDATE THEM!!!!!!!!!!!!!!!!!!!");
-                            updating = true;
-                            crypDist.updateBlockchain();
-                        }
-                    }
+//        public void run()
+//        {
+//            while(true)
+//            {
+//                if (!updating) {
+//                    Set<String> keys = transactionPendingBucket.keySet();
+//                    for (String key : keys) {
+//                        Transaction trans = transactionPendingBucket.get(key);
+//                        if (trans.getTimeStamp() < getTime() - Config.TRANSACTION_VALIDATION_TIMEOUT) {
+//                            log.warn("UPDATE THEM!!!!!!!!!!!!!!!!!!!");
+//                            updating = true;
+//                            crypDist.updateBlockchain();
+//                        }
+//                    }
+//
+//                    try {
+//                        Thread.sleep(100);
+//                    } catch (InterruptedException e) {
+//                        e.printStackTrace();
+//                    }
+//                }
+//            }
+//        }
+//    }
 
-                    try {
-                        Thread.sleep(100);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-        }
-    }
-
-    public void setUpdated()
+    public void setUpdating(boolean updating)
     {
-        updating = false;
+        this.updating = updating;
     }
 
     public void setNumOfPairs(int numOfPairs) {
@@ -587,7 +571,7 @@ public class BlockchainManager
 
         log.info("New blockchain size is: " + blockchain.getLength());
         log.info("New blockchain lasthash: " + blockchain.getLastBlock());
-        transactionPendingBucket = new ConcurrentHashMap<String, Pair>();
+        transactionPendingBucket = new ConcurrentHashMap<String, Transaction>();
         transactionBucket = new PriorityBlockingQueue<Transaction>();
     }
 

@@ -5,6 +5,7 @@ import Util.Config;
 import com.google.gson.Gson;
 
 import com.google.gson.JsonObject;
+import com.mchange.v2.collection.MapEntry;
 import org.apache.log4j.Logger;
 
 import java.io.DataInputStream;
@@ -195,6 +196,35 @@ public class Client extends Observable implements Runnable{
 
         return result;
     }
+
+    public HashMap<String,String> broadCastMessageResponseWithIp(String message) {
+
+        ExecutorService executor = Executors.newCachedThreadPool();
+        HashMap<Peer,Future<String>> futures = new HashMap<>();
+
+        for(Peer peer:peerList.keySet()) {
+            Callable<String> task = new ResponsedMessageTask(peer,message);
+            Future<String> future = executor.submit(task);
+            futures.put(peer,future);
+        }
+
+        HashMap<String,String> result = new HashMap<>();
+
+
+        for(Map.Entry<Peer,Future<String>> entry : futures.entrySet()) {
+            try {
+                String res  = entry.getValue().get();
+                if(res != null && !res.equals(""))
+                    result.put(entry.getKey().getAddress().toString(),res);
+            } catch (Exception e) {
+
+            }
+        }
+
+        return result;
+    }
+
+
 
     public String sendMessageResponse(String adr, String message) {
 

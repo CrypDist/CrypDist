@@ -34,6 +34,7 @@ public class ResponsedMessageTask implements Callable<String> {
                 log.trace(p.getPeerServerPort());
                 log.trace(p.getAddress());
                 Socket messagedClient = new Socket(p.getAddress(), p.getPeerServerPort());
+                messagedClient.setSoTimeout(1000);
                 ObjectOutputStream out = new ObjectOutputStream(messagedClient.getOutputStream());
                 out.writeInt(Config.MESSAGE_OUTGOING_RESPONSE);
                 out.writeUTF(msg);
@@ -53,6 +54,8 @@ public class ResponsedMessageTask implements Callable<String> {
             } catch (IOException e) {
                 log.info("EXCEPTIOON\n\n\n");
                 log.info(e);
+                trials++;
+                continue;
             }
             trials++;
         }

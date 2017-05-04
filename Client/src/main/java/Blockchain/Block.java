@@ -1,5 +1,7 @@
 package Blockchain;
 
+import org.apache.log4j.Logger;
+
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
@@ -19,6 +21,8 @@ import java.util.ArrayList;
 
 public class Block implements Serializable
 {
+    private static transient Logger log = Logger.getLogger("Block");
+
     private static final long serialVersionUID = 1L;
     private ArrayList<Transaction> transactions;
     private MerkleTree data;
@@ -45,6 +49,12 @@ public class Block implements Serializable
                  ArrayList<Transaction> transactions, Blockchain blockchain) throws NoSuchAlgorithmException,
             UnsupportedEncodingException
     {
+        if (blockchain == null)
+            log.warn("blockchain is null");
+        else if (prevHash == null)
+            log.warn("prevHash is null");
+        else if (blockchain.getBlock(prevHash) == null)
+            log.warn("blockchain.getBlock is null");
         length = blockchain.getBlock(prevHash).getLength() + 1;
         indegree = 0;
         this.prevHash = prevHash;
