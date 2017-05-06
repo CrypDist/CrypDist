@@ -106,7 +106,7 @@ public class Server extends Thread {
                             String pass = in.readUTF();
 
                             boolean valid = Authentication.Authenticate(id,pass);
-                            Future<Boolean> future = executor.submit(new TestConnectionTask(newConnection.getInetAddress().toString(),port2));
+                            Future<Boolean> future = executor.submit(new TestConnectionTask(newConnection.getInetAddress(),port2));
 
                             boolean active;
                             try {
@@ -114,7 +114,6 @@ public class Server extends Thread {
                             } catch (Exception e) {
                                 active = false;
                             }
-
                             byte [] msg;
                             if (valid)
                                  msg = generateKey(newConnection.getInetAddress().toString(),id);
@@ -132,10 +131,8 @@ public class Server extends Thread {
                                 peerList.put(p,0);
                             }
 
+                            System.out.println(newConnection.getInetAddress() + " is connected and active: " + active);
                         }
-
-                        System.out.println(newConnection.getInetAddress() + " is connected.");
-
 
                         newConnection.close();
                     } catch (IOException e) {
