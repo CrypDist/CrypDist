@@ -12,4 +12,9 @@ public class Config {
     static int HEARTBEAT_PERIOD = 5000;
     static int HEARTBEAT_TIMEOUT = 1000;
     static int HEARTBEAT_DELAY = 1000;
+
+    static int MESSAGE_ACK = 900;
+    static int MESSAGE_TEST_TRIALS = 2;
+    static int MESSAGE_SERVER_TEST = 999;
+    static int SERVER_TEST_TIMEOUT = 2500;
 }

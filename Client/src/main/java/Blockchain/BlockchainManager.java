@@ -544,7 +544,7 @@ public class BlockchainManager
         while (blocks.size() > 0) {
 
             Iterator<String> iterator = blocks.keySet().iterator();
-            while (iterator.hasNext())
+            while    (iterator.hasNext())
             {
                 log.info("in iterator!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
                 String key = iterator.next();
