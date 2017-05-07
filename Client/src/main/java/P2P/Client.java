@@ -73,7 +73,6 @@ public class Client extends Observable implements Runnable{
             t2.start();
 
             Socket serverConnection = new Socket(swAdr, swPort);
-            serverConnection.getReuseAddress(true);
             serverConnection.setSoTimeout(Config.SERVER_TIMEOUT);
 
             DataInputStream in = new DataInputStream(serverConnection.getInputStream());

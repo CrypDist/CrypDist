@@ -14,6 +14,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.beans.PropertyChangeListener;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -49,11 +50,17 @@ public class QueryScreen extends JPanel {
         };
         resultsModel.addColumn("");
         results = new JTable(resultsModel);
+        results.addMouseListener(new TableListener());
         currTransactions = new ArrayList<>();
+        currTransactions.add(null);
+
+//        // TODO remove
+        Object[] rowData = {"GeneX"};
+        resultsModel.addRow(rowData);
+        resultsModel.fireTableDataChanged();
 
         run = new GlossyButton("Run");
         back = new GlossyButton("Back");
-
 
         ButtonListener l = new ButtonListener();
         query.addActionListener(l);
@@ -125,7 +132,8 @@ public class QueryScreen extends JPanel {
 
         public void actionPerformed(ActionEvent e) {
 
-            if(e.getSource() == run || e.getSource() == query) {
+            if(e.getSource() == run || e.getSource() == query)
+            {
                 back.setEnabled(false);
                 // TODO: Check if query statement is correct
                 if(query.getText().equals("")) {
@@ -136,23 +144,6 @@ public class QueryScreen extends JPanel {
 
                 resultsModel.setRowCount(0);
                 currTransactions.clear();
-                //String result = controller.query(query.getText());
-//                HashMap<String, ArrayList<String>> queryResults = controller.query(query.getText());
-//                Set<String> keySet = queryResults.keySet();
-//                Iterator<String> iterator = keySet.iterator();
-//                while (iterator.hasNext())
-//                {
-//                    String key = iterator.next();
-//                    ArrayList<String> transactions = queryResults.get(key);
-//
-//                    for (int i = 0; i < transactions.size(); i++)
-//                    {
-//                        Vector<String> rowData = new Vector<>();
-//                        rowData.add(transactions.get(i));
-//                        resultsModel.addRow(rowData);
-//                    }
-//                }
-
 
                 HashMap<String, ArrayList<Transaction>> queryResults = controller.query(query.getText());
                 Set<String> keySet = queryResults.keySet();
@@ -178,15 +169,40 @@ public class QueryScreen extends JPanel {
             }
             repaint();
         }
+    }
 
-        class TableListener extends MouseAdapter
+    class TableListener extends MouseAdapter
+    {
+        public void mouseClicked(MouseEvent event)
         {
-            public void mouseClicked(MouseEvent event)
+            if (SwingUtilities.isRightMouseButton(event))
             {
                 int row = results.rowAtPoint(event.getPoint());
                 if (row >= 0 && row < currTransactions.size())
                 {
-                    // TODO execute transaction
+                    JPopupMenu popupMenu = new JPopupMenu();
+                    JMenuItem download = new JMenuItem("Download");
+                    JMenuItem update = new JMenuItem("Update");
+                    popupMenu.add(download);
+                    popupMenu.add(update);
+                    popupMenu.setLocation(event.getXOnScreen(), event.getYOnScreen());
+                    popupMenu.setVisible(true);
+                    download.addActionListener(e -> {
+                        update.setSelected(false);
+                        String filename = currTransactions.get(row).getFileName();
+                        controller.showDownload(filename);
+                    });
+                    update.addActionListener(e -> {
+                        download.setSelected(false);
+                        JFileChooser fileChooser = new JFileChooser();
+                        String path = fileChooser.getSelectedFile().getAbsolutePath();
+                        String fileName = fileChooser.getSelectedFile().getName();
+                        try {
+                            controller.updateData(currTransactions.get(row), path, fileName);
+                        } catch (InterruptedException e1) {
+                            e1.printStackTrace();
+                        }
+                    });
                 }
             }
         }

@@ -24,10 +24,11 @@ public class CrypDist {
     // Flag 3 = Valid transaction message
     // Flag 4 = Validate my blockchain (taken from blockchainManager)
 
-    public BlockchainManager blockchainManager;
+    private BlockchainManager blockchainManager;
     Client client;
 
-    public CrypDist() {
+    public CrypDist()
+    {
         if(!Decryption.initialization())
             log.info("Decryption service cannot be created.");
 
@@ -39,6 +40,11 @@ public class CrypDist {
         t.start();
         blockchainManager.buildBlockchain();
         updateBlockchain();
+    }
+
+    public BlockchainManager getBlockchainManager()
+    {
+        return blockchainManager;
     }
 
     public String updateByClient(String arg) {
@@ -252,4 +258,6 @@ public class CrypDist {
     public boolean isAuthenticated() {
         return authenticated;
     }
+
+
 }

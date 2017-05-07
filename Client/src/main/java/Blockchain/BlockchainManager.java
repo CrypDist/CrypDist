@@ -130,6 +130,34 @@ public class BlockchainManager
 
     }
 
+    public void updateFile(Transaction transaction, String filePath, String dataSummary) throws Exception
+    {
+        if(!crypDist.isAuthenticated())
+            return;
+
+        log.warn("FILE PATH CAME AS :" + filePath);
+        String[] path = filePath.substring(1).split("/");
+        String fileName = path[path.length - 1];
+
+        File file = new File(filePath);
+        if(fileName.equals("merhaba") || (file.exists() && !file.isDirectory())) {
+            long dataSize = file.length();
+            URL url = serverAccessor.getURL(fileName);
+            Transaction upload = new Transaction(filePath, fileName, dataSummary, dataSize, url,crypDist.getSessionKey(),
+                                                 transaction.getVersion() + 1);
+            Gson gson = new Gson();
+
+            log.info(gson.toJson(upload));
+            transactionPendingBucket.put(gson.toJson(upload), upload);
+            log.info("Transaction added, being broadcasted.");
+            broadcast(gson.toJson(upload), Config.FLAG_BROADCAST_TRANSACTION, null);
+
+            log.info("Notified");
+        }
+        else
+            throw new Exception("No such file!");
+    }
+
     public void downloadFile(String fileName, String path)
     {
         try {
