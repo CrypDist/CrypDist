@@ -4,7 +4,6 @@ import Blockchain.Block;
 import Blockchain.Blockchain;
 import Blockchain.Transaction;
 import Util.CrypDist;
-import sun.awt.X11.Screen;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;

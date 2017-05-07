@@ -44,7 +44,7 @@ public class Client extends Observable implements Runnable{
     ConcurrentHashMap<Peer,Integer> peerList;
     private int serverPort;
     private int heartBeatPort;
-
+    private boolean active;
     // Added to support the hash choosing algorithm.
     int lastSize;
 
@@ -69,6 +69,9 @@ public class Client extends Observable implements Runnable{
         System.out.println("x");
         //Establish a connection with server, get number of active peers and their information.
         try {
+            Thread t2 = new ReceiveServerRequest(this);
+            t2.start();
+
             Socket serverConnection = new Socket(swAdr, swPort);
             serverConnection.getReuseAddress(true);
             serverConnection.setSoTimeout(Config.SERVER_TIMEOUT);
@@ -86,6 +89,7 @@ public class Client extends Observable implements Runnable{
             out.flush();
 
             boolean authenticated = in.readBoolean();
+            active = in.readBoolean();
             int size = in.readInt();
             byte[] key_array = new byte[size];
             in.read(key_array);
@@ -93,6 +97,7 @@ public class Client extends Observable implements Runnable{
             crypDist.setSessionKey(key_array);
             crypDist.setAuthenticated(authenticated);
 
+            t2.interrupt();
             serverConnection.close();
         }
         catch(IOException e)
@@ -254,14 +259,18 @@ public class Client extends Observable implements Runnable{
         //To notify at the beginning
         notify(Config.CLIENT_MESSAGE_PEERSIZE + Config.CLIENT_MESSAGE_SPLITTER + peerList.size());
 
-        Timer timer = new Timer();
-        timer.schedule(new HeartBeatTask(this, peerList, heartBeatPort,serverPort), 0, Config.HEARTBEAT_PERIOD);
+        if(active) {
 
-        Thread t1 = new ReceiveHeartBeat(this);
-        Thread t2 = new ReceiveServerRequest(this);
+            Timer timer = new Timer();
+            timer.schedule(new HeartBeatTask(this, peerList, heartBeatPort,serverPort), 0, Config.HEARTBEAT_PERIOD);
 
-        t1.start();
-        t2.start();
+            Thread t1 = new ReceiveHeartBeat(this);
+            Thread t2 = new ReceiveServerRequest(this);
+
+            t1.start();
+            t2.start();
+        }
+
     }
 
     public int getServerPort() {

@@ -45,14 +45,23 @@ public class ReceiveServerRequest extends Thread {
                         log.trace("Server request incoming.");
 
                         ObjectInputStream in = new ObjectInputStream(new DataInputStream(server.getInputStream()));
+                        ObjectOutputStream out = new ObjectOutputStream(new DataOutputStream(server.getOutputStream()));
+
                         int flag = in.readInt();
+
+                        if(flag == Config.MESSAGE_SERVER_TEST) {
+                            out.writeInt(Config.MESSAGE_ACK);
+                            out.flush();
+                            server.close();
+                            return;
+                        }
+
                         String str = in.readUTF();
 
                         str = server.getInetAddress().toString() + Config.CLIENT_MESSAGE_SPLITTER + str;
                         log.trace("Client is notifying with " + flag  + " | " + str);
                         String response = client.notify(str);
 
-                        ObjectOutputStream out = new ObjectOutputStream(new DataOutputStream(server.getOutputStream()));
 
                         out.writeInt(Config.MESSAGE_ACK);
                         if(flag == Config.MESSAGE_OUTGOING_RESPONSE){

@@ -19,6 +19,8 @@ public class Config {
     public static int MESSAGE_RESPONSE_INVALIDHASH = 402;
     public static int MESSAGE_RESPONSE_VALID = 403;
 
+    public static int MESSAGE_SERVER_TEST = 999;
+
     public static int UPLOAD_EXPIRATION_TIME = 100000;
     public static int BLOCKCHAIN_BATCH_TIMEOUT = 10000;
     public static int BLOCKCHAIN_BATCH_PERIOD = 8000;
@@ -29,9 +31,9 @@ public class Config {
 
     public static String DB_TABLE_NAME="blockchain";
 
-    public static String SERVER_ADDRESS = "46.101.245.232";
+    public static String SERVER_ADDRESS = "207.154.219.184";
     public static int SERVER_PORT = 4141;
-    public static int SERVER_TIMEOUT = 3000;
+    public static int SERVER_TIMEOUT = 5000;
 
     public static int CLIENT_HEARTBEAT_PORT = 4141;
     public static int CLIENT_SERVER_PORT = 4142;

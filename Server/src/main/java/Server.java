@@ -14,6 +14,11 @@ import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
 import java.util.Timer;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Server implementation for establishing connection among peers.
@@ -30,7 +35,7 @@ public class Server extends Thread {
     ConcurrentHashMap<Peer,Integer> peerList;
     private final static Object lock = new Object();
     private ServerSocket serverSocket;
-
+    ExecutorService executor = Executors.newCachedThreadPool();
     private Cipher cipher;
 
     public Server() throws IOException {
@@ -101,7 +106,14 @@ public class Server extends Thread {
                             String pass = in.readUTF();
 
                             boolean valid = Authentication.Authenticate(id,pass);
+                            Future<Boolean> future = executor.submit(new TestConnectionTask(newConnection.getInetAddress(),port2));
 
+                            boolean active;
+                            try {
+                                active= future.get(Config.SERVER_TEST_TIMEOUT, TimeUnit.MILLISECONDS);
+                            } catch (Exception e) {
+                                active = false;
+                            }
                             byte [] msg;
                             if (valid)
                                  msg = generateKey(newConnection.getInetAddress().toString(),id);
@@ -109,17 +121,18 @@ public class Server extends Thread {
                                 msg = generateKey("None", "N");
 
                             out.writeBoolean(valid);
+                            out.writeBoolean(active);
                             out.writeInt(msg.length);
                             out.write(msg);
                             out.flush();
 
-                            p = new Peer(newConnection.getInetAddress(),port,port2 );
+                            if (active) {
+                                p = new Peer(newConnection.getInetAddress(),port,port2 );
+                                peerList.put(p,0);
+                            }
 
-                            peerList.put(p,0);
+                            System.out.println(newConnection.getInetAddress() + " is connected and active: " + active);
                         }
-
-                        System.out.println(newConnection.getInetAddress() + " is connected.");
-
 
                         newConnection.close();
                     } catch (IOException e) {
@@ -146,6 +159,5 @@ public class Server extends Thread {
             return "".getBytes();
         }
     }
-
 
 }
