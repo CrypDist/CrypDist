@@ -15,36 +15,27 @@ import java.util.Vector;
 public class MainScreen extends JPanel {
     JTable blockTable;
     JPanel blockContent;
-    GlossyButton update;
-    GlossyButton download;
     GlossyButton upload;
     GlossyButton query;
-    GlossyButton authenticate;
     GlossyButton refresh;
     ScreenManager controller;
     NonEditableModel tableModel;
 
     // blocklist numberOfBlocksX2 blocklist[i][0] id of ith block, blocklist[i][1] timestamp of ith block
-    public  MainScreen(ScreenManager controller) {
-
+    public  MainScreen(ScreenManager controller)
+    {
         this.controller = controller;
         String[][] blocklist = controller.getBlockList();
         setSize(new Dimension(1000,600));
 
         JPanel buttonsPanel = new JPanel(new GridLayout(0,1));
-        update = new GlossyButton("Update");
-        download = new GlossyButton("Download");
         upload = new GlossyButton("Upload");
         query = new GlossyButton("Query");
-        authenticate = new GlossyButton("Authenticate");
         refresh = new GlossyButton("Refresh");
 
         ButtonListener listener = new ButtonListener();
-        update.addActionListener(listener);
-        download.addActionListener(listener);
         upload.addActionListener(listener);
         query.addActionListener(listener);
-        authenticate.addActionListener(listener);
         refresh.addActionListener(listener);
 
         FlowLayout buttonsLayout = new FlowLayout(FlowLayout.CENTER);
@@ -52,11 +43,8 @@ public class MainScreen extends JPanel {
         buttonsLayout.setVgap(10);
         buttonsPanel.setLayout(buttonsLayout);
         buttonsPanel.setBackground(Color.white);
-        buttonsPanel.add(update);
-        buttonsPanel.add(download);
         buttonsPanel.add(upload);
         buttonsPanel.add(query);
-        buttonsPanel.add(authenticate);
         buttonsPanel.add(refresh);
         buttonsPanel.setComponentOrientation(
                 ComponentOrientation.LEFT_TO_RIGHT);
@@ -119,35 +107,23 @@ public class MainScreen extends JPanel {
 
         public void actionPerformed(ActionEvent e) {
 
-            if (e.getSource() == update) {
-                if(blockTable.getSelectionModel().isSelectionEmpty()) {
-                    JOptionPane.showMessageDialog(MainScreen.this, "Please choose a block from the list", "Warning",
-                            JOptionPane.WARNING_MESSAGE);
-                }
-                else {
-                    controller.setCurrentView(new DataUpdateScreen(controller, blockTable.getValueAt(blockTable.getSelectedRow(), 0).toString()));
-                    controller.setSize((new Dimension(600, 300)));
-                }
-            }
-            else if(e.getSource() == download) {
-                if(blockTable.getSelectionModel().isSelectionEmpty()) {
-                    JOptionPane.showMessageDialog(MainScreen.this, "Please choose a block to download", "Warning",
-                            JOptionPane.WARNING_MESSAGE);
-                }
-                else {
-                    controller.showDownload(blockTable.getValueAt(blockTable.getSelectedRow(), 0).toString());
-                }
-            }
-            else if(e.getSource() == upload) {
+//            if (e.getSource() == update) {
+//                if(blockTable.getSelectionModel().isSelectionEmpty()) {
+//                    JOptionPane.showMessageDialog(MainScreen.this, "Please choose a block from the list", "Warning",
+//                            JOptionPane.WARNING_MESSAGE);
+//                }
+//                else {
+//                    controller.setCurrentView(new DataUpdateScreen(controller, blockTable.getValueAt(blockTable.getSelectedRow(), 0).toString()));
+//                    controller.setSize((new Dimension(600, 300)));
+//                }
+//            }
+            if(e.getSource() == upload) {
                 controller.setCurrentView(new DataUploadScreen(controller));
                 controller.setSize((new Dimension(600,300)));
             }
             else if(e.getSource() == query) {
                 controller.setCurrentView(new QueryScreen(controller));
                 controller.setSize((new Dimension(1000,600)));
-            }
-            else if (e.getSource() == authenticate){  // authenticate
-                controller.showLogin();
             }
             else if (e.getSource() == refresh)
             {

@@ -11,8 +11,8 @@ import java.io.File;
 /**
  * Created by gizem on 06.04.2017.
  */
-public class DataUpdateScreen extends JPanel implements ActionListener{
-
+public class DataUpdateScreen extends JPanel implements ActionListener
+{
     JLabel label;
     JButton upload;
     JButton back;
@@ -89,41 +89,41 @@ public class DataUpdateScreen extends JPanel implements ActionListener{
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == upload) {
             {
-                if(pathField.getText().equals(""))
-                    JOptionPane.showMessageDialog(this, "Please enter a path", "Warning",
-                            JOptionPane.WARNING_MESSAGE);
-                else {
-                    if(controller.isPathExist(pathField.getText())) {
-                        pathField.setEditable(false);
-                        browse.setEnabled(false);
-                        back.setEnabled(false);
-                        cancel.setEnabled(true);
-                        progressBar.setVisible(true);
-                        progressBar.setIndeterminate(true);
-                        Runnable myrunnable = new Runnable() {
-                            public void run() {
-
-                                try {
-                                    controller.updateData(pathField.getText(), blockId);
-                                    pathField.setEditable(true);
-                                    browse.setEnabled(true);
-                                    back.setEnabled(true);
-                                    cancel.setEnabled(false);
-                                    progressBar.setVisible(false);
-                                    progressBar.setIndeterminate(false);
-                                    pathField.setText("");
-                                } catch (InterruptedException e1) {
-                                    e1.printStackTrace();
-                                }
-                            }
-                        };
-                        new Thread(myrunnable).start();
-                    }
-                    else {
-                        JOptionPane.showMessageDialog(this, "Please enter a valid path!", "Warning",
-                                JOptionPane.WARNING_MESSAGE);
-                    }
-                }
+//                if(pathField.getText().equals(""))
+//                    JOptionPane.showMessageDialog(this, "Please enter a path", "Warning",
+//                            JOptionPane.WARNING_MESSAGE);
+//                else {
+//                    if(controller.isPathExist(pathField.getText())) {
+//                        pathField.setEditable(false);
+//                        browse.setEnabled(false);
+//                        back.setEnabled(false);
+//                        cancel.setEnabled(true);
+//                        progressBar.setVisible(true);
+//                        progressBar.setIndeterminate(true);
+//                        Runnable myrunnable = new Runnable() {
+//                            public void run() {
+//
+//                                try {
+//                                    //controller.updateData(pathField.getText(), blockId);
+//                                    pathField.setEditable(true);
+//                                    browse.setEnabled(true);
+//                                    back.setEnabled(true);
+//                                    cancel.setEnabled(false);
+//                                    progressBar.setVisible(false);
+//                                    progressBar.setIndeterminate(false);
+//                                    pathField.setText("");
+//                                } catch (InterruptedException e1) {
+//                                    e1.printStackTrace();
+//                                }
+//                            }
+//                        };
+//                        new Thread(myrunnable).start();
+//                    }
+//                    else {
+//                        JOptionPane.showMessageDialog(this, "Please enter a valid path!", "Warning",
+//                                JOptionPane.WARNING_MESSAGE);
+//                    }
+//                }
             }
         }
         else if(e.getSource() == back) {
@@ -131,20 +131,14 @@ public class DataUpdateScreen extends JPanel implements ActionListener{
             controller.setSize((new Dimension(1000,600)));
         }
         else if(e.getSource() == cancel) {
-            try {
-                progressBar.setVisible(false);
-                progressBar.setIndeterminate(false);
-                cancel.setEnabled(false);
-                controller.abortUpload();
-                pathField.setText("");
-            } catch (InterruptedException e1) {
-                e1.printStackTrace();
-            }
+            progressBar.setVisible(false);
+            progressBar.setIndeterminate(false);
+            cancel.setEnabled(false);
+            pathField.setText("");
             pathField.setEditable(true);
             browse.setEnabled(true);
             back.setEnabled(true);
             pathField.setText("");
-
         }
         else {  // Browse
             final JFileChooser fc = new JFileChooser();

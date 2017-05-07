@@ -3,17 +3,20 @@ package GUI;
 import Blockchain.Block;
 import Blockchain.Blockchain;
 import Blockchain.Transaction;
+import Util.Config;
 import Util.CrypDist;
+import jdk.nashorn.internal.scripts.JO;
+import sun.awt.ConstrainableGraphics;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import javax.swing.tree.TreeNode;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -28,10 +31,8 @@ public class ScreenManager extends JFrame{
 
     private final int dimensionX = 1000;
     private final int dimensionY = 600;
-    private boolean authenticated = false;
 
-    public ScreenManager(CrypDist crypDist) {
-        this.crypDist = crypDist;
+    public ScreenManager() {
         Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
         this.setLocation(dim.width/2-this.getSize().width/2, dim.height/2-this.getSize().height/2);
         setSize(new Dimension(dimensionX,dimensionY));
@@ -57,12 +58,8 @@ public class ScreenManager extends JFrame{
 
     }
 
-    public JPanel getCurrentView() {
-        return currentView;
-    }
-
     public String getBlockContent(String blockId) {
-        Block block = crypDist.blockchainManager.getBlock(blockId);
+        Block block = crypDist.getBlockchainManager().getBlock(blockId);
         ArrayList<Transaction> transactions = block.getTransactions();
         String result = "";
         for (int i = 0; i < transactions.size(); i++)
@@ -73,7 +70,8 @@ public class ScreenManager extends JFrame{
         return result;
     }
 
-    public void showLogin() {
+    public void showLogin()
+    {
         JPanel p = new JPanel(new BorderLayout(5,5));
 
         JPanel labels = new JPanel(new GridLayout(0,1,2,2));
@@ -89,40 +87,27 @@ public class ScreenManager extends JFrame{
         controls.add(password);
         p.add(controls, BorderLayout.CENTER);
 
-        String userName = null;
         boolean validUser = false;
-        int result = JOptionPane.CANCEL_OPTION;
-
-        do {
-            result = JOptionPane.showConfirmDialog(
+        int result = JOptionPane.showConfirmDialog(
                     this, p, "Log In", JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE);
-            switch (result) {
-                case JOptionPane.OK_OPTION:
-                    // Verify user details
-                    if(authenticate(username.getText(),password.hashCode()))
-                        validUser = true;
-                    if (!validUser) {
-                        JOptionPane.showMessageDialog(this, "Invalid username/password", "Error", JOptionPane.ERROR_MESSAGE);
-                    }
-                    break;
-            }
-        } while (!validUser && result != JOptionPane.CANCEL_OPTION);
-
-        if (result == JOptionPane.OK_OPTION) {
-            if (validUser) {
-                JOptionPane.showMessageDialog(this, "You are logged into system " + username.getText(), "Welcome", JOptionPane.INFORMATION_MESSAGE);
-                authenticated = true;
-            }
+        if (result == JOptionPane.OK_OPTION)
+        {
+            Config.USER_NAME = username.getText();
+            Config.USER_PASS = password.getName();
+            crypDist = new CrypDist();
+            setCurrentView(new MainScreen(this));
+        }
+        else if (result == JOptionPane.CANCEL_OPTION)
+        {
+            Config.USER_NAME = "";
+            Config.USER_PASS = "";
+            crypDist = new CrypDist();
+            setCurrentView(new MainScreen(this));
         }
     }
 
-    private boolean authenticate(String text, int i) {
-        return true;
-    }
-
     public boolean getAuthenticated() {
-        //return crypDist.isAuthenticated();
-        return true;
+        return crypDist.isAuthenticated();
     }
 
     public String[][] getBlockList() {
@@ -134,7 +119,7 @@ public class ScreenManager extends JFrame{
 //                {"#id4", "2014-04-11T18:46:07+00:00 "},
 //                {"#id5", "2013-04-11T18:46:07+00:00 "}
 //        };
-        Blockchain blockchain = crypDist.blockchainManager.getBlockchain();
+        Blockchain blockchain = crypDist.getBlockchainManager().getBlockchain();
         Set<String> keySet = blockchain.getKeySet();
         String[][] blockList = new String[keySet.size()][2];
         Iterator<String> iterator = keySet.iterator();
@@ -149,31 +134,30 @@ public class ScreenManager extends JFrame{
         return blockList;
     }
 
-    public void abortUpload() throws InterruptedException {
-         /* cancel upload or update data  */
-        // TODO Interrupt upload
-        TimeUnit.SECONDS.sleep(1);
-    }
-
     public void uploadData(String filePath, String dataSummary) throws InterruptedException {
         /* upload data  */
         try {
-            crypDist.blockchainManager.uploadFile(filePath, dataSummary);
+            crypDist.getBlockchainManager().uploadFile(filePath, dataSummary);
         } catch (Exception e) {
             e.printStackTrace();
         }
         TimeUnit.SECONDS.sleep(5);
     }
 
-    public void updateData(String text, String blockId) throws InterruptedException {
-        /* update data  */
-        // TODO
+    public void updateData(Transaction transaction, String path, String fileName) throws InterruptedException {
+        try {
+            crypDist.getBlockchainManager().updateFile(transaction, path, fileName);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         TimeUnit.SECONDS.sleep(5);
     }
 
-    public void showDownload(String s) {
-
-        final JDialog dlg = new JDialog(this, "Cryp Dist", true);
+    public void showDownload(String filename)
+    {
+        final JFileChooser fileChooser = new JFileChooser();
+        String path = fileChooser.getCurrentDirectory().getPath();
+        final JDialog dlg = new JDialog(this, "CrypDist", true);
         dlg.setLayout(new GridLayout(3,0));
 
         final JLabel label = new JLabel("Downloading...");
@@ -187,40 +171,26 @@ public class ScreenManager extends JFrame{
         final GlossyButton cancel = new GlossyButton("Cancel");
         final JPanel bottomP = new JPanel();
 
-        final Thread t = new Thread(new Runnable() {
-            public void run() {
+        final Thread t = new Thread(() -> dlg.setVisible(true));
+
+        final Thread download = new Thread(() -> {
+            crypDist.getBlockchainManager().downloadFile(filename, path);
+            System.out.println(filename + " - " + path + " is downloaded");
+            try {
+                TimeUnit.SECONDS.sleep(5);
+                t.interrupt();
+                label.setText("Data downloaded..");
+                progressBar.setEnabled(false);
+                progressBar.setVisible(false);
+                bottomP.remove(cancel);
+                GlossyButton ok = new GlossyButton("OK");
+                ok.addActionListener(e -> dlg.dispose());
+                bottomP.add(ok);
+                ok.repaint();
+                dlg.repaint();
                 dlg.setVisible(true);
-            }
-        });
-
-        final Thread download = new Thread(new Runnable() {
-            public void run()
-            {
-                /*
-                * download data
-                * */
-                try {
-                    TimeUnit.SECONDS.sleep(5);
-                    t.interrupt();
-                    label.setText("Data downloaded..");
-                    progressBar.setEnabled(false);
-                    progressBar.setVisible(false);
-                    bottomP.remove(cancel);
-                    GlossyButton ok = new GlossyButton("OK");
-                    ok.addActionListener(new ActionListener() {
-                        public void actionPerformed(ActionEvent e) {
-                            dlg.dispose();
-                        }
-                    } );
-                    bottomP.add(ok);
-                    ok.repaint();
-                    dlg.repaint();
-                    dlg.setVisible(true);
-                } catch (InterruptedException e) {
-                    cancelDownload();
-                    dlg.dispose();
-                }
-
+            } catch (InterruptedException e) {
+                dlg.dispose();
             }
         });
 
@@ -242,10 +212,6 @@ public class ScreenManager extends JFrame{
         download.start();
     }
 
-    private void cancelDownload() {
-        // TODO interrupt download
-    }
-
     public HashMap<String, ArrayList<Transaction>> query(String text) {
         // TODO query();
         HashMap<String, ArrayList<Transaction>> queryResults = new HashMap<>();
@@ -258,7 +224,7 @@ public class ScreenManager extends JFrame{
 //        queryResults.put("Hash1", arr1);
 //        queryResults.put("Hash2", arr2);
 
-        Blockchain blockchain = crypDist.blockchainManager.getBlockchain();
+        Blockchain blockchain = crypDist.getBlockchainManager().getBlockchain();
         Set<String> keySet = blockchain.getKeySet();
         Iterator<String> iterator = keySet.iterator();
         while (iterator.hasNext())
@@ -286,12 +252,4 @@ public class ScreenManager extends JFrame{
         File file = new File(text);
         return file.exists();
     }
-
-//    // TODO remove
-//    public static void main(String[] args)
-//    {
-//        CrypDist crypDist = new ;
-//        ScreenManager screenManager = new ScreenManager(crypDist);
-//        screenManager.setCurrentView(new MainScreen(screenManager));
-//    }
 }

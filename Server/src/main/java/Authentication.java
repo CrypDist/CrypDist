@@ -16,6 +16,8 @@ public class Authentication {
 
     public static boolean Authenticate(String id, String pass) {
         String result = list.get(id);
+        if (result == null)
+            return false;
         if(result.equals(pass)) {
             return true;
         }

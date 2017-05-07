@@ -129,14 +129,9 @@ public class DataUploadScreen extends JPanel implements ActionListener{
             controller.setSize((new Dimension(1000,600)));
         }
         else if(e.getSource() == cancel) {
-            try {
-                progressBar.setVisible(false);
-                progressBar.setIndeterminate(false);
-                cancel.setEnabled(false);
-                controller.abortUpload();
-            } catch (InterruptedException e1) {
-                e1.printStackTrace();
-            }
+            progressBar.setVisible(false);
+            progressBar.setIndeterminate(false);
+            cancel.setEnabled(false);
             pathField.setEditable(true);
             browse.setEnabled(true);
             back.setEnabled(true);

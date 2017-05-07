@@ -72,7 +72,7 @@ public class Transaction implements Comparable<Transaction>
     {
         this.filePath = filePath;
         this.fileName = fileName;
-        this.dataSummary = dataSummary;
+        this.dataSummary = dataSummary + "-v" + version;
         this.dataSize = dataSize;
         this.url = url;
         this.signature = signature;
@@ -96,12 +96,22 @@ public class Transaction implements Comparable<Transaction>
         }
     }
 
+    public String getFilePath()
+    {
+        return filePath;
+    }
+
+    public int getVersion()
+    {
+        return version;
+    }
+
     public void execute(ServerAccessor serverAccessor)
     {
         try {
             if (serverAccessor == null)
                 log.info("HEYYYYYYYYYYYYYYYYYOOOOOOOOOOOOOOOOOOOOOOOOO");
-            serverAccessor.upload(url, filePath, fileName);
+            serverAccessor.upload(url, filePath, fileName + version);
         } catch (Exception e) {
             e.printStackTrace();
         }
