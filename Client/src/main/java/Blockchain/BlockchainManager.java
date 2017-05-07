@@ -571,8 +571,9 @@ public class BlockchainManager
 
         log.info("New blockchain size is: " + blockchain.getLength());
         log.info("New blockchain lasthash: " + blockchain.getLastBlock());
-        transactionPendingBucket = new ConcurrentHashMap<String, Transaction>();
-        transactionBucket = new PriorityBlockingQueue<Transaction>();
+        transactionPendingBucket.clear();
+        transactionBucket.clear();
+        transactionBucket_solid.clear();
     }
 
 

@@ -40,9 +40,9 @@ public class ServerAccessor {
     }
 
     public void upload(URL url, String filePath, String fileName) throws Exception {
-        if (doesObjectExist(fileName)) {
-            throw new Exception("file already exists!");
-        }
+//        if (doesObjectExist(fileName)) {
+//            throw new Exception("file already exists!");
+//        }
         try {
             log.info("Uploading a new object to S3 from a file\n");
 
@@ -103,7 +103,6 @@ public class ServerAccessor {
         out.close();
         int responseCode = connection.getResponseCode();
         System.out.println("Service returned response code " + responseCode);
-
     }
 
     public URL getURL(String fileName)

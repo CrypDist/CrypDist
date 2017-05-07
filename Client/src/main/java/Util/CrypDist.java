@@ -220,7 +220,9 @@ public class CrypDist {
                 return;
             }
             Set<String> neededBlocks = blockchainManager.getNeededBlocks(keySet);
-            log.info("neededBlocks.size = " + keySet.size());
+            log.info("neededBlocks.size = " + neededBlocks.size());
+            if (neededBlocks.size() == 1)
+                System.out.println(neededBlocks.iterator().next());
             if (neededBlocks.size() == 0) {
                 blockchainManager.removeInvalidBlocks(keySet);
                 blockchainManager.setUpdating(false);

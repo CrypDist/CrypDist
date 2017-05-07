@@ -96,7 +96,6 @@ public class Client extends Observable implements Runnable{
             crypDist.setSessionKey(key_array);
             crypDist.setAuthenticated(authenticated);
 
-            t2.interrupt();
             serverConnection.close();
         }
         catch(IOException e)
@@ -264,10 +263,10 @@ public class Client extends Observable implements Runnable{
             timer.schedule(new HeartBeatTask(this, peerList, heartBeatPort,serverPort), 0, Config.HEARTBEAT_PERIOD);
 
             Thread t1 = new ReceiveHeartBeat(this);
-            Thread t2 = new ReceiveServerRequest(this);
+            //Thread t2 = new ReceiveServerRequest(this);
 
             t1.start();
-            t2.start();
+            //t2.start();
         }
 
     }

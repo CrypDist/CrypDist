@@ -18,6 +18,7 @@ import java.net.SocketTimeoutException;
 public class ReceiveServerRequest extends Thread {
 
     private static Logger log = Client.log;
+    static boolean broken = false;
 
     private Client client;
     ServerSocket serverSocket;
@@ -32,11 +33,20 @@ public class ReceiveServerRequest extends Thread {
              serverSocket = new ServerSocket(client.getServerPort());
         } catch (IOException e) {
             log.fatal("Cannot open the server socket.");
-            log.trace(e);
+            e.printStackTrace();
+            log.fatal(client.getServerPort());
             return;
         }
 
-        while (true) {
+        while (!broken) {
+
+//            if(Thread.interrupted()) {
+//                System.out.println("IN INTERRUPTED!!!!!!!!!!!!!");
+//                try {
+//                    serverSocket.close();
+//                } catch (Exception e) {
+//                }
+//            }
             try {
                 Socket server = serverSocket.accept();
 
@@ -53,25 +63,24 @@ public class ReceiveServerRequest extends Thread {
                             out.writeInt(Config.MESSAGE_ACK);
                             out.flush();
                             server.close();
-                            return;
                         }
+                        else {
+                            String str = in.readUTF();
 
-                        String str = in.readUTF();
-
-                        str = server.getInetAddress().toString() + Config.CLIENT_MESSAGE_SPLITTER + str;
-                        log.trace("Client is notifying with " + flag  + " | " + str);
-                        String response = client.notify(str);
+                            str = server.getInetAddress().toString() + Config.CLIENT_MESSAGE_SPLITTER + str;
+                            log.trace("Client is notifying with " + flag + " | " + str);
+                            String response = client.notify(str);
 
 
-                        out.writeInt(Config.MESSAGE_ACK);
-                        if(flag == Config.MESSAGE_OUTGOING_RESPONSE){
-                            out.writeUTF(response);
+                            out.writeInt(Config.MESSAGE_ACK);
+                            if (flag == Config.MESSAGE_OUTGOING_RESPONSE) {
+                                out.writeUTF(response);
+                            }
+
+                            out.flush();
+
+                            server.close();
                         }
-
-                        out.flush();
-
-                        server.close();
-
                     } catch (IOException e) {
                         e.printStackTrace();
                     } finally {
@@ -88,10 +97,10 @@ public class ReceiveServerRequest extends Thread {
             }
             catch (SocketTimeoutException s) {
                 log.error("Server socket timed out!");
-                log.trace(s);
+                s.printStackTrace();
             } catch (IOException e) {
                 log.error("IOException while receiving server request!");
-                log.trace(e);
+                e.printStackTrace();
             }
         }
     }
