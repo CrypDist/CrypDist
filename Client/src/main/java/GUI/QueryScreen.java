@@ -126,10 +126,10 @@ public class QueryScreen extends JPanel {
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.ipady = 0;
         gbc.gridx = 0;
-        gbc.gridy = 3;
+        gbc.gridy = 4;
         gbc.weightx = 0;
-        gbc.insets = new Insets(5,50,5,10);
-        gbc.gridwidth = 1;
+        gbc.insets = new Insets(5,10,50,10);
+        gbc.gridwidth = 5;
         add(progressBar,gbc);
 
         repaint();
