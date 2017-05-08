@@ -4,7 +4,12 @@ import Blockchain.Transaction;
 
 import javax.swing.*;
 import javax.swing.border.Border;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.JTableHeader;
+import javax.swing.table.TableColumnModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -44,6 +49,7 @@ public class QueryScreen extends JPanel {
             }
         };
         resultsModel.addColumn("");
+        resultsModel.addColumn("");
         results = new JTable(resultsModel);
         results.addMouseListener(new TableListener());
         currTransactions = new ArrayList<>();
@@ -51,10 +57,31 @@ public class QueryScreen extends JPanel {
         progressBar = new JProgressBar();
         progressBar.setBackground(Color.white);
 
+        DefaultTableCellRenderer moreRenderer = new DefaultTableCellRenderer() {
+            Font font = new Font("Arial",Font.BOLD,results.getFont().getSize());
+
+            @Override
+            public Component getTableCellRendererComponent(JTable table,
+                                                           Object value, boolean isSelected, boolean hasFocus,
+                                                           int row, int column) {
+                super.getTableCellRendererComponent(table, value, isSelected, hasFocus,
+                        row, column);
+                setFont(font);
+                setForeground(Color.BLUE);
+                return this;
+            }
+
+        };
+        TableColumnModel jTableColumnModel = results.getColumnModel();
+        jTableColumnModel.getColumn(1).setMaxWidth(50);
+        jTableColumnModel.getColumn(1).setCellRenderer(moreRenderer);
+
 //        // TODO remove
         Object[] rowData = {"GeneX"};
         resultsModel.addRow(rowData);
+        resultsModel.setValueAt("More", 0,1);
         resultsModel.fireTableDataChanged();
+
 
         run = new GlossyButton("Run");
         back = new GlossyButton("Back");
@@ -166,6 +193,7 @@ public class QueryScreen extends JPanel {
                     {
                         Object[] rowData = {transactions.get(i).getDataSummary()};
                         resultsModel.addRow(rowData);
+                        resultsModel.setValueAt("More", resultsModel.getRowCount()-1,1);
                         resultsModel.fireTableDataChanged();
                         currTransactions.add(transactions.get(i));
                     }
@@ -186,6 +214,14 @@ public class QueryScreen extends JPanel {
         {
             popupMenu.setVisible(false);
             results.clearSelection();
+            if(results.columnAtPoint(event.getPoint()) == 1) {
+                int row = results.rowAtPoint(event.getPoint());
+                if(currTransactions.get(row) != null ) {
+                    JOptionPane.showMessageDialog(QueryScreen.this, "File name: " + currTransactions.get(row).getFileName()
+                            + "\nUser name: " + currTransactions.get(row).getSignature());
+                }
+
+            }
             if (SwingUtilities.isRightMouseButton(event))
             {
                 int row = results.rowAtPoint(event.getPoint());
