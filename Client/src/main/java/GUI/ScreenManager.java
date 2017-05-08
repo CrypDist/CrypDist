@@ -75,8 +75,8 @@ public class ScreenManager extends JFrame implements WindowListener{
 
     public void showLogin()
     {
-        JPanel p = new JPanel(new BorderLayout(5,5));
 
+        JPanel p = new JPanel(new BorderLayout(5,5));
         JPanel labels = new JPanel(new GridLayout(0,1,2,2));
         labels.add(new JLabel("Id", SwingConstants.RIGHT));
         labels.add(new JLabel("Password", SwingConstants.RIGHT));
@@ -97,14 +97,38 @@ public class ScreenManager extends JFrame implements WindowListener{
             Config.USER_NAME = username.getText();
             userName = username.getText();
             Config.USER_PASS = new String(password.getPassword());
+            ImageIcon loading = new ImageIcon(this.getClass().getClassLoader().getResource("ajax-loader.gif"));
+            JLabel loadingLabel = new JLabel(loading, JLabel.CENTER);
+            JPanel loadingPanel = new JPanel();
+            loadingPanel.setLayout(new GridBagLayout());
+            loadingPanel.add(loadingLabel);
+            loadingPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+            loadingPanel.setSize(this.getSize());
+            loadingPanel.setBackground(Color.white);
+            getContentPane().add(loadingPanel,BorderLayout.CENTER);
+            getContentPane().setBackground(Color.BLUE);
+            this.revalidate();
             crypDist = new CrypDist(this);
+            this.remove(loadingPanel);
             setCurrentView(new MainScreen(this));
         }
         else if (result == JOptionPane.CANCEL_OPTION)
         {
             Config.USER_NAME = "";
             Config.USER_PASS = "";
+            ImageIcon loading = new ImageIcon(this.getClass().getClassLoader().getResource("ajax-loader.gif"));
+            JLabel loadingLabel = new JLabel(loading, JLabel.CENTER);
+            JPanel loadingPanel = new JPanel();
+            loadingPanel.setLayout(new GridBagLayout());
+            loadingPanel.add(loadingLabel);
+            loadingPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+            loadingPanel.setSize(this.getSize());
+            loadingPanel.setBackground(Color.white);
+            getContentPane().add(loadingPanel,BorderLayout.CENTER);
+            getContentPane().setBackground(Color.BLUE);
+            this.revalidate();
             crypDist = new CrypDist(this);
+            this.remove(loadingPanel);
             setCurrentView(new MainScreen(this));
         }
     }
@@ -217,7 +241,6 @@ public class ScreenManager extends JFrame implements WindowListener{
         dlg.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
         dlg.setSize(600, 100);
         dlg.setLocationRelativeTo(this);
-
 
         t.start();
         download.start();

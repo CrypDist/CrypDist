@@ -26,7 +26,6 @@ import java.util.Set;
 public class QueryScreen extends JPanel {
 
     JTextField query;
-    //JTextArea results;
     GlossyButton run;
     GlossyButton back;
     ScreenManager controller;
@@ -56,6 +55,8 @@ public class QueryScreen extends JPanel {
         currTransactions.add(null);
         progressBar = new JProgressBar();
         progressBar.setBackground(Color.white);
+
+        query.setFont(new Font("Arial", Font.BOLD,20));
 
         DefaultTableCellRenderer moreRenderer = new DefaultTableCellRenderer() {
             Font font = new Font("Arial",Font.BOLD,results.getFont().getSize());
@@ -112,7 +113,7 @@ public class QueryScreen extends JPanel {
         this.setLayout(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
 
-        gbc.ipady = getHeight()/2 - 125;
+        gbc.ipady = getHeight()/2 - 250;
         gbc.ipadx = 0;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.gridx = 0;
