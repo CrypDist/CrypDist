@@ -1,6 +1,7 @@
 package Util;
 
 import Blockchain.BlockchainManager;
+import GUI.ScreenManager;
 import P2P.Client;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
@@ -19,6 +20,7 @@ public class CrypDist {
     private static transient  Logger log = Logger.getLogger("CrypDist");
     private byte[] sessionKey;
     private boolean authenticated;
+    private ScreenManager screenManager;
     // Flag 1 = Transaction data
     // Flag 2 = Hash
     // Flag 3 = Valid transaction message
@@ -27,8 +29,9 @@ public class CrypDist {
     private static BlockchainManager blockchainManager;
     private static Client client;
 
-    public CrypDist()
+    public CrypDist(ScreenManager screenManager)
     {
+        this.screenManager = screenManager;
         if(!Decryption.initialization())
             log.info("Decryption service cannot be created.");
 

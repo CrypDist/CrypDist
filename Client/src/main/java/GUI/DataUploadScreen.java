@@ -19,6 +19,7 @@ public class DataUploadScreen extends JPanel implements ActionListener{
     GlossyButton cancel;
     GlossyButton browse;
     JTextField pathField;
+    JTextField dataSummary;
     JProgressBar progressBar;
     ScreenManager controller;
 
@@ -33,6 +34,7 @@ public class DataUploadScreen extends JPanel implements ActionListener{
         cancel = new GlossyButton("Cancel");
         browse = new GlossyButton("Browse");
         pathField = new JTextField(30);
+        dataSummary = new JTextField(30);
         progressBar = new JProgressBar();
 
         upload.addActionListener(this);
@@ -60,6 +62,7 @@ public class DataUploadScreen extends JPanel implements ActionListener{
         JPanel browsePanel = new JPanel(new FlowLayout(FlowLayout.LEFT,20,0));
         browsePanel.setBackground(Color.white);
         browsePanel.add(pathField);
+        browsePanel.add(dataSummary);
         browsePanel.add(browse);
         browsePanel.setBorder(BorderFactory.createEmptyBorder(10, 30, 10, 10));
 
@@ -90,7 +93,14 @@ public class DataUploadScreen extends JPanel implements ActionListener{
                     JOptionPane.showMessageDialog(this, "Please enter a valid path!", "Warning",
                             JOptionPane.WARNING_MESSAGE);
                 else {
-                    if(controller.isPathExist(pathField.getText())) {
+                    if (dataSummary.getText().isEmpty())
+                    {
+                        JOptionPane.showMessageDialog(DataUploadScreen.this,
+                                "Please enter a data summary!", "Warning",
+                                JOptionPane.WARNING_MESSAGE);
+                        return;
+                    }
+                    else if(controller.isPathExist(pathField.getText())) {
                         pathField.setEditable(false);
                         browse.setEnabled(false);
                         back.setEnabled(false);
@@ -98,21 +108,20 @@ public class DataUploadScreen extends JPanel implements ActionListener{
                         progressBar.setVisible(true);
                         progressBar.setIndeterminate(true);
 
-                        Runnable myrunnable = new Runnable() {
-                            public void run() {
-
-                                try {
-                                    controller.uploadData(pathField.getText(), "summary");
-                                    pathField.setEditable(true);
-                                    browse.setEnabled(true);
-                                    back.setEnabled(true);
-                                    cancel.setEnabled(false);
-                                    progressBar.setVisible(false);
-                                    progressBar.setIndeterminate(false);
-                                    pathField.setText("");
-                                } catch (InterruptedException e1) {
-                                    e1.printStackTrace();
-                                }
+                        Runnable myrunnable = () -> {
+                            try {
+                                String summary = dataSummary.getText();
+                                controller.uploadData(pathField.getText(), summary);
+                                pathField.setEditable(true);
+                                browse.setEnabled(true);
+                                back.setEnabled(true);
+                                cancel.setEnabled(false);
+                                progressBar.setVisible(false);
+                                progressBar.setIndeterminate(false);
+                                pathField.setText("");
+                                dataSummary.setText("");
+                            } catch (InterruptedException e1) {
+                                e1.printStackTrace();
                             }
                         };
                         new Thread(myrunnable).start();

@@ -78,7 +78,6 @@ public class Blockchain implements Serializable
 
                     blockMap.remove(key);
                 }
-
             }
         }
     }

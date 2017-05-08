@@ -94,14 +94,14 @@ public class ScreenManager extends JFrame{
         {
             Config.USER_NAME = username.getText();
             Config.USER_PASS = password.getName();
-            crypDist = new CrypDist();
+            crypDist = new CrypDist(this);
             setCurrentView(new MainScreen(this));
         }
         else if (result == JOptionPane.CANCEL_OPTION)
         {
             Config.USER_NAME = "";
             Config.USER_PASS = "";
-            crypDist = new CrypDist();
+            crypDist = new CrypDist(this);
             setCurrentView(new MainScreen(this));
         }
     }
@@ -141,7 +141,6 @@ public class ScreenManager extends JFrame{
         } catch (Exception e) {
             e.printStackTrace();
         }
-        TimeUnit.SECONDS.sleep(5);
     }
 
     public void updateData(Transaction transaction, String path, String fileName) throws InterruptedException {
@@ -150,7 +149,6 @@ public class ScreenManager extends JFrame{
         } catch (Exception e) {
             e.printStackTrace();
         }
-        TimeUnit.SECONDS.sleep(5);
     }
 
     public void showDownload(String filename)

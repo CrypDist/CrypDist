@@ -4,23 +4,16 @@ import Blockchain.Transaction;
 
 import javax.swing.*;
 import javax.swing.border.Border;
-import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.TreeNode;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.beans.PropertyChangeListener;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Set;
-import java.util.Vector;
 
 /**
  * Created by gizem on 06.04.2017.
@@ -35,6 +28,8 @@ public class QueryScreen extends JPanel {
     JTable results;
     DefaultTableModel resultsModel;
     ArrayList<Transaction> currTransactions;
+    JPopupMenu popupMenu;
+    JProgressBar progressBar;
 
     public QueryScreen(ScreenManager controller) {
         this.controller = controller;
@@ -53,6 +48,8 @@ public class QueryScreen extends JPanel {
         results.addMouseListener(new TableListener());
         currTransactions = new ArrayList<>();
         currTransactions.add(null);
+        progressBar = new JProgressBar();
+        progressBar.setBackground(Color.white);
 
 //        // TODO remove
         Object[] rowData = {"GeneX"};
@@ -81,6 +78,8 @@ public class QueryScreen extends JPanel {
         run.setBorder(BorderFactory.createCompoundBorder(border,
                 BorderFactory.createEmptyBorder(10, 10, 10, 10)));
         back.setBorder(BorderFactory.createCompoundBorder(border,
+                BorderFactory.createEmptyBorder(10, 10, 10, 10)));
+        progressBar.setBorder(BorderFactory.createCompoundBorder(border,
                 BorderFactory.createEmptyBorder(10, 10, 10, 10)));
 
         this.setLayout(new GridBagLayout());
@@ -124,8 +123,18 @@ public class QueryScreen extends JPanel {
         gbc.gridwidth = 1;
         add(back,gbc);
 
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.ipady = 0;
+        gbc.gridx = 0;
+        gbc.gridy = 3;
+        gbc.weightx = 0;
+        gbc.insets = new Insets(5,50,5,10);
+        gbc.gridwidth = 1;
+        add(progressBar,gbc);
+
         repaint();
         setVisible(true);
+        popupMenu = new JPopupMenu();
     }
 
     class ButtonListener implements ActionListener {
@@ -175,12 +184,15 @@ public class QueryScreen extends JPanel {
     {
         public void mouseClicked(MouseEvent event)
         {
+            popupMenu.setVisible(false);
+            results.clearSelection();
             if (SwingUtilities.isRightMouseButton(event))
             {
                 int row = results.rowAtPoint(event.getPoint());
+                results.setRowSelectionInterval(row, row);
                 if (row >= 0 && row < currTransactions.size())
                 {
-                    JPopupMenu popupMenu = new JPopupMenu();
+                    popupMenu = new JPopupMenu();
                     JMenuItem download = new JMenuItem("Download");
                     JMenuItem update = new JMenuItem("Update");
                     popupMenu.add(download);
@@ -191,16 +203,32 @@ public class QueryScreen extends JPanel {
                         update.setSelected(false);
                         String filename = currTransactions.get(row).getFileName();
                         controller.showDownload(filename);
+                        popupMenu.setVisible(false);
                     });
                     update.addActionListener(e -> {
                         download.setSelected(false);
                         JFileChooser fileChooser = new JFileChooser();
-                        String path = fileChooser.getSelectedFile().getAbsolutePath();
-                        String fileName = fileChooser.getSelectedFile().getName();
-                        try {
-                            controller.updateData(currTransactions.get(row), path, fileName);
-                        } catch (InterruptedException e1) {
-                            e1.printStackTrace();
+                        int returnVal = fileChooser.showOpenDialog(QueryScreen.this);
+
+                        if (returnVal == JFileChooser.APPROVE_OPTION) {
+                            progressBar.setVisible(true);
+                            progressBar.setIndeterminate(true);
+                            String path = fileChooser.getSelectedFile().getAbsolutePath();
+                            String fileName = fileChooser.getSelectedFile().getName();
+                            try {
+                                controller.updateData(currTransactions.get(row), path, fileName);
+                            } catch (InterruptedException e1) {
+                                e1.printStackTrace();
+                            }
+                            progressBar.setVisible(false);
+                            progressBar.setIndeterminate(false);
+                            popupMenu.setVisible(false);
+                        }
+                        else
+                        {
+                            download.setSelected(false);
+                            update.setSelected(false);
+                            popupMenu.setVisible(false);
                         }
                     });
                 }
