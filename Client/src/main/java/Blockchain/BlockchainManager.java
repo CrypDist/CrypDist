@@ -557,7 +557,6 @@ public class BlockchainManager
         log.info("Size of adding: " + blocks.size());
         log.info("1.Blockchain size is: " + blockchain.getLength());
         log.info("1.Blockchain lasthash: " + blockchain.getLastBlock());
-        log.info("blocks size is: " + blocks.size());
         while (blocks.size() > 0) {
 
             Iterator<String> iterator = blocks.keySet().iterator();

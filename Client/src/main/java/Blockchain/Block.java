@@ -39,6 +39,7 @@ public class Block implements Serializable
     // genesis block
     public Block()
     {
+        prevHash = "";
         length = 0;
         indegree = 0;
         hash = "0x0";

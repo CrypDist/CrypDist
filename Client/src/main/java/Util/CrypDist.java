@@ -221,17 +221,29 @@ public class CrypDist {
             // UPDATE BLOCKCHAIN
             log.warn("Blockchain update procedure is started!");
             ArrayList<String> keySet = client.receiveKeySet();
-            if (keySet.size() == 0) {
-                return;
-            }
             Set<String> purifiedList = blockchainManager.getPurifiedList(keySet);
+
+            for (String str: purifiedList)
+            {
+                System.out.println("KEY IN PURIFIED LIST: " + str);
+            }
+
+            for (String str:blockchainManager.getBlockchain().getKeySet())
+            {
+                System.out.println("KEY IN BLOCKCHAIN: " + str);
+            }
+
             Set<String> neededBlocks = blockchainManager.getNeededBlocks(purifiedList);
-            if (neededBlocks.size() == 1)
-                System.out.println(neededBlocks.iterator().next());
 
             blockchainManager.removeInvalidBlocks(new ArrayList<>(purifiedList));
 
-            if (neededBlocks.size() == 0) {
+            if (keySet.size() == 0) {
+                return;
+            }
+            if (neededBlocks.size() == 1){
+                System.out.println(neededBlocks.iterator().next());
+            }
+            else if (neededBlocks.size() == 0) {
                 blockchainManager.setUpdating(false);
                 return;
             }
