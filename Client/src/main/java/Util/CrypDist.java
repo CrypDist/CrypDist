@@ -34,12 +34,22 @@ public class CrypDist {
         this.screenManager = screenManager;
         if(!Decryption.initialization())
             log.error("Decryption service cannot be created.");
-
         client = new Client(this);
         blockchainManager = new BlockchainManager(this, sessionKey);
+        updateBlockchain();
         Thread t = new Thread(client);
         t.start();
+    }
+
+    public CrypDist()
+    {
+        if(!Decryption.initialization())
+            log.error("Decryption service cannot be created.");
+        client = new Client(this);
+        blockchainManager = new BlockchainManager(this, sessionKey);
         updateBlockchain();
+        Thread t = new Thread(client);
+        t.start();
     }
 
     public BlockchainManager getBlockchainManager()

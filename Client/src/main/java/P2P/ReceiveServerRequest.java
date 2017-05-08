@@ -52,7 +52,7 @@ public class ReceiveServerRequest extends Thread {
 
                 new Thread(() -> {
                     try {
-                        log.info("Server request incoming.");
+                        log.trace("Server request incoming.");
 
                         ObjectInputStream in = new ObjectInputStream(new DataInputStream(server.getInputStream()));
                         ObjectOutputStream out = new ObjectOutputStream(new DataOutputStream(server.getOutputStream()));

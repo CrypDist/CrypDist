@@ -35,6 +35,7 @@ public class Decryption {
             instance = new Decryption();
             return true;
         } catch (Exception e ) {
+            e.printStackTrace();
             return false;
         }
     }
