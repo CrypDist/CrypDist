@@ -31,7 +31,7 @@ public class Config {
 
     public static String DB_TABLE_NAME="blockchain";
 
-    public static String SERVER_ADDRESS = "46.101.245.232";
+    public static String SERVER_ADDRESS = "207.154.219.184";
     public static int SERVER_PORT = 4141;
     public static int SERVER_TIMEOUT = 5000;
 

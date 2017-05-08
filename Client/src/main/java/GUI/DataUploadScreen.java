@@ -6,6 +6,8 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.io.File;
 
 /**
@@ -50,6 +52,43 @@ public class DataUploadScreen extends JPanel implements ActionListener{
         pathField.setFont(new Font("Arial", Font.LAYOUT_LEFT_TO_RIGHT,14));
         pathField.setBorder(border);
 
+        pathField.setForeground(Color.GRAY);
+        pathField.setText("Path");
+        pathField.addFocusListener(new FocusListener() {
+            @Override
+            public void focusGained(FocusEvent e) {
+                if (pathField.getText().equals("Path")) {
+                    pathField.setText("");
+                    pathField.setForeground(Color.BLACK);
+                }
+            }
+            @Override
+            public void focusLost(FocusEvent e) {
+                if (pathField.getText().isEmpty()) {
+                    pathField.setForeground(Color.GRAY);
+                    pathField.setText("Path");
+                }
+            }
+        });
+
+        dataSummary.setForeground(Color.GRAY);
+        dataSummary.setText("Data summary");
+        dataSummary.addFocusListener(new FocusListener() {
+            @Override
+            public void focusGained(FocusEvent e) {
+                if (dataSummary.getText().equals("Data summary")) {
+                    dataSummary.setText("");
+                    dataSummary.setForeground(Color.BLACK);
+                }
+            }
+            @Override
+            public void focusLost(FocusEvent e) {
+                if (dataSummary.getText().isEmpty()) {
+                    dataSummary.setForeground(Color.GRAY);
+                    dataSummary.setText("Data summary");
+                }
+            }
+        });
         // Create the layout structure
         GridLayout mainLayout = new GridLayout(5,0);
         this.setLayout(mainLayout);

@@ -75,7 +75,7 @@ public class ScreenManager extends JFrame implements WindowListener{
 
     public void showLogin()
     {
-
+        this.setVisible(false);
         JPanel p = new JPanel(new BorderLayout(5,5));
         JPanel labels = new JPanel(new GridLayout(0,1,2,2));
         labels.add(new JLabel("Id", SwingConstants.RIGHT));
@@ -92,6 +92,7 @@ public class ScreenManager extends JFrame implements WindowListener{
 
         int result = JOptionPane.showConfirmDialog(
                     this, p, "Log In", JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE);
+        this.setVisible(true);
         if (result == JOptionPane.OK_OPTION)
         {
             Config.USER_NAME = username.getText();
