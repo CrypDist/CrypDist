@@ -6,7 +6,6 @@ import Blockchain.Transaction;
 import Util.Config;
 import Util.CrypDist;
 import jdk.nashorn.internal.scripts.JO;
-import org.apache.log4j.Logger;
 import sun.awt.ConstrainableGraphics;
 
 import javax.swing.*;
@@ -28,7 +27,7 @@ import java.util.concurrent.TimeUnit;
  * Created by gizem on 06.04.2017.
  */
 public class ScreenManager extends JFrame implements WindowListener{
-    public static Logger logger = Logger.getLogger("GUI");
+
     private CrypDist crypDist;
     JPanel currentView;
     private String userName;
@@ -76,8 +75,8 @@ public class ScreenManager extends JFrame implements WindowListener{
 
     public void showLogin()
     {
+        this.setVisible(false);
         JPanel p = new JPanel(new BorderLayout(5,5));
-
         JPanel labels = new JPanel(new GridLayout(0,1,2,2));
         labels.add(new JLabel("Id", SwingConstants.RIGHT));
         labels.add(new JLabel("Password", SwingConstants.RIGHT));
@@ -93,19 +92,44 @@ public class ScreenManager extends JFrame implements WindowListener{
 
         int result = JOptionPane.showConfirmDialog(
                     this, p, "Log In", JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE);
+        this.setVisible(true);
         if (result == JOptionPane.OK_OPTION)
         {
             Config.USER_NAME = username.getText();
             userName = username.getText();
             Config.USER_PASS = new String(password.getPassword());
+            ImageIcon loading = new ImageIcon(this.getClass().getClassLoader().getResource("ajax-loader.gif"));
+            JLabel loadingLabel = new JLabel(loading, JLabel.CENTER);
+            JPanel loadingPanel = new JPanel();
+            loadingPanel.setLayout(new GridBagLayout());
+            loadingPanel.add(loadingLabel);
+            loadingPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+            loadingPanel.setSize(this.getSize());
+            loadingPanel.setBackground(Color.white);
+            getContentPane().add(loadingPanel,BorderLayout.CENTER);
+            getContentPane().setBackground(Color.BLUE);
+            this.revalidate();
             crypDist = new CrypDist(this);
+            this.remove(loadingPanel);
             setCurrentView(new MainScreen(this));
         }
         else if (result == JOptionPane.CANCEL_OPTION)
         {
             Config.USER_NAME = "";
             Config.USER_PASS = "";
+            ImageIcon loading = new ImageIcon(this.getClass().getClassLoader().getResource("ajax-loader.gif"));
+            JLabel loadingLabel = new JLabel(loading, JLabel.CENTER);
+            JPanel loadingPanel = new JPanel();
+            loadingPanel.setLayout(new GridBagLayout());
+            loadingPanel.add(loadingLabel);
+            loadingPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+            loadingPanel.setSize(this.getSize());
+            loadingPanel.setBackground(Color.white);
+            getContentPane().add(loadingPanel,BorderLayout.CENTER);
+            getContentPane().setBackground(Color.BLUE);
+            this.revalidate();
             crypDist = new CrypDist(this);
+            this.remove(loadingPanel);
             setCurrentView(new MainScreen(this));
         }
     }
@@ -183,8 +207,6 @@ public class ScreenManager extends JFrame implements WindowListener{
         final Thread t = new Thread(() -> dlg.setVisible(true));
 
         final Thread download = new Thread(() -> {
-            System.out.println("Name: " + filename);
-            System.out.println("Path: " + path);
             crypDist.getBlockchainManager().downloadFile(filename, path);
             System.out.println(filename + " - " + path + " is downloaded");
             try {
@@ -215,10 +237,9 @@ public class ScreenManager extends JFrame implements WindowListener{
         bottomP.add(cancel);
         cancel.setSize(100,80);
         dlg.add(bottomP);
-        dlg.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+        dlg.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
         dlg.setSize(600, 100);
         dlg.setLocationRelativeTo(this);
-
 
         t.start();
         download.start();
@@ -242,6 +263,8 @@ public class ScreenManager extends JFrame implements WindowListener{
         while (iterator.hasNext())
         {
             Block block = blockchain.getBlock(iterator.next());
+            System.out.println(block != null);
+            System.out.println(block.getTransactions() != null);
 
             ArrayList<Transaction> transactions = block.getTransactions();
             int index = 0;
