@@ -99,8 +99,8 @@ public class Client extends Observable implements Runnable{
         }
         catch(IOException e)
         {
-            log.trace("Cannot connect to the server, terminated.");
-            log.trace(e);
+            log.error("Cannot connect to the server, terminated.");
+            log.error(e);
         }
     }
 
@@ -117,15 +117,15 @@ public class Client extends Observable implements Runnable{
                     //new Peer8Notifier(p,heartBeatPort,serverPort).start();
                 }
                 catch (ClassNotFoundException classException) {
-                    log.trace("A peer cannot be resolved to an object.");
-                    log.trace(classException);
+                    log.error("A peer cannot be resolved to an object.");
+                    log.error(classException);
                 }
             }
         } catch (IOException e) {
             throw e;
         }
 
-        log.trace("Client initialized with size: " + peerList.size());
+        log.info("Client initialized with size: " + peerList.size());
 
     }
 
@@ -144,7 +144,7 @@ public class Client extends Observable implements Runnable{
                 t.join();
             }
         } catch (InterruptedException e) {
-            log.trace("Message interrupted.");
+            log.error("Message interrupted.");
         }
 
     }
@@ -159,12 +159,12 @@ public class Client extends Observable implements Runnable{
             }
         }
         if(t == null){
-            log.trace("Peer cannot found.");
+            log.error("Peer cannot found.");
         } else {
             try {
                 t.join();
             } catch (InterruptedException e) {
-                log.trace("Message sending is interrupted before success.");
+                log.error("Message sending is interrupted before success.");
             }
         }
     }
@@ -174,7 +174,7 @@ public class Client extends Observable implements Runnable{
         ExecutorService executor = Executors.newCachedThreadPool();
         ArrayList<Future<String>> futures = new ArrayList<>();
 
-        log.trace("BROADCASTED TO " + peerList.size() + " PEERS");
+        log.info("BROADCASTED TO " + peerList.size() + " PEERS");
         for(Peer peer:peerList.keySet()) {
             Callable<String> task = new ResponsedMessageTask(peer,message);
             Future<String> future = executor.submit(task);
@@ -188,14 +188,14 @@ public class Client extends Observable implements Runnable{
                 String res = future.get();
                 if(res != null && !res.equals(""))
                 {
-                    log.trace("RESULT IS ADDED: " + res);
+                    log.debug("RESULT IS ADDED: " + res);
                     result.add(res);
                 }
                 else
-                    log.trace("KEYSET CANNOT BE RECEIVED.");
+                    log.error("KEYSET CANNOT BE RECEIVED.");
             }
         } catch (Exception e) {
-            log.trace("KEYSET CANNOT BE RECEIVED.");
+            log.error("KEYSET CANNOT BE RECEIVED.");
         }
 
         return result;
@@ -220,9 +220,7 @@ public class Client extends Observable implements Runnable{
                 String res  = entry.getValue().get();
                 if(res != null && !res.equals(""))
                     result.put(entry.getKey().getAddress().toString(),res);
-            } catch (Exception e) {
-
-            }
+            } catch (Exception e) {}
         }
 
         return result;
@@ -280,10 +278,10 @@ public class Client extends Observable implements Runnable{
 
     public HashMap<String, String > receiveBlocks(Set<String> neededBlocks) {
 
-        log.trace("RECEIVE BLOCKS ARE CALLED");
+        log.debug("RECEIVE BLOCKS ARE CALLED");
 
         for(String s : neededBlocks)
-            log.trace("STRING:" + s);
+            log.debug("STRING:" + s);
 
         int peerSize = peerList.size();
         Peer[] peers = new Peer[peerSize];
@@ -338,7 +336,7 @@ public class Client extends Observable implements Runnable{
     }
 
     public ArrayList<String> receiveKeySet() {
-        log.trace("KEY SET IS CALLED WITH " + peerList.size() + " PEERS");
+        log.info("KEY SET IS CALLED WITH " + peerList.size() + " PEERS");
         JsonObject obj = new JsonObject();
         obj.addProperty("flag",Config.MESSAGE_REQUEST_KEYSET);
         return broadCastMessageResponse(obj.toString());

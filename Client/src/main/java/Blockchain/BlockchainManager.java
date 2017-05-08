@@ -108,7 +108,7 @@ public class BlockchainManager
         if(!crypDist.isAuthenticated())
             return;
 
-        log.trace("FILE PATH CAME AS :" + filePath);
+        log.debug("FILE PATH CAME AS :" + filePath);
         String[] path = filePath.substring(1).split("/");
         String fileName = path[path.length - 1];
 
@@ -121,10 +121,10 @@ public class BlockchainManager
 
             log.trace(gson.toJson(upload));
             transactionPendingBucket.put(gson.toJson(upload), upload);
-            log.trace("Transaction added, being broadcasted.");
+            log.debug("Transaction added, being broadcasted.");
             broadcast(gson.toJson(upload), Config.FLAG_BROADCAST_TRANSACTION, null);
 
-            log.trace("Notified");
+            log.debug("Notified");
         }
         else
             throw new Exception("No such file!");
@@ -136,7 +136,7 @@ public class BlockchainManager
         if(!crypDist.isAuthenticated())
             return;
 
-        log.trace("FILE PATH CAME AS :" + filePath);
+        log.debug("FILE PATH CAME AS :" + filePath);
         String[] path = filePath.substring(1).split("/");
         String fileName = path[path.length - 1];
 
@@ -150,10 +150,10 @@ public class BlockchainManager
 
             log.trace(gson.toJson(upload));
             transactionPendingBucket.put(gson.toJson(upload), upload);
-            log.trace("Transaction added, being broadcasted.");
+            log.info("Transaction added, being broadcasted.");
             broadcast(gson.toJson(upload), Config.FLAG_BROADCAST_TRANSACTION, null);
 
-            log.trace("Notified");
+            log.debug("Notified");
         }
         else
             throw new Exception("No such file!");
@@ -174,7 +174,7 @@ public class BlockchainManager
         Transaction transaction = gson.fromJson(data, Transaction.class);
 
         transactionBucket.add(transaction);
-        log.trace("My bucket size is:" + transactionBucket.size());
+        log.info("My bucket size is:" + transactionBucket.size());
 
     }
 
@@ -187,16 +187,16 @@ public class BlockchainManager
         synchronized (this) {
             if (!hashes.containsKey(blockId)) {
                 hashes.put(blockId, new ArrayList<>());
-                log.trace("The first time a hash is in hashes for the block!");
+                log.warn("The first time a hash is in hashes for the block!");
             }
             hashes.get(blockId).add(new Pair<>(data, timeStamp));
-            log.trace("the hash is added to the hashes");
+            log.debug("the hash is added to the hashes");
         }
     }
 
     public void createBlock()
     {
-        log.trace("Block is being created");
+        log.info("Block is being created");
 
         String prevHash = blockchain.getLastBlock();
         long timestamp = getTime();
@@ -212,7 +212,7 @@ public class BlockchainManager
         Block block = null;
         try {
             synchronized (this) {
-                log.trace("Hash in block: " + hash);
+                log.info("Hash in block: " + hash);
                 block = new Block(prevHash, timestamp, hash, transactionBucket_solid, blockchain);
                 for (Transaction t : block.getTransactions()) {
                     transactionBucket.remove(t);
@@ -322,7 +322,7 @@ public class BlockchainManager
                 transactionPendingBucket.remove(transaction);
                 if (!tr.getFileName().equals("merhaba"))
                     tr.execute(serverAccessor);
-                log.trace("VALIDATED");
+                log.info("VALIDATED");
             }
         }
     }
@@ -399,7 +399,7 @@ public class BlockchainManager
             }
             catch (NoSuchAlgorithmException | UnsupportedEncodingException e) {}
 
-            log.trace("CALL TO NOTIFY OBSERVERS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+            log.debug("CALL TO NOTIFY OBSERVERS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 
             Random rnd = new Random();
             try {
@@ -450,7 +450,7 @@ public class BlockchainManager
                     if (transactionBucket.peek().getTimeStamp() < getTime() - MAX_TIMEOUT_MS)
                     {
                         transactionBucket_solid.add(transactionBucket.poll());
-                        log.trace("Transaction bucket size = " + transactionBucket.size());
+                        log.debug("Transaction bucket size = " + transactionBucket.size());
                         if (transactionBucket_solid.size() == BLOCK_SIZE)
                         {
                             createBlock();
@@ -560,9 +560,9 @@ public class BlockchainManager
 
         String lastHash = blockchain.getLastBlock();
 
-        log.trace("Size of adding: " + blocks.size());
-        log.trace("1.Blockchain size is: " + blockchain.getLength());
-        log.trace("1.Blockchain lasthash: " + blockchain.getLastBlock());
+        log.debug("Size of adding: " + blocks.size());
+        log.debug("1.Blockchain size is: " + blockchain.getLength());
+        log.debug("1.Blockchain lasthash: " + blockchain.getLastBlock());
         while (blocks.size() > 0) {
 
             Iterator<String> iterator = blocks.keySet().iterator();
@@ -591,8 +591,8 @@ public class BlockchainManager
 
         }
 
-        log.trace("New blockchain size is: " + blockchain.getLength());
-        log.trace("New blockchain lasthash: " + blockchain.getLastBlock());
+        log.info("New blockchain size is: " + blockchain.getLength());
+        log.info("New blockchain lasthash: " + blockchain.getLastBlock());
         transactionPendingBucket.clear();
         transactionBucket.clear();
         transactionBucket_solid.clear();

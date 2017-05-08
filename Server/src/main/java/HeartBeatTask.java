@@ -10,7 +10,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-
 /**
  * P2P.HeartBeatTask class for both Server and P2P.Client for refreshing their peerList by sending heartbeats.
  *
@@ -19,7 +18,6 @@ import java.util.concurrent.Future;
 
 
 public class HeartBeatTask extends TimerTask {
-
     private class SendHeartBeat implements Callable<Peer> {
         private Peer peer;
 
@@ -86,14 +84,13 @@ public class HeartBeatTask extends TimerTask {
             }
 
         } catch (Exception e) {
-            log.trace("Interrupted.");
             e.printStackTrace();
         }
 
         int a = peerList.size();
 
         if(size > a ) {
-            log.trace(size-a + " is disconnected.");
+            System.out.println(size-a + " is disconnected.");
         }
     }
 

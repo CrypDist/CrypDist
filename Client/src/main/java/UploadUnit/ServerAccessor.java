@@ -44,26 +44,26 @@ public class ServerAccessor {
 //            throw new Exception("file already exists!");
 //        }
         try {
-            log.trace("Uploading a new object to S3 from a file\n");
+            log.debug("Uploading a new object to S3 from a file\n");
 
             UploadObject(url, filePath);
         } catch (AmazonServiceException ase) {
-            log.trace("Caught an AmazonServiceException, which " +
+            log.error("Caught an AmazonServiceException, which " +
                     "means your request made it " +
                     "to Amazon S3, but was rejected with an error response" +
                     " for some reason.");
-            log.trace("Error Message:    " + ase.getMessage());
-            log.trace("HTTP Status Code: " + ase.getStatusCode());
-            log.trace("AWS Error Code:   " + ase.getErrorCode());
-            log.trace("Error Type:       " + ase.getErrorType());
-            log.trace("Request ID:       " + ase.getRequestId());
+            log.error("Error Message:    " + ase.getMessage());
+            log.error("HTTP Status Code: " + ase.getStatusCode());
+            log.error("AWS Error Code:   " + ase.getErrorCode());
+            log.error("Error Type:       " + ase.getErrorType());
+            log.error("Request ID:       " + ase.getRequestId());
         } catch (AmazonClientException ace) {
-            log.trace("Caught an AmazonClientException, which " +
+            log.error("Caught an AmazonClientException, which " +
                     "means the client encountered " +
                     "an internal error while trying to " +
                     "communicate with S3, " +
                     "such as not being able to access the network.");
-            log.trace("Error Message: " + ace.getMessage());
+            log.error("Error Message: " + ace.getMessage());
         }
     }
 
@@ -83,8 +83,8 @@ public class ServerAccessor {
 
     public boolean doesObjectExist(String fileName)
     {
-        log.trace("BUCKET:" + bucketName);
-        log.trace("FILE:" + fileName);
+        log.info("BUCKET:" + bucketName);
+        log.info("FILE:" + fileName);
         return s3client.doesObjectExist(bucketName, fileName);
     }
 
@@ -102,12 +102,12 @@ public class ServerAccessor {
         out.write(new String(Files.readAllBytes(Paths.get(filePath))));
         out.close();
         int responseCode = connection.getResponseCode();
-        log.trace("Service returned response code " + responseCode);
+        log.info("Service returned response code " + responseCode);
     }
 
     public URL getURL(String fileName)
     {
-        log.trace("Generating pre-signed URL.");
+        log.debug("Generating pre-signed URL.");
         java.util.Date expiration = new java.util.Date();
         long milliSeconds = expiration.getTime();
         milliSeconds += Config.UPLOAD_EXPIRATION_TIME; // Add 10 sec.

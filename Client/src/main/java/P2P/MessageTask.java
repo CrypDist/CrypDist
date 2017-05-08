@@ -30,8 +30,8 @@ public class MessageTask implements Runnable {
         while(trials < Config.MESSAGE_MAX_TRIALS) {
 
             try {
-                log.trace(p.getPeerServerPort());
-                log.trace(p.getAddress());
+                log.debug(p.getPeerServerPort());
+                log.debug(p.getAddress());
                 Socket messagedClient = new Socket(p.getAddress(), p.getPeerServerPort());
                 messagedClient.setSoTimeout(Config.MESSAGE_TIMEOUT);
                 ObjectOutputStream out = new ObjectOutputStream(messagedClient.getOutputStream());
@@ -51,7 +51,7 @@ public class MessageTask implements Runnable {
             }
             trials++;
         }
-        log.trace("Message cannot be sent after " + Config.MESSAGE_MAX_TRIALS + " trials");
-        log.trace(msg);
+        log.error("Message cannot be sent after " + Config.MESSAGE_MAX_TRIALS + " trials");
+        log.error(msg);
     }
 }

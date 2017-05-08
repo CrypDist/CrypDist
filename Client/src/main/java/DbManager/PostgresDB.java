@@ -26,15 +26,15 @@ public class PostgresDB {
         try {
             Class.forName("org.postgresql.Driver");
         } catch (ClassNotFoundException e) {
-            log.trace("Postgres driver couldn't be reached. Download the jar file and link it to the project");
-            log.trace(e);
+            log.error("Postgres driver couldn't be reached. Download the jar file and link it to the project");
+            log.error(e);
         }
 
         try {
             setupDB(dbName, user, secret, reset);
         } catch (SQLException e) {
-            log.trace("Postgres could not setup the desired database.");
-            log.trace(e);
+            log.error("Postgres could not setup the desired database.");
+            log.error(e);
         }
 
 
@@ -46,8 +46,8 @@ public class PostgresDB {
         try {
             conn = DriverManager.getConnection(url, user, secret);
         } catch (SQLException e) {
-            log.trace("DB could not be created, there is a possible problem related to properties.");
-            log.trace(e);
+            log.error("DB could not be created, there is a possible problem related to properties.");
+            log.error(e);
         }
 
         String query = "SELECT datname FROM pg_database WHERE datname=\'" + dbName + "\'";

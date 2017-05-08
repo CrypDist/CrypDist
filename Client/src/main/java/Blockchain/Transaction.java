@@ -109,8 +109,6 @@ public class Transaction implements Comparable<Transaction>
     public void execute(ServerAccessor serverAccessor)
     {
         try {
-            if (serverAccessor == null)
-                log.trace("HEYYYYYYYYYYYYYYYYYOOOOOOOOOOOOOOOOOOOOOOOOO");
             serverAccessor.upload(url, filePath, fileName + version);
         } catch (Exception e) {
             e.printStackTrace();

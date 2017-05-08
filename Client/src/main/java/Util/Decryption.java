@@ -43,12 +43,12 @@ public class Decryption {
         synchronized (lock) {
             try {
                 String result = new String(cipher.doFinal(secret), "UTF8");
-                log.trace(result);
+                log.debug(result);
                 String[] splitted = result.split(Config.KEY_SPLITTER);
                 if (splitted.length < 2 || splitted.length > 2) {
-                    log.trace("SPLITTED SIZE=\t" + splitted.length);
+                    log.error("SPLITTED SIZE=\t" + splitted.length);
                     for (String str : splitted)
-                        log.trace("SPLITTED\t" + str);
+                        log.error("SPLITTED\t" + str);
                     return null;
                 }
                 return splitted;

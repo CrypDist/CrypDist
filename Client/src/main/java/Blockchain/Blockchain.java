@@ -38,7 +38,7 @@ public class Blockchain implements Serializable
             {
                 longest = tmpBlock.getLength();
                 validBlock = tmpBlock;
-                log.trace("LAST HASH IS NOW: " + validBlock.getHash());
+                log.debug("LAST HASH IS NOW: " + validBlock.getHash());
             }
         }
     }
@@ -145,16 +145,16 @@ public class Blockchain implements Serializable
     public Set<String> getNeededBlocks(Set<String> keySet)
     {
 
-        log.trace("KEYSET IS:");
+        log.debug("KEYSET IS:");
 
         for(String s : keySet) {
-            log.trace("ITEM " + s);
+            log.debug("ITEM " + s);
         }
 
-        log.trace("BLOCKMAP IS:");
+        log.debug("BLOCKMAP IS:");
 
         for(String s : blockMap.keySet()) {
-            log.trace("MAP " + s);
+            log.debug("MAP " + s);
         }
 
         Set<String> neededBlocks = new HashSet<>();
@@ -164,7 +164,7 @@ public class Blockchain implements Serializable
             String key = iterator.next();
             if (!blockMap.containsKey(key)) {
                 neededBlocks.add(key);
-                log.trace(key + " is added!!!!!!!!!!!!!!!!!");
+                log.debug(key + " is added!!!!!!!!!!!!!!!!!");
             }
         }
         return neededBlocks;

@@ -56,7 +56,7 @@ public class ReceiveHeartBeat extends Thread {
                     }
                     if (b) {
                         Peer x = new Peer(addr,hbPort,swPort);
-                        log.trace("New peer added.");
+                        log.info("New peer added.");
                         client.peerList.put(x,0);
                     }
                 }
@@ -68,11 +68,11 @@ public class ReceiveHeartBeat extends Thread {
                 hb.close();
             }
             catch (SocketTimeoutException s) {
-                log.trace("Server socket timed out!");
-                log.trace(s);
+                log.error("Server socket timed out!");
+                log.error(s);
             } catch (IOException e) {
-                log.trace("IOException while receiving server request!");
-                log.trace(e);
+                log.error("IOException while receiving server request!");
+                log.error(e);
             }
         }
     }

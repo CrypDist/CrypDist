@@ -32,9 +32,9 @@ public class ReceiveServerRequest extends Thread {
         try {
              serverSocket = new ServerSocket(client.getServerPort());
         } catch (IOException e) {
-            log.trace("Cannot open the server socket.");
+            log.error("Cannot open the server socket.");
             e.printStackTrace();
-            log.trace(client.getServerPort());
+            log.error(client.getServerPort());
             return;
         }
 
@@ -52,7 +52,7 @@ public class ReceiveServerRequest extends Thread {
 
                 new Thread(() -> {
                     try {
-                        log.trace("Server request incoming.");
+                        log.info("Server request incoming.");
 
                         ObjectInputStream in = new ObjectInputStream(new DataInputStream(server.getInputStream()));
                         ObjectOutputStream out = new ObjectOutputStream(new DataOutputStream(server.getOutputStream()));
@@ -68,7 +68,7 @@ public class ReceiveServerRequest extends Thread {
                             String str = in.readUTF();
 
                             str = server.getInetAddress().toString() + Config.CLIENT_MESSAGE_SPLITTER + str;
-                            log.trace("Client is notifying with " + flag + " | " + str);
+                            log.debug("Client is notifying with " + flag + " | " + str);
                             String response = client.notify(str);
 
 
@@ -96,10 +96,10 @@ public class ReceiveServerRequest extends Thread {
 
             }
             catch (SocketTimeoutException s) {
-                log.trace("Server socket timed out!");
+                log.error("Server socket timed out!");
                 s.printStackTrace();
             } catch (IOException e) {
-                log.trace("IOException while receiving server request!");
+                log.error("IOException while receiving server request!");
                 e.printStackTrace();
             }
         }
