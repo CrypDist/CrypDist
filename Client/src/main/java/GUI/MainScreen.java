@@ -7,6 +7,7 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.security.NoSuchAlgorithmException;
 import java.util.Vector;
 
 /**
@@ -25,7 +26,12 @@ public class MainScreen extends JPanel {
     public  MainScreen(ScreenManager controller)
     {
         this.controller = controller;
-        String[][] blocklist = controller.getBlockList();
+        String[][] blocklist = new String[0][];
+        try {
+            blocklist = controller.getBlockList();
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
         setSize(new Dimension(1000,600));
 
         JPanel buttonsPanel = new JPanel(new GridLayout(0,1));
@@ -127,7 +133,12 @@ public class MainScreen extends JPanel {
             }
             else if (e.getSource() == refresh)
             {
-                String[][] blocklist = controller.getBlockList();
+                String[][] blocklist = new String[0][];
+                try {
+                    blocklist = controller.getBlockList();
+                } catch (NoSuchAlgorithmException e1) {
+                    e1.printStackTrace();
+                }
                 tableModel.setRowCount(0);
 
                 for (int i = 0; i < blocklist.length; i++)

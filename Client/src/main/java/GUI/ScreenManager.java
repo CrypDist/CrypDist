@@ -14,7 +14,12 @@ import javax.swing.tree.TreeNode;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import java.io.File;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -24,7 +29,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * Created by gizem on 06.04.2017.
  */
-public class ScreenManager extends JFrame{
+public class ScreenManager extends JFrame implements WindowListener{
 
     private CrypDist crypDist;
     JPanel currentView;
@@ -110,7 +115,7 @@ public class ScreenManager extends JFrame{
         return crypDist.isAuthenticated();
     }
 
-    public String[][] getBlockList() {
+    public String[][] getBlockList() throws NoSuchAlgorithmException {
         // TODO
 //        String[][] blockList = {
 //                {"#id1", "2017-04-11T18:46:07+00:00 "},
@@ -119,6 +124,7 @@ public class ScreenManager extends JFrame{
 //                {"#id4", "2014-04-11T18:46:07+00:00 "},
 //                {"#id5", "2013-04-11T18:46:07+00:00 "}
 //        };
+        MessageDigest digest = MessageDigest.getInstance("SHA-256");
         Blockchain blockchain = crypDist.getBlockchainManager().getBlockchain();
         Set<String> keySet = blockchain.getKeySet();
         String[][] blockList = new String[keySet.size()][2];
@@ -128,7 +134,8 @@ public class ScreenManager extends JFrame{
         while (iterator.hasNext())
         {
             Block block = blockchain.getBlock(iterator.next());
-            blockList[index][0] = block.getHash();
+            byte[] hash = digest.digest(block.getHash().getBytes(StandardCharsets.UTF_8));
+            blockList[index][0] = new String(hash);
             blockList[index++][1] = block.getTimestamp() + "";
         }
         return blockList;
@@ -249,5 +256,41 @@ public class ScreenManager extends JFrame{
     public boolean isPathExist(String text) {
         File file = new File(text);
         return file.exists();
+    }
+
+    @Override
+    public void windowOpened(WindowEvent e) {
+
+    }
+
+    @Override
+    public void windowClosing(WindowEvent e)
+    {
+        crypDist.getBlockchainManager().saveBlockchain();
+    }
+
+    @Override
+    public void windowClosed(WindowEvent e) {
+
+    }
+
+    @Override
+    public void windowIconified(WindowEvent e) {
+
+    }
+
+    @Override
+    public void windowDeiconified(WindowEvent e) {
+
+    }
+
+    @Override
+    public void windowActivated(WindowEvent e) {
+
+    }
+
+    @Override
+    public void windowDeactivated(WindowEvent e) {
+
     }
 }

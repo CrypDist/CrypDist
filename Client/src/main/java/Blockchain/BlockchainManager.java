@@ -14,6 +14,7 @@ import org.apache.log4j.Logger;
 import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.math.BigInteger;
 import java.net.InetAddress;
 import java.net.URL;
 import java.net.UnknownHostException;
@@ -355,6 +356,10 @@ public class BlockchainManager
             data = new MerkleTree(stringTransactions);
         }
 
+        public String bin2hex(byte[] data) {
+            return String.format("%0" + (data.length * 2) + 'x', new BigInteger(1, data));
+        }
+
         public String call()
         {
             long score = Long.MAX_VALUE;
@@ -375,6 +380,7 @@ public class BlockchainManager
                     }
                     String dataWithNonce = blockData + ":" + i + "}";
                     hash = md.digest(dataWithNonce.getBytes("UTF-8"));
+                    hash = bin2hex(hash).getBytes();
 
                     long tempScore = 0L;
                     for (int j = 0; j < 8; j++)
