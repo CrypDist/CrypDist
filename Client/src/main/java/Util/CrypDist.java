@@ -111,7 +111,7 @@ public class CrypDist {
                     toReturn.addProperty("transaction", dataStr);
                     toReturn.addProperty("lastHash", hashValue);
 
-                    blockchainManager.addTransaction(dataStr, ip);
+                    blockchainManager.addTransaction(dataStr);
 
                 } else if (flagValue == Config.FLAG_BROADCAST_HASH) {
                     toReturn.addProperty("response", Config.MESSAGE_RESPONSE_VALID);
@@ -198,6 +198,8 @@ public class CrypDist {
             else if(totalInvalidHashResponses >= totalValidResponses/2 +1)
             {
                 updateBlockchain();
+                blockchainManager.addTransaction(obj.get("data").getAsString());
+                updateByBlockchain(arg);
             }
         }
         else if (flag == Config.FLAG_BROADCAST_HASH) {

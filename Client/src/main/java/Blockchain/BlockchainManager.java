@@ -167,7 +167,7 @@ public class BlockchainManager
         }
     }
 
-    public void addTransaction(String data, String ip)
+    public void addTransaction(String data)
     {
         Gson gson = new Gson();
         Transaction transaction = gson.fromJson(data, Transaction.class);
