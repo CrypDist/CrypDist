@@ -26,14 +26,14 @@ public class PostgresDB {
         try {
             Class.forName("org.postgresql.Driver");
         } catch (ClassNotFoundException e) {
-            log.fatal("Postgres driver couldn't be reached. Download the jar file and link it to the project");
+            log.trace("Postgres driver couldn't be reached. Download the jar file and link it to the project");
             log.trace(e);
         }
 
         try {
             setupDB(dbName, user, secret, reset);
         } catch (SQLException e) {
-            log.fatal("Postgres could not setup the desired database.");
+            log.trace("Postgres could not setup the desired database.");
             log.trace(e);
         }
 
@@ -46,7 +46,7 @@ public class PostgresDB {
         try {
             conn = DriverManager.getConnection(url, user, secret);
         } catch (SQLException e) {
-            log.fatal("DB could not be created, there is a possible problem related to properties.");
+            log.trace("DB could not be created, there is a possible problem related to properties.");
             log.trace(e);
         }
 

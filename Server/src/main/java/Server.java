@@ -130,7 +130,7 @@ public class Server extends Thread {
                                 peerList.put(p,0);
                             }
 
-                            System.out.println(newConnection.getInetAddress() + " is connected and active: " + active);
+                            log.trace(newConnection.getInetAddress() + " is connected and active: " + active);
                         }
 
                         newConnection.close();
@@ -143,7 +143,7 @@ public class Server extends Thread {
 
             }
             catch (SocketTimeoutException s) {
-                System.out.println("Socket timed out!");
+                log.trace("Socket timed out!");
             } catch (IOException e) {
                 e.printStackTrace();
             }

@@ -99,7 +99,7 @@ public class Client extends Observable implements Runnable{
         }
         catch(IOException e)
         {
-            log.fatal("Cannot connect to the server, terminated.");
+            log.trace("Cannot connect to the server, terminated.");
             log.trace(e);
         }
     }
@@ -117,7 +117,7 @@ public class Client extends Observable implements Runnable{
                     //new Peer8Notifier(p,heartBeatPort,serverPort).start();
                 }
                 catch (ClassNotFoundException classException) {
-                    log.error("A peer cannot be resolved to an object.");
+                    log.trace("A peer cannot be resolved to an object.");
                     log.trace(classException);
                 }
             }
@@ -125,7 +125,7 @@ public class Client extends Observable implements Runnable{
             throw e;
         }
 
-        log.info("Client initialized with size: " + peerList.size());
+        log.trace("Client initialized with size: " + peerList.size());
 
     }
 
@@ -159,12 +159,12 @@ public class Client extends Observable implements Runnable{
             }
         }
         if(t == null){
-            log.error("Peer cannot found.");
+            log.trace("Peer cannot found.");
         } else {
             try {
                 t.join();
             } catch (InterruptedException e) {
-                log.error("Message sending is interrupted before success.");
+                log.trace("Message sending is interrupted before success.");
             }
         }
     }
@@ -174,7 +174,7 @@ public class Client extends Observable implements Runnable{
         ExecutorService executor = Executors.newCachedThreadPool();
         ArrayList<Future<String>> futures = new ArrayList<>();
 
-        log.info("BROADCASTED TO " + peerList.size() + " PEERS");
+        log.trace("BROADCASTED TO " + peerList.size() + " PEERS");
         for(Peer peer:peerList.keySet()) {
             Callable<String> task = new ResponsedMessageTask(peer,message);
             Future<String> future = executor.submit(task);
@@ -188,14 +188,14 @@ public class Client extends Observable implements Runnable{
                 String res = future.get();
                 if(res != null && !res.equals(""))
                 {
-                    log.info("RESULT IS ADDED: " + res);
+                    log.trace("RESULT IS ADDED: " + res);
                     result.add(res);
                 }
                 else
-                    log.error("KEYSET CANNOT BE RECEIVED.");
+                    log.trace("KEYSET CANNOT BE RECEIVED.");
             }
         } catch (Exception e) {
-            log.error("KEYSET CANNOT BE RECEIVED.");
+            log.trace("KEYSET CANNOT BE RECEIVED.");
         }
 
         return result;
@@ -280,10 +280,10 @@ public class Client extends Observable implements Runnable{
 
     public HashMap<String, String > receiveBlocks(Set<String> neededBlocks) {
 
-        log.info("RECEIVE BLOCKS ARE CALLED");
+        log.trace("RECEIVE BLOCKS ARE CALLED");
 
         for(String s : neededBlocks)
-            log.info("STRING:" + s);
+            log.trace("STRING:" + s);
 
         int peerSize = peerList.size();
         Peer[] peers = new Peer[peerSize];
@@ -338,7 +338,7 @@ public class Client extends Observable implements Runnable{
     }
 
     public ArrayList<String> receiveKeySet() {
-        log.info("KEY SET IS CALLED WITH " + peerList.size() + " PEERS");
+        log.trace("KEY SET IS CALLED WITH " + peerList.size() + " PEERS");
         JsonObject obj = new JsonObject();
         obj.addProperty("flag",Config.MESSAGE_REQUEST_KEYSET);
         return broadCastMessageResponse(obj.toString());

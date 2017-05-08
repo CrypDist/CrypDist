@@ -32,16 +32,16 @@ public class ReceiveServerRequest extends Thread {
         try {
              serverSocket = new ServerSocket(client.getServerPort());
         } catch (IOException e) {
-            log.fatal("Cannot open the server socket.");
+            log.trace("Cannot open the server socket.");
             e.printStackTrace();
-            log.fatal(client.getServerPort());
+            log.trace(client.getServerPort());
             return;
         }
 
         while (!broken) {
 
 //            if(Thread.interrupted()) {
-//                System.out.println("IN INTERRUPTED!!!!!!!!!!!!!");
+//                log.trace("IN INTERRUPTED!!!!!!!!!!!!!");
 //                try {
 //                    serverSocket.close();
 //                } catch (Exception e) {
@@ -96,10 +96,10 @@ public class ReceiveServerRequest extends Thread {
 
             }
             catch (SocketTimeoutException s) {
-                log.error("Server socket timed out!");
+                log.trace("Server socket timed out!");
                 s.printStackTrace();
             } catch (IOException e) {
-                log.error("IOException while receiving server request!");
+                log.trace("IOException while receiving server request!");
                 e.printStackTrace();
             }
         }

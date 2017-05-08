@@ -47,19 +47,19 @@ public class ResponsedMessageTask implements Callable<String> {
                     String response = in.readUTF();
                     return response;
                 } else {
-                    log.info("Non flag read");
+                    log.trace("Non flag read");
                 }
                 messagedClient.close();
 
             } catch (IOException e) {
-                log.info("EXCEPTIOON\n\n\n");
-                log.info(e);
+                log.trace("EXCEPTIOON\n\n\n");
+                log.trace(e);
                 trials++;
                 continue;
             }
             trials++;
         }
-        log.error("Message cannot be sent after " + Config.MESSAGE_MAX_TRIALS + " trials");
+        log.trace("Message cannot be sent after " + Config.MESSAGE_MAX_TRIALS + " trials");
         log.trace(msg);
         return null;
     }

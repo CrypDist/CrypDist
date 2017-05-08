@@ -86,14 +86,14 @@ public class HeartBeatTask extends TimerTask {
             }
 
         } catch (Exception e) {
-            System.out.println("Interrupted.");
+            log.trace("Interrupted.");
             e.printStackTrace();
         }
 
         int a = peerList.size();
 
         if(size > a ) {
-            System.out.println(size-a + " is disconnected.");
+            log.trace(size-a + " is disconnected.");
         }
     }
 

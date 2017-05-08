@@ -9,7 +9,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.security.NoSuchAlgorithmException;
 import java.util.Vector;
-
+import org.apache.log4j.Logger;
 /**
  * Created by gizem on 06.04.2017.
  */
@@ -21,6 +21,7 @@ public class MainScreen extends JPanel {
     GlossyButton refresh;
     ScreenManager controller;
     NonEditableModel tableModel;
+    static Logger log = Logger.getLogger("GUI");
 
     // blocklist numberOfBlocksX2 blocklist[i][0] id of ith block, blocklist[i][1] timestamp of ith block
     public  MainScreen(ScreenManager controller)
@@ -84,7 +85,7 @@ public class MainScreen extends JPanel {
                 public void valueChanged(ListSelectionEvent event) {
                     if (blockTable.getSelectedRow() > -1) {
                         // print first column value from selected row
-                        // System.out.println(blockTable.getValueAt(blockTable.getSelectedRow(), 0).toString());
+                        // log.trace(blockTable.getValueAt(blockTable.getSelectedRow(), 0).toString());
                         String blockId = blockTable.getValueAt(blockTable.getSelectedRow(), 0).toString();
                         displayBlockContent(blockId);
                     }
@@ -133,7 +134,7 @@ public class MainScreen extends JPanel {
             }
             else if (e.getSource() == refresh)
             {
-                System.out.println("REFRESH CALL");
+                log.trace("REFRESH CALL");
                 String[][] blocklist = new String[0][];
                 try {
                     blocklist = controller.getBlockList();
@@ -150,7 +151,7 @@ public class MainScreen extends JPanel {
                     tableModel.addRow(rowVector);
                 }
                 tableModel.fireTableDataChanged();
-                System.out.println(tableModel.getRowCount());
+                log.trace(tableModel.getRowCount());
             }
             repaint();
         }

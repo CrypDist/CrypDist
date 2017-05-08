@@ -52,11 +52,11 @@ public class Block implements Serializable
             UnsupportedEncodingException
     {
         if (blockchain == null)
-            log.warn("blockchain is null");
+            log.trace("blockchain is null");
         else if (prevHash == null)
-            log.warn("prevHash is null");
+            log.trace("prevHash is null");
         else if (blockchain.getBlock(prevHash) == null)
-            log.warn("blockchain.getBlock is null");
+            log.trace("blockchain.getBlock is null");
         length = blockchain.getBlock(prevHash).getLength() + 1;
         indegree = 0;
         this.prevHash = prevHash;

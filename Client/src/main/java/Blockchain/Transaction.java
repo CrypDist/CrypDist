@@ -55,7 +55,7 @@ public class Transaction implements Comparable<Transaction>
             inetAddress = InetAddress.getByName(TIME_SERVER);
             TimeInfo timeInfo = timeClient.getTime(inetAddress);
             long returnTime = timeInfo.getMessage().getTransmitTimeStamp().getTime();
-            log.info("Time:" + returnTime);
+            log.trace("Time:" + returnTime);
             Date time = new Date(returnTime);
 
             this.timeStamp = time.getTime();
@@ -85,7 +85,7 @@ public class Transaction implements Comparable<Transaction>
             inetAddress = InetAddress.getByName(TIME_SERVER);
             TimeInfo timeInfo = timeClient.getTime(inetAddress);
             long returnTime = timeInfo.getMessage().getTransmitTimeStamp().getTime();
-            log.info("Time:" + returnTime);
+            log.trace("Time:" + returnTime);
             Date time = new Date(returnTime);
 
             this.timeStamp = time.getTime();
@@ -110,7 +110,7 @@ public class Transaction implements Comparable<Transaction>
     {
         try {
             if (serverAccessor == null)
-                log.info("HEYYYYYYYYYYYYYYYYYOOOOOOOOOOOOOOOOOOOOOOOOO");
+                log.trace("HEYYYYYYYYYYYYYYYYYOOOOOOOOOOOOOOOOOOOOOOOOO");
             serverAccessor.upload(url, filePath, fileName + version);
         } catch (Exception e) {
             e.printStackTrace();

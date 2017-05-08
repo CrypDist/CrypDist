@@ -33,7 +33,7 @@ public class CrypDist {
     {
         this.screenManager = screenManager;
         if(!Decryption.initialization())
-            log.info("Decryption service cannot be created.");
+            log.trace("Decryption service cannot be created.");
 
         client = new Client(this);
         blockchainManager = new BlockchainManager(this, sessionKey);
@@ -57,7 +57,7 @@ public class CrypDist {
         String str = elems[1];
 
         if(ip.equals(Config.CLIENT_MESSAGE_PEERSIZE)) {
-            log.info("Pair size is now " + str);
+            log.trace("Pair size is now " + str);
             blockchainManager.setNumOfPairs(Integer.parseInt(str));
             return "";
         }
@@ -71,7 +71,7 @@ public class CrypDist {
         }
 
         if(flagValue == Config.MESSAGE_REQUEST_BLOCK) {
-            log.info("BLOCK REQUESTED.");
+            log.trace("BLOCK REQUESTED.");
             JsonElement data = obj2.get("data");
             String dataStr = data.getAsString();
 
@@ -90,7 +90,7 @@ public class CrypDist {
         String[] credentials = Decryption.decryptGet(key);
         String messageIp;
         if(credentials == null){
-            log.error("The incoming message includes false key");
+            log.trace("The incoming message includes false key");
             messageIp = "";
         }
         else {
@@ -127,7 +127,7 @@ public class CrypDist {
 
             } else {
                 toReturn.addProperty("response", Config.MESSAGE_RESPONSE_INVALIDHASH);
-                log.error("Incoming message has invalid hash.");
+                log.trace("Incoming message has invalid hash.");
             }
         }
         else  {
@@ -137,7 +137,7 @@ public class CrypDist {
     }
 
     public String updateByBlockchain(Object arg) {
-        log.info("BE NOTIFIED");
+        log.trace("BE NOTIFIED");
         Gson gson = new Gson();
         String lastHash = blockchainManager.getBlockchain().getLastBlock();
 
@@ -181,7 +181,7 @@ public class CrypDist {
                     if (response == Config.MESSAGE_RESPONSE_VALID) {
 
                         if(transaction != null && !transaction.equals(result.get("transaction").getAsString()))
-                            log.error("WRONG RESPONSE");
+                            log.trace("WRONG RESPONSE");
 
                         transaction = result.get("transaction").getAsString();
                         totalValidations++;
@@ -193,8 +193,8 @@ public class CrypDist {
                 }
             }
 
-            log.info(totalValidations + " vs  " + totalValidResponses);
-            log.info("Invalid:" + totalInvalidHashResponses + " vs  " + totalValidResponses);
+            log.trace(totalValidations + " vs  " + totalValidResponses);
+            log.trace("Invalid:" + totalInvalidHashResponses + " vs  " + totalValidResponses);
 
             if(totalValidations >= totalValidResponses/2+1)
                 blockchainManager.markValid(transaction);
@@ -206,15 +206,15 @@ public class CrypDist {
             }
         }
         else if (flag == Config.FLAG_BROADCAST_HASH) {
-            log.info("HASH BROADCAST IS IN PROCESS");
+            log.trace("HASH BROADCAST IS IN PROCESS");
             client.broadCastMessage(obj.toString());
         }
         else if (flag == Config.FLAG_BLOCKCHAIN_INVALID) {
-            log.warn("HASH UPDATE IS IN PROGRESS");
+            log.trace("HASH UPDATE IS IN PROGRESS");
             updateBlockchain();
         }
         else
-            log.error("Invalid flag");
+            log.trace("Invalid flag");
 
         return "";
     }
@@ -224,7 +224,7 @@ public class CrypDist {
         synchronized (this) {
             blockchainManager.setUpdating(true);
             // UPDATE BLOCKCHAIN
-            log.warn("Blockchain update procedure is started!");
+            log.trace("Blockchain update procedure is started!");
             ArrayList<String> keySet = client.receiveKeySet();
             if (keySet.size() == 0) {
                 blockchainManager.setUpdating(false);
@@ -234,12 +234,12 @@ public class CrypDist {
 
             for (String str: purifiedList)
             {
-                System.out.println("KEY IN PURIFIED LIST: " + str);
+                log.trace("KEY IN PURIFIED LIST: " + str);
             }
 
             for (String str:blockchainManager.getBlockchain().getKeySet())
             {
-                System.out.println("KEY IN BLOCKCHAIN: " + str);
+                log.trace("KEY IN BLOCKCHAIN: " + str);
             }
 
             Set<String> neededBlocks = blockchainManager.getNeededBlocks(purifiedList);
@@ -248,7 +248,7 @@ public class CrypDist {
 
 
             if (neededBlocks.size() == 1){
-                System.out.println(neededBlocks.iterator().next());
+                log.trace(neededBlocks.iterator().next());
             }
             else if (neededBlocks.size() == 0) {
                 blockchainManager.setUpdating(false);
@@ -258,7 +258,7 @@ public class CrypDist {
             HashMap<String, String> blocks = client.receiveBlocks(neededBlocks);
 
             for (String str : blocks.values())
-                log.info("BLOCK " + str);
+                log.trace("BLOCK " + str);
 
 
             blockchainManager.addNewBlocks(blocks);
