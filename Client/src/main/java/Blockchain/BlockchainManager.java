@@ -145,7 +145,7 @@ public class BlockchainManager
             long dataSize = file.length();
             URL url = serverAccessor.getURL(fileName);
             Transaction upload = new Transaction(filePath, fileName, dataSummary, dataSize, url,crypDist.getSessionKey(),
-                                                 transaction.getVersion() + 1);
+                                    transaction.getVersion() + 1);
             Gson gson = new Gson();
 
             log.info(gson.toJson(upload));

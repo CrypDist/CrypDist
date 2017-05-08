@@ -33,6 +33,7 @@ public class ScreenManager extends JFrame implements WindowListener{
 
     private CrypDist crypDist;
     JPanel currentView;
+    private String userName;
 
     private final int dimensionX = 1000;
     private final int dimensionY = 600;
@@ -92,23 +93,28 @@ public class ScreenManager extends JFrame implements WindowListener{
         controls.add(password);
         p.add(controls, BorderLayout.CENTER);
 
-        boolean validUser = false;
         int result = JOptionPane.showConfirmDialog(
                     this, p, "Log In", JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE);
         if (result == JOptionPane.OK_OPTION)
         {
             Config.USER_NAME = username.getText();
-            Config.USER_PASS = password.getName();
-            //crypDist = new CrypDist(this);
+            userName = username.getText();
+            Config.USER_PASS = new String(password.getPassword());
+            crypDist = new CrypDist(this);
             setCurrentView(new MainScreen(this));
         }
         else if (result == JOptionPane.CANCEL_OPTION)
         {
             Config.USER_NAME = "";
             Config.USER_PASS = "";
-       //     crypDist = new CrypDist(this);
+            crypDist = new CrypDist(this);
             setCurrentView(new MainScreen(this));
         }
+    }
+
+    public String getUserName()
+    {
+        return userName;
     }
 
     public boolean getAuthenticated() {
@@ -124,7 +130,6 @@ public class ScreenManager extends JFrame implements WindowListener{
 //                {"#id4", "2014-04-11T18:46:07+00:00 "},
 //                {"#id5", "2013-04-11T18:46:07+00:00 "}
 //        };
-        MessageDigest digest = MessageDigest.getInstance("SHA-256");
         Blockchain blockchain = crypDist.getBlockchainManager().getBlockchain();
         Set<String> keySet = blockchain.getKeySet();
         String[][] blockList = new String[keySet.size()][2];
@@ -134,8 +139,7 @@ public class ScreenManager extends JFrame implements WindowListener{
         while (iterator.hasNext())
         {
             Block block = blockchain.getBlock(iterator.next());
-            byte[] hash = digest.digest(block.getHash().getBytes(StandardCharsets.UTF_8));
-            blockList[index][0] = new String(hash);
+            blockList[index][0] = block.getHash();
             blockList[index++][1] = block.getTimestamp() + "";
         }
         return blockList;

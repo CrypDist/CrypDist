@@ -29,9 +29,9 @@ public class CrypDist {
     private static BlockchainManager blockchainManager;
     private static Client client;
 
-    public CrypDist()
+    public CrypDist(ScreenManager screenManager)
     {
- //       this.screenManager = screenManager;
+        this.screenManager = screenManager;
         if(!Decryption.initialization())
             log.info("Decryption service cannot be created.");
 
