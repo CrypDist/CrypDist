@@ -20,10 +20,7 @@ import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -130,15 +127,19 @@ public class ScreenManager extends JFrame implements WindowListener{
 //                {"#id4", "2014-04-11T18:46:07+00:00 "},
 //                {"#id5", "2013-04-11T18:46:07+00:00 "}
 //        };
+        crypDist.updateBlockchain();
         Blockchain blockchain = crypDist.getBlockchainManager().getBlockchain();
         Set<String> keySet = blockchain.getKeySet();
+
+        ArrayList<String> keys = new ArrayList<>(keySet);
+        Collections.sort(keys);
         String[][] blockList = new String[keySet.size()][2];
-        Iterator<String> iterator = keySet.iterator();
         int index = 0;
 
-        while (iterator.hasNext())
+
+        for (String key : keys)
         {
-            Block block = blockchain.getBlock(iterator.next());
+            Block block = blockchain.getBlock(key);
             blockList[index][0] = block.getHash();
             blockList[index++][1] = block.getTimestamp() + "";
         }

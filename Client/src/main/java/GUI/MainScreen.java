@@ -133,6 +133,7 @@ public class MainScreen extends JPanel {
             }
             else if (e.getSource() == refresh)
             {
+                System.out.println("REFRESH CALL");
                 String[][] blocklist = new String[0][];
                 try {
                     blocklist = controller.getBlockList();
@@ -149,6 +150,7 @@ public class MainScreen extends JPanel {
                     tableModel.addRow(rowVector);
                 }
                 tableModel.fireTableDataChanged();
+                System.out.println(tableModel.getRowCount());
             }
             repaint();
         }
