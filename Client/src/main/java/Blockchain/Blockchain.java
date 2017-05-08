@@ -45,12 +45,10 @@ public class Blockchain implements Serializable
 
     public void removeInvalidBlocks(ArrayList<String> keySet)
     {
-        Iterator<String> iterator = blockMap.keySet().iterator();
-        while (iterator.hasNext())
-        {
-            String key = iterator.next();
-            if (!keySet.contains(key) && !key.equals("0x0"))
+        for(String key : blockMap.keySet()){
+            if (!keySet.contains(key) && !key.equals("0x0")) {
                 blockMap.remove(key);
+            }
         }
     }
 

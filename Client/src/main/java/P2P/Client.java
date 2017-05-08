@@ -66,7 +66,6 @@ public class Client extends Observable implements Runnable{
     }
     public void initialization() {
 
-        System.out.println("x");
         //Establish a connection with server, get number of active peers and their information.
         try {
             Thread t2 = new ReceiveServerRequest(this);

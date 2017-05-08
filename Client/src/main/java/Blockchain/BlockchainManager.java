@@ -41,7 +41,7 @@ import java.util.concurrent.PriorityBlockingQueue;
 
 public class BlockchainManager
 {
-    static transient Logger log = Logger.getLogger("Blockchain");
+    static transient Logger log = Logger.getLogger("BlockchainManager");
     private CrypDist crypDist;
     private final int BLOCK_SIZE = 4;
     private final int MAX_TIMEOUT_MS = Config.BLOCKCHAIN_BATCH_TIMEOUT;
@@ -63,13 +63,12 @@ public class BlockchainManager
     public BlockchainManager(CrypDist crypDist, byte[] session_key)
     {
         this.crypDist = crypDist;
-        Block genesis = new Block();
         dbManager = new PostgresDB("blockchain", "postgres", "", false);
-        blockchain = new Blockchain(genesis);
         serverAccessor = new ServerAccessor();
         transactionPendingBucket = new ConcurrentHashMap<>();
         transactionBucket = new PriorityBlockingQueue<>();
         transactionBucket_solid = new ArrayList<>(BLOCK_SIZE);
+        buildBlockchain();
         hashes = new ConcurrentHashMap<>();
         numOfPairs = 0;
         serverTime = getServerTime();
@@ -77,17 +76,18 @@ public class BlockchainManager
         updating = false;
         Timer timer = new Timer();
         timer.schedule(new BlockchainBatch(),0, Config.BLOCKCHAIN_BATCH_PERIOD);
-//        HashValidation validation = new HashValidation();
-//        validation.start();
     }
 
     public void buildBlockchain()
     {
         Gson gson = new Gson();
-        Blockchain blockchain_db = gson.fromJson(dbManager.getBlockchain(), Blockchain.class);
-        if (blockchain_db != null)
-            blockchain = blockchain_db;
-
+        Blockchain blockchainDB = gson.fromJson(dbManager.getBlockchain(), Blockchain.class);
+        if (blockchainDB != null)
+            blockchain = blockchainDB;
+        else{
+            Block genesis = new Block();
+            blockchain = new Blockchain(genesis);
+        }
     }
 
     public void saveBlockchain()
@@ -196,50 +196,37 @@ public class BlockchainManager
     public void createBlock()
     {
         log.info("Block is being created");
-//        if (transactionBucket_solid.size() != BLOCK_SIZE)
-//        {
-//            log.warn("RETURNED!");
-//            log.warn("transactionBucket_solid size = " + transactionBucket_solid.size());
-//            return;
-//        }
-//        else
-//        {
-            log.warn("CALL TO LAST BLOCK");
-            String prevHash = blockchain.getLastBlock();
-            log.warn("CALL TO GET TIME");
-            long timestamp = getTime();
-            long maxNonce = Long.MAX_VALUE;
 
-            String blockId = generateBlockId(transactionBucket_solid);
-            synchronized (this) {
-                if (!hashes.containsKey(blockId))
-                    hashes.put(blockId, new ArrayList<>());
-                log.info("mineBlock is called, hashes size = " + hashes.get(blockId).size());
-            }
-            log.info("CAME TO MINE BLOCK");
-            String hash = mineBlock(blockId, prevHash, timestamp, maxNonce);
-            log.info("OUT FROM MINE BLOCK");
+        String prevHash = blockchain.getLastBlock();
+        long timestamp = getTime();
+        long maxNonce = Long.MAX_VALUE;
 
-            Block block = null;
-            try {
-                synchronized (this) {
-                    log.info("Hash in block: " + hash);
-                    block = new Block(prevHash, timestamp, hash, transactionBucket_solid, blockchain);
-                    for (Transaction t : block.getTransactions()) {
-                        transactionBucket.remove(t);
-                        transactionBucket_solid.remove(t);
-                    }
-                }
-            } catch (NoSuchAlgorithmException | UnsupportedEncodingException e) {
-                e.printStackTrace();
-            }
+        String blockId = generateBlockId(transactionBucket_solid);
+        synchronized (this) {
+            if (!hashes.containsKey(blockId))
+                hashes.put(blockId, new ArrayList<>());
+        }
+        String hash = mineBlock(blockId, prevHash, timestamp, maxNonce);
 
+        Block block = null;
         try {
-                addBlockToBlockchain(block);
-            } catch (Exception e) {
-                e.printStackTrace();
+            synchronized (this) {
+                log.info("Hash in block: " + hash);
+                block = new Block(prevHash, timestamp, hash, transactionBucket_solid, blockchain);
+                for (Transaction t : block.getTransactions()) {
+                    transactionBucket.remove(t);
+                    transactionBucket_solid.remove(t);
+                }
             }
-//        }
+        } catch (NoSuchAlgorithmException | UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+
+    try {
+            addBlockToBlockchain(block);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private String generateBlockId(ArrayList<Transaction> transactionBucket_solid) {
@@ -407,7 +394,6 @@ public class BlockchainManager
             catch (NoSuchAlgorithmException | UnsupportedEncodingException e) {}
 
             log.info("CALL TO NOTIFY OBSERVERS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-            log.info("Produced Hash=\t" + new String(hash));
 
             Random rnd = new Random();
             try {
@@ -444,7 +430,6 @@ public class BlockchainManager
                         minHash = (String) p.frst;
                     }
                 }
-                log.info("Chosen hash= " + minHash);
                 hashes.remove(blockId);
                 return minHash;
             }
@@ -529,7 +514,12 @@ public class BlockchainManager
         this.numOfPairs = numOfPairs;
     }
 
-    public Set<String> getNeededBlocks(ArrayList<String> keySet)
+    public Set<String> getNeededBlocks(Set<String> keySet)
+    {
+        return blockchain.getNeededBlocks(keySet);
+    }
+
+    public Set<String> getPurifiedList(ArrayList<String> keySet)
     {
         int size = keySet.size();
         Gson gson = new Gson();
@@ -555,8 +545,7 @@ public class BlockchainManager
                 resultingList.add(entry.getKey());
             }
         }
-
-        return blockchain.getNeededBlocks(resultingList);
+        return resultingList;
     }
 
     public void addNewBlocks(HashMap<String, String> blocks)
