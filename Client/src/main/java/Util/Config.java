@@ -14,6 +14,7 @@ public class Config {
     public static int MESSAGE_ACK = 900;
     public static int MESSAGE_REQUEST_KEYSET = 301;
     public static int MESSAGE_REQUEST_BLOCK = 302;
+    public static int MESSAGE_TIMEOUT = 2500;
 
     public static int MESSAGE_RESPONSE_INVALIDKEY = 401;
     public static int MESSAGE_RESPONSE_INVALIDHASH = 402;

@@ -226,6 +226,10 @@ public class CrypDist {
             // UPDATE BLOCKCHAIN
             log.warn("Blockchain update procedure is started!");
             ArrayList<String> keySet = client.receiveKeySet();
+            if (keySet.size() == 0) {
+                blockchainManager.setUpdating(false);
+                return;
+            }
             Set<String> purifiedList = blockchainManager.getPurifiedList(keySet);
 
             for (String str: purifiedList)
@@ -242,9 +246,7 @@ public class CrypDist {
 
             blockchainManager.removeInvalidBlocks(new ArrayList<>(purifiedList));
 
-            if (keySet.size() == 0) {
-                return;
-            }
+
             if (neededBlocks.size() == 1){
                 System.out.println(neededBlocks.iterator().next());
             }

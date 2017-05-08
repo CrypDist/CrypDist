@@ -33,6 +33,7 @@ public class MessageTask implements Runnable {
                 log.trace(p.getPeerServerPort());
                 log.trace(p.getAddress());
                 Socket messagedClient = new Socket(p.getAddress(), p.getPeerServerPort());
+                messagedClient.setSoTimeout(Config.MESSAGE_TIMEOUT);
                 ObjectOutputStream out = new ObjectOutputStream(messagedClient.getOutputStream());
                 out.writeInt(Config.MESSAGE_OUTGOING);
                 out.writeUTF(msg);

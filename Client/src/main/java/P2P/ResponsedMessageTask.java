@@ -34,7 +34,7 @@ public class ResponsedMessageTask implements Callable<String> {
                 log.trace(p.getPeerServerPort());
                 log.trace(p.getAddress());
                 Socket messagedClient = new Socket(p.getAddress(), p.getPeerServerPort());
-                messagedClient.setSoTimeout(1000);
+                messagedClient.setSoTimeout(Config.MESSAGE_TIMEOUT);
                 ObjectOutputStream out = new ObjectOutputStream(messagedClient.getOutputStream());
                 out.writeInt(Config.MESSAGE_OUTGOING_RESPONSE);
                 out.writeUTF(msg);
