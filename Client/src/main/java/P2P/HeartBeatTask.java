@@ -35,8 +35,9 @@ public class HeartBeatTask extends TimerTask {
         }
 
         public Peer call() {
+            Socket clientSocket = null;
             try {
-                Socket clientSocket = new Socket(peer.getAddress(),peer.getPeerHeartBeatPort());
+                clientSocket = new Socket(peer.getAddress(),peer.getPeerHeartBeatPort());
                 DataOutputStream out = new DataOutputStream(clientSocket.getOutputStream());
                 DataInputStream in = new DataInputStream(clientSocket.getInputStream());
 
@@ -48,11 +49,19 @@ public class HeartBeatTask extends TimerTask {
                 clientSocket.setSoTimeout(Config.HEARTBEAT_TIMEOUT);
 
                 int x = in.readInt();
+                clientSocket.close();
                 if(x == Config.HEARTBEAT_ACK) {
                     return peer;
                 }
             } catch (IOException e) {
                 return null;
+            } finally {
+                if(clientSocket != null && !clientSocket.isClosed())
+                    try {
+                        clientSocket.close();
+                    } catch (Exception e) {
+
+                    }
             }
             return null;
         }
