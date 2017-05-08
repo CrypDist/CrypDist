@@ -380,7 +380,6 @@ public class BlockchainManager
                     }
                     String dataWithNonce = blockData + ":" + i + "}";
                     hash = md.digest(dataWithNonce.getBytes("UTF-8"));
-                    hash = bin2hex(hash).getBytes();
 
                     long tempScore = 0L;
                     for (int j = 0; j < 8; j++)
@@ -393,6 +392,7 @@ public class BlockchainManager
                     if ((hash[0] & 0xff) == 0x00)
                     {
                         bestNonce = i;
+                        hash = bin2hex(hash).getBytes();
                         break;
                     }
                 }

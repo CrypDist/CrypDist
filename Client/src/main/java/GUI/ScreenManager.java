@@ -99,14 +99,14 @@ public class ScreenManager extends JFrame implements WindowListener{
         {
             Config.USER_NAME = username.getText();
             Config.USER_PASS = password.getName();
-            crypDist = new CrypDist(this);
+            //crypDist = new CrypDist(this);
             setCurrentView(new MainScreen(this));
         }
         else if (result == JOptionPane.CANCEL_OPTION)
         {
             Config.USER_NAME = "";
             Config.USER_PASS = "";
-            crypDist = new CrypDist(this);
+       //     crypDist = new CrypDist(this);
             setCurrentView(new MainScreen(this));
         }
     }
