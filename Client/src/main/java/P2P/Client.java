@@ -316,21 +316,19 @@ public class Client extends Observable implements Runnable{
                 Future<String> f = executor.submit(task);
 
                 assignments.put(hash,f);
-                log.info("AN ASSIGNMENT IS DONE.");
-
                 count++;
             }
 
             for(Map.Entry<String, Future<String>> entry : assignments.entrySet()) {
                 try {
                     String response = entry.getValue().get();
-                    if(response != null) {
+                    if(response != null && !response.equals("")) {
                         actualResults.put(entry.getKey(),response);
                         remainingTasks.remove(entry.getKey());
                     }
-                    log.info("A RESULT IS TAKEN");
+
                 } catch (Exception e) {
-                    log.fatal("RESPONSE CANNOT BE TAKEN.");
+
                 }
             }
         }

@@ -72,7 +72,13 @@ public class CrypDist {
             JsonElement data = obj2.get("data");
             String dataStr = data.getAsString();
 
-            return gson.toJson(blockchainManager.getBlock(dataStr));
+            Object block = blockchainManager.getBlock(dataStr);
+            if(block == null) {
+                return "";
+            } else {
+                return gson.toJson(blockchainManager.getBlock(dataStr));
+            }
+
         }
         byte[] dummy = new byte[1];
 
