@@ -202,8 +202,22 @@ public class QueryScreen extends JPanel {
                     download.addActionListener(e -> {
                         update.setSelected(false);
                         String filename = currTransactions.get(row).getFileName();
-                        controller.showDownload(filename);
-                        popupMenu.setVisible(false);
+                        JFileChooser fileChooser = new JFileChooser();
+                        fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+                        int returnVal = fileChooser.showOpenDialog(QueryScreen.this);
+
+                        if (returnVal == JFileChooser.APPROVE_OPTION) {
+                            String path = fileChooser.getSelectedFile().getAbsolutePath();
+                            path = path + "/" + filename;
+                            controller.showDownload(filename, path);
+                            popupMenu.setVisible(false);
+                        }
+                        else
+                        {
+                            download.setSelected(false);
+                            update.setSelected(false);
+                            popupMenu.setVisible(false);
+                        }
                     });
                     update.addActionListener(e -> {
                         download.setSelected(false);

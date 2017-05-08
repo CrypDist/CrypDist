@@ -162,10 +162,8 @@ public class ScreenManager extends JFrame implements WindowListener{
         }
     }
 
-    public void showDownload(String filename)
+    public void showDownload(String filename, String path)
     {
-        final JFileChooser fileChooser = new JFileChooser();
-        String path = fileChooser.getCurrentDirectory().getPath();
         final JDialog dlg = new JDialog(this, "CrypDist", true);
         dlg.setLayout(new GridLayout(3,0));
 
@@ -183,6 +181,8 @@ public class ScreenManager extends JFrame implements WindowListener{
         final Thread t = new Thread(() -> dlg.setVisible(true));
 
         final Thread download = new Thread(() -> {
+            System.out.println("Name: " + filename);
+            System.out.println("Path: " + path);
             crypDist.getBlockchainManager().downloadFile(filename, path);
             System.out.println(filename + " - " + path + " is downloaded");
             try {
@@ -207,6 +207,7 @@ public class ScreenManager extends JFrame implements WindowListener{
             public void actionPerformed(ActionEvent e) {
                 download.interrupt();
                 t.interrupt();
+
             }
         } );
         bottomP.add(cancel);
