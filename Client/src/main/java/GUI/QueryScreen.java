@@ -253,6 +253,7 @@ public class QueryScreen extends JPanel {
                     update.addActionListener(e -> {
                         download.setSelected(false);
                         JFileChooser fileChooser = new JFileChooser();
+                        popupMenu.setVisible(false);
                         int returnVal = fileChooser.showOpenDialog(QueryScreen.this);
 
                         if (returnVal == JFileChooser.APPROVE_OPTION) {
