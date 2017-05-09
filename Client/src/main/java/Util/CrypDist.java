@@ -67,7 +67,7 @@ public class CrypDist {
         String str = elems[1];
 
         if(ip.equals(Config.CLIENT_MESSAGE_PEERSIZE)) {
-            log.info("Pair size is now " + str);
+            log.debug("Pair size is now " + str);
             blockchainManager.setNumOfPairs(Integer.parseInt(str));
             return "";
         }

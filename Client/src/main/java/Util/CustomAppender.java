@@ -24,7 +24,7 @@ public class CustomAppender extends AppenderSkeleton {
         StringBuilder stringBuilder = new StringBuilder();
 
         for(LoggingEvent event : eventsList) {
-            stringBuilder.append(event.getLevel() + ": " + event.getLoggerName() + ": " + event.getRenderedMessage() + "\n");
+            stringBuilder.append(event.getLoggerName() + ": " + event.getRenderedMessage() + "\n");
         }
 
         clear();
