@@ -229,6 +229,7 @@ public class QueryScreen extends JPanel {
                     popupMenu.setVisible(true);
                     download.addActionListener(e -> {
                         update.setSelected(false);
+                        popupMenu.setVisible(false);
                         String filename = currTransactions.get(row).getFileName();
                         JFileChooser fileChooser = new JFileChooser();
                         fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
@@ -239,6 +240,7 @@ public class QueryScreen extends JPanel {
                             path = path + "/" + filename ;
                             filename += currTransactions.get(row).getVersion();
                             popupMenu.setVisible(false);
+
                             controller.showDownload(filename, path);
                         }
                         else
