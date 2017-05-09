@@ -77,13 +77,6 @@ public class QueryScreen extends JPanel {
         jTableColumnModel.getColumn(1).setMaxWidth(50);
         jTableColumnModel.getColumn(1).setCellRenderer(moreRenderer);
 
-//        // TODO remove
-        Object[] rowData = {"GeneX"};
-        resultsModel.addRow(rowData);
-        resultsModel.setValueAt("More", 0,1);
-        resultsModel.fireTableDataChanged();
-
-
         run = new GlossyButton("Run");
         back = new GlossyButton("Back");
 
@@ -106,8 +99,6 @@ public class QueryScreen extends JPanel {
         run.setBorder(BorderFactory.createCompoundBorder(border,
                 BorderFactory.createEmptyBorder(10, 10, 10, 10)));
         back.setBorder(BorderFactory.createCompoundBorder(border,
-                BorderFactory.createEmptyBorder(10, 10, 10, 10)));
-        progressBar.setBorder(BorderFactory.createCompoundBorder(border,
                 BorderFactory.createEmptyBorder(10, 10, 10, 10)));
 
         this.setLayout(new GridBagLayout());

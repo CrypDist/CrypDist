@@ -6,7 +6,6 @@ import Blockchain.Transaction;
 import Util.Config;
 import Util.CrypDist;
 import jdk.nashorn.internal.scripts.JO;
-import org.apache.log4j.Logger;
 import sun.awt.ConstrainableGraphics;
 
 import javax.swing.*;
@@ -28,7 +27,7 @@ import java.util.concurrent.TimeUnit;
  * Created by gizem on 06.04.2017.
  */
 public class ScreenManager extends JFrame implements WindowListener{
-    public static Logger logger = Logger.getLogger("GUI");
+
     private CrypDist crypDist;
     JPanel currentView;
     private String userName;
@@ -208,8 +207,6 @@ public class ScreenManager extends JFrame implements WindowListener{
         final Thread t = new Thread(() -> dlg.setVisible(true));
 
         final Thread download = new Thread(() -> {
-            System.out.println("Name: " + filename);
-            System.out.println("Path: " + path);
             crypDist.getBlockchainManager().downloadFile(filename, path);
             System.out.println(filename + " - " + path + " is downloaded");
             try {
@@ -240,7 +237,7 @@ public class ScreenManager extends JFrame implements WindowListener{
         bottomP.add(cancel);
         cancel.setSize(100,80);
         dlg.add(bottomP);
-        dlg.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+        dlg.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
         dlg.setSize(600, 100);
         dlg.setLocationRelativeTo(this);
 
@@ -266,6 +263,8 @@ public class ScreenManager extends JFrame implements WindowListener{
         while (iterator.hasNext())
         {
             Block block = blockchain.getBlock(iterator.next());
+            System.out.println(block != null);
+            System.out.println(block.getTransactions() != null);
 
             ArrayList<Transaction> transactions = block.getTransactions();
             int index = 0;

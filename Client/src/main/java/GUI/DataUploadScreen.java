@@ -50,6 +50,7 @@ public class DataUploadScreen extends JPanel implements ActionListener{
         Border border = BorderFactory.createLineBorder(Color.GRAY, 1);
         label.setBorder(new EmptyBorder(10, 40, 10, 10));
         pathField.setFont(new Font("Arial", Font.LAYOUT_LEFT_TO_RIGHT,14));
+        dataSummary.setFont(new Font("Arial", Font.LAYOUT_LEFT_TO_RIGHT,14));
         pathField.setBorder(border);
 
         pathField.setForeground(Color.GRAY);
