@@ -64,7 +64,7 @@ public class BlockchainManager
     public BlockchainManager(CrypDist crypDist, byte[] session_key)
     {
         this.crypDist = crypDist;
-        dbManager = new PostgresDB("blockchain", "od", "", false);
+        dbManager = new PostgresDB("blockchain", "postgres", "", false);
         serverAccessor = new ServerAccessor();
         transactionPendingBucket = new ConcurrentHashMap<>();
         transactionBucket = new PriorityBlockingQueue<>();
