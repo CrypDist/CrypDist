@@ -64,7 +64,7 @@ public class BlockchainManager
     public BlockchainManager(CrypDist crypDist, byte[] session_key)
     {
         this.crypDist = crypDist;
-        dbManager = new PostgresDB("blockchain", "postgres", "", false);
+        dbManager = new PostgresDB("blockchain", "od", "", false);
         serverAccessor = new ServerAccessor();
         transactionPendingBucket = new ConcurrentHashMap<>();
         transactionBucket = new PriorityBlockingQueue<>();
@@ -179,7 +179,12 @@ public class BlockchainManager
     }
 
     private boolean addBlockToBlockchain(Block block) throws Exception {
-        return blockchain.addBlock(block);
+        boolean b = blockchain.addBlock(block);
+
+        if(b)
+            log.error("A block is successfully added to blockchain.");
+
+        return b;
     }
 
 

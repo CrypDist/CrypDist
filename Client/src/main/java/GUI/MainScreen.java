@@ -177,6 +177,7 @@ public class MainScreen extends JPanel {
         public void mouseClicked(MouseEvent event) {
             if (content.rowAtPoint(event.getPoint()) % 5 == 3) {
                 String filename = (String)content.getValueAt(content.rowAtPoint(event.getPoint()),0);
+                filename = filename.substring(14);
                 JFileChooser fileChooser = new JFileChooser();
                 fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
                 int returnVal = fileChooser.showOpenDialog(MainScreen.this);
