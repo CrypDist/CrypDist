@@ -1,6 +1,7 @@
 import GUI.MainScreen;
 import GUI.ScreenManager;
 import Util.CrypDist;
+import Util.CustomAppender;
 
 import java.util.Scanner;
 
@@ -36,6 +37,7 @@ public class MainClass {
                 }
                 switch (x) {
                     case "upload":
+                        CustomAppender.clear();
                         if (inputSplitted.length == 1) {
                             try {
                                 c.getBlockchainManager().uploadFile("SelaminAleykum/merhaba", "Summary");
@@ -49,15 +51,25 @@ public class MainClass {
                                 e.printStackTrace();
                             }
                         }
+                        System.out.println(CustomAppender.getMessages());
                         break;
                     case "download":
+                        CustomAppender.clear();
                         c.getBlockchainManager().downloadFile(name, path);
+                        System.out.println(CustomAppender.getMessages());
                         break;
                     case "save":
+                        CustomAppender.clear();
                         c.getBlockchainManager().saveBlockchain();
+                        System.out.println(CustomAppender.getMessages());
                         break;
                     case "fetch":
+                        CustomAppender.clear();
                         c.getBlockchainManager().buildBlockchain();
+                        System.out.println(CustomAppender.getMessages());
+                        break;
+                    case "status":
+                        System.out.println(CustomAppender.getMessages());
                         break;
                 }
             }
