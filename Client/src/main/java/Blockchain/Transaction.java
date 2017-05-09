@@ -1,6 +1,7 @@
 package Blockchain;
 
 import UploadUnit.ServerAccessor;
+import Util.Decryption;
 import org.apache.commons.net.ntp.NTPUDPClient;
 import org.apache.commons.net.ntp.TimeInfo;
 import org.apache.log4j.Logger;
@@ -145,7 +146,11 @@ public class Transaction implements Comparable<Transaction>
         return fileName;
     }
 
-    public byte[] getSignature() {
-        return signature;
+    public String getSignature() {
+        String[] credentials = Decryption.decryptGet(signature);
+        if(credentials == null){
+            return "";
+        }
+        return credentials[1];
     }
 }

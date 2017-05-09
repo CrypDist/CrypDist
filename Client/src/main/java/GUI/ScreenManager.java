@@ -264,8 +264,6 @@ public class ScreenManager extends JFrame implements WindowListener{
         while (iterator.hasNext())
         {
             Block block = blockchain.getBlock(iterator.next());
-            System.out.println(block != null);
-            System.out.println(block.getTransactions() != null);
 
             ArrayList<Transaction> transactions = block.getTransactions();
             int index = 0;
