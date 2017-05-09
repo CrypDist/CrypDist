@@ -236,7 +236,11 @@ public class QueryScreen extends JPanel {
 
                         if (returnVal == JFileChooser.APPROVE_OPTION) {
                             String path = fileChooser.getSelectedFile().getAbsolutePath();
-                            path = path + "/" + filename;
+                            path = path + "/" + filename ;
+                            filename += currTransactions.get(row).getVersion();
+
+                            System.out.println("FILENAME: " + filename);
+                            System.out.println("FILEPATH: " + path);
                             controller.showDownload(filename, path);
                             popupMenu.setVisible(false);
                         }

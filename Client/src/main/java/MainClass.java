@@ -11,6 +11,7 @@ public class MainClass {
 
     public static void main (String [] args)
     {
+        Property p = new Property();
         int crypType = 0;
         if (args.length == 1)
             crypType = 1;
@@ -19,9 +20,7 @@ public class MainClass {
             screenManager.showLogin();
         }
         else {
-            Property p = new Property();
             CrypDist c = new CrypDist();
-
             Scanner scan = new Scanner(System.in);
             while (true) {
                 System.out.print(">>");

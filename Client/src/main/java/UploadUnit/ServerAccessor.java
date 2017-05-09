@@ -15,10 +15,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStreamWriter;
+import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.file.Files;
@@ -40,45 +37,48 @@ public class ServerAccessor {
     }
 
     public void upload(URL url, String filePath, String fileName) throws Exception {
-//        if (doesObjectExist(fileName)) {
-//            throw new Exception("file already exists!");
-//        }
         try {
-            log.debug("Uploading a new object to S3 from a file\n");
+            System.out.println("Uploading a new object to S3 from a file\n");
+            File file = new File(filePath);
+            s3client.putObject(new PutObjectRequest(
+                    bucketName, fileName, file));
 
-            UploadObject(url, filePath);
         } catch (AmazonServiceException ase) {
-            log.error("Caught an AmazonServiceException, which " +
+            System.out.println("Caught an AmazonServiceException, which " +
                     "means your request made it " +
                     "to Amazon S3, but was rejected with an error response" +
                     " for some reason.");
-            log.error("Error Message:    " + ase.getMessage());
-            log.error("HTTP Status Code: " + ase.getStatusCode());
-            log.error("AWS Error Code:   " + ase.getErrorCode());
-            log.error("Error Type:       " + ase.getErrorType());
-            log.error("Request ID:       " + ase.getRequestId());
+            System.out.println("Error Message:    " + ase.getMessage());
+            System.out.println("HTTP Status Code: " + ase.getStatusCode());
+            System.out.println("AWS Error Code:   " + ase.getErrorCode());
+            System.out.println("Error Type:       " + ase.getErrorType());
+            System.out.println("Request ID:       " + ase.getRequestId());
         } catch (AmazonClientException ace) {
-            log.error("Caught an AmazonClientException, which " +
+            System.out.println("Caught an AmazonClientException, which " +
                     "means the client encountered " +
                     "an internal error while trying to " +
                     "communicate with S3, " +
                     "such as not being able to access the network.");
-            log.error("Error Message: " + ace.getMessage());
+            System.out.println("Error Message: " + ace.getMessage());
         }
     }
 
     public void download(String fileName, String toDirectory) throws IOException {
-        S3Object object = s3client.getObject(new GetObjectRequest(bucketName, fileName));
-        InputStream objectData = object.getObjectContent();
-        byte[] buffer = IOUtils.toByteArray(objectData);
 
-        FileUtils.writeByteArrayToFile(new File(toDirectory), buffer);
+        GetObjectRequest request = new GetObjectRequest(bucketName, fileName);
+        S3Object object = s3client.getObject(request);
+        int size = (int)object.getObjectMetadata().getContentLength();
+        S3ObjectInputStream objectContent = object.getObjectContent();
+        FileOutputStream fos = new FileOutputStream(toDirectory);
 
-        try {
-            objectData.close();
-        } catch (IOException e) {
-            e.printStackTrace();
+        byte[] buffer = new byte[size];
+
+        int buf = 0;
+        while((buf = objectContent.read(buffer)) > 0)
+        {
+            fos.write(buffer, 0, buf);
         }
+        fos.close();
     }
 
     public boolean doesObjectExist(String fileName)
