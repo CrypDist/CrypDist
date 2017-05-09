@@ -3,13 +3,20 @@ package GUI;
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableColumnModel;
+import javax.swing.table.TableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.Vector;
 
+import Blockchain.Transaction;
 import Util.Config;
 import org.apache.log4j.Logger;
 /**
@@ -23,6 +30,9 @@ public class MainScreen extends JPanel {
     GlossyButton refresh;
     ScreenManager controller;
     NonEditableModel tableModel;
+    ArrayList<Transaction> currTransactions;
+    JTable content;
+    DefaultTableModel resultsModel;
     static Logger log = Logger.getLogger("GUI");
 
     // blocklist numberOfBlocksX2 blocklist[i][0] id of ith block, blocklist[i][1] timestamp of ith block
@@ -42,6 +52,8 @@ public class MainScreen extends JPanel {
         query = new GlossyButton("Query");
         refresh = new GlossyButton("Refresh");
 
+        currTransactions = new ArrayList<>();
+        currTransactions.add(null);
         if(Config.USER_NAME == "")
             upload.setEnabled(false);
         else
@@ -70,10 +82,40 @@ public class MainScreen extends JPanel {
         JScrollPane scrollPane = null;
         blockContent = new JPanel(new GridLayout(0,1));
         blockContent.setBackground(Color.white);
-        JTextArea content = new JTextArea();
-        content.setEditable(false);
-        JScrollPane contentScroll = new JScrollPane(content);
-        blockContent.add(contentScroll);
+
+        resultsModel = new DefaultTableModel() {
+            public boolean isCellEditable(int row, int col)
+            {
+                return false;
+            }
+        };
+        resultsModel.addColumn("");
+        content = new JTable(resultsModel);
+        JScrollPane scrollPanex = new JScrollPane(content);
+        blockContent.add(scrollPanex);
+
+        DefaultTableCellRenderer moreRenderer = new DefaultTableCellRenderer() {
+
+            @Override
+            public Component getTableCellRendererComponent(JTable table,
+                                                           Object value, boolean isSelected, boolean hasFocus,
+                                                           int row, int column) {
+                super.getTableCellRendererComponent(table, value, isSelected, hasFocus,
+                        row, column);
+                setBackground(Color.WHITE);
+                if(row % 5 == 3)
+                    setForeground(Color.BLUE);
+                else
+                    setForeground(Color.BLACK);
+
+                return this;
+            }
+
+        };
+        TableColumnModel jTableColumnModel = content.getColumnModel();
+        jTableColumnModel.getColumn(0).setCellRenderer(moreRenderer);
+        content.setShowGrid(false);
+        content.addMouseListener(new TableListener());
 
         if(blocklist != null) {
             UIDefaults defaults = UIManager.getLookAndFeelDefaults();
@@ -110,13 +152,45 @@ public class MainScreen extends JPanel {
     }
 
     private void displayBlockContent(String blockId) {
-        String content = controller.getBlockContent(blockId);
-        JViewport viewport = ((JScrollPane)(blockContent.getComponents()[0])).getViewport();
-        JTextArea area = (JTextArea)viewport.getView();
-        area.setText(content);
+        ArrayList<Transaction> contentx = controller.getBlockContent(blockId);
+        currTransactions.clear();
+        resultsModel.setRowCount(0);
+        for(int i = 0; i < contentx.size(); i++) {
+            Object[] header = {"Transaction" + (i+1) + "\n"};
+            resultsModel.addRow(header);
+            Object[] summary = {"    Summary: " + contentx.get(i).getDataSummary() + "\n"};
+            resultsModel.addRow(summary);
+            Object[] username = {"   Username: " + contentx.get(i).getSignature() + "\n"};
+            resultsModel.addRow(username);
+            Object[] filename = {"    Filename: " + contentx.get(i).getFileName() + "\n"};
+            resultsModel.addRow(filename);
+            Object[] space = {" "};
+            resultsModel.addRow(space);
+            currTransactions.add(contentx.get(i));
+            resultsModel.fireTableDataChanged();
+        }
         blockContent.repaint();
     }
 
+    class TableListener extends MouseAdapter
+    {
+        public void mouseClicked(MouseEvent event) {
+            if (content.rowAtPoint(event.getPoint()) % 5 == 3) {
+                String filename = (String)content.getValueAt(content.rowAtPoint(event.getPoint()),0);
+                JFileChooser fileChooser = new JFileChooser();
+                fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+                int returnVal = fileChooser.showOpenDialog(MainScreen.this);
+
+                if (returnVal == JFileChooser.APPROVE_OPTION) {
+                    String path = fileChooser.getSelectedFile().getAbsolutePath();
+                    path = path + "/" + filename ;
+                    filename += currTransactions.get(content.rowAtPoint(event.getPoint()) % 5).getVersion();
+                    controller.showDownload(filename, path);
+                }
+
+            }
+        }
+    }
     class ButtonListener implements ActionListener {
 
         public void actionPerformed(ActionEvent e) {

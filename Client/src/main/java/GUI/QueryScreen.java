@@ -47,8 +47,9 @@ public class QueryScreen extends JPanel {
                 return false;
             }
         };
-        resultsModel.addColumn("");
-        resultsModel.addColumn("");
+        resultsModel.addColumn("Data summary");
+        resultsModel.addColumn("File name");
+        resultsModel.addColumn("User name");
         results = new JTable(resultsModel);
         results.addMouseListener(new TableListener());
         currTransactions = new ArrayList<>();
@@ -74,8 +75,8 @@ public class QueryScreen extends JPanel {
 
         };
         TableColumnModel jTableColumnModel = results.getColumnModel();
-        jTableColumnModel.getColumn(1).setMaxWidth(50);
-        jTableColumnModel.getColumn(1).setCellRenderer(moreRenderer);
+//        jTableColumnModel.getColumn(1).setMaxWidth(50);
+//        jTableColumnModel.getColumn(1).setCellRenderer(moreRenderer);
 
         run = new GlossyButton("Run");
         back = new GlossyButton("Back");
@@ -185,7 +186,8 @@ public class QueryScreen extends JPanel {
                     {
                         Object[] rowData = {transactions.get(i).getDataSummary()};
                         resultsModel.addRow(rowData);
-                        resultsModel.setValueAt("More", resultsModel.getRowCount()-1,1);
+                        resultsModel.setValueAt(transactions.get(i).getFileName(), resultsModel.getRowCount()-1,1);
+                        resultsModel.setValueAt(transactions.get(i).getSignature(), resultsModel.getRowCount()-1,2);
                         resultsModel.fireTableDataChanged();
                         currTransactions.add(transactions.get(i));
                     }
@@ -206,14 +208,6 @@ public class QueryScreen extends JPanel {
         {
             popupMenu.setVisible(false);
             results.clearSelection();
-            if(results.columnAtPoint(event.getPoint()) == 1) {
-                int row = results.rowAtPoint(event.getPoint());
-                if(currTransactions.get(row) != null ) {
-                    JOptionPane.showMessageDialog(QueryScreen.this, "File name: " + currTransactions.get(row).getFileName()
-                            + "\nUser name: " + currTransactions.get(row).getSignature());
-                }
-
-            }
             if (SwingUtilities.isRightMouseButton(event))
             {
                 int row = results.rowAtPoint(event.getPoint());

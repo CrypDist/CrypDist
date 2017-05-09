@@ -61,16 +61,10 @@ public class ScreenManager extends JFrame implements WindowListener{
 
     }
 
-    public String getBlockContent(String blockId) {
+    public ArrayList<Transaction> getBlockContent(String blockId) {
         Block block = crypDist.getBlockchainManager().getBlock(blockId);
         ArrayList<Transaction> transactions = block.getTransactions();
-        String result = "";
-        for (int i = 0; i < transactions.size(); i++)
-        {
-            Transaction transaction = transactions.get(i);
-            result += transaction.getDataSummary() + "\n";
-        }
-        return result;
+        return transactions;
     }
 
     public void showLogin()
