@@ -23,6 +23,7 @@ public class MainClass {
         else {
             CrypDist c = new CrypDist();
             Scanner scan = new Scanner(System.in);
+            System.out.println(CustomAppender.getMessages());
             while (true) {
                 System.out.print(">>");
                 String input = scan.nextLine();
@@ -44,13 +45,11 @@ public class MainClass {
                             try {
                                 c.getBlockchainManager().uploadFile("SelaminAleykum/merhaba", "Summary");
                             } catch (Exception e) {
-                                e.printStackTrace();
                             }
                         } else {
                             try {
                                 c.getBlockchainManager().uploadFile(name, path);
                             } catch (Exception e) {
-                                e.printStackTrace();
                             }
                         }
                         System.out.println(CustomAppender.getMessages());

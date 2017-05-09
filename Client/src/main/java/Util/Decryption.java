@@ -35,7 +35,7 @@ public class Decryption {
             instance = new Decryption();
             return true;
         } catch (Exception e ) {
-            e.printStackTrace();
+            log.debug(e);
             return false;
         }
     }
@@ -47,14 +47,14 @@ public class Decryption {
                 log.debug(result);
                 String[] splitted = result.split(Config.KEY_SPLITTER);
                 if (splitted.length < 2 || splitted.length > 2) {
-                    log.error("SPLITTED SIZE=\t" + splitted.length);
+                    log.warn("SPLITTED SIZE=\t" + splitted.length);
                     for (String str : splitted)
-                        log.error("SPLITTED\t" + str);
+                        log.warn("SPLITTED\t" + str);
                     return null;
                 }
                 return splitted;
             } catch (Exception e) {
-                e.printStackTrace();
+                log.debug(e);
                 return null;
             }
         }

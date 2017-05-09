@@ -26,15 +26,15 @@ public class PostgresDB {
         try {
             Class.forName("org.postgresql.Driver");
         } catch (ClassNotFoundException e) {
-            log.error("Postgres driver couldn't be reached. Download the jar file and link it to the project");
-            log.error(e);
+            log.warn("Postgres driver couldn't be reached. Download the jar file and link it to the project");
+            log.warn(e);
         }
 
         try {
             setupDB(dbName, user, secret, reset);
         } catch (SQLException e) {
-            log.error("Postgres could not setup the desired database.");
-            log.error(e);
+            log.warn("Postgres could not setup the desired database.");
+            log.warn(e);
         }
 
 
@@ -46,8 +46,8 @@ public class PostgresDB {
         try {
             conn = DriverManager.getConnection(url, user, secret);
         } catch (SQLException e) {
-            log.error("DB could not be created, there is a possible problem related to properties.");
-            log.error(e);
+            log.warn("DB could not be created, there is a possible problem related to properties.");
+            log.warn(e);
         }
 
         String query = "SELECT datname FROM pg_database WHERE datname=\'" + dbName + "\'";
@@ -101,7 +101,7 @@ public class PostgresDB {
             st = conn.prepareStatement(query);
             st.executeUpdate();
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.debug(e);
         }
     }
 
@@ -115,7 +115,7 @@ public class PostgresDB {
             st = conn.prepareStatement(query);
             st.setString(1, blockchain);
         }catch (SQLException e) {
-            e.printStackTrace();
+            log.debug(e);
         }
         executeQuery(st);
     }
@@ -127,7 +127,7 @@ public class PostgresDB {
         try {
             st = conn.prepareStatement(query);
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.debug(e);
         }
         return dataFetcher(st);
     }
@@ -145,13 +145,13 @@ public class PostgresDB {
 
             return result.toString();
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.debug(e);
         }
         finally {
             try {
                 st.close();
             } catch (SQLException e) {
-                e.printStackTrace();
+                log.debug(e);
             }
         }
 
@@ -164,13 +164,13 @@ public class PostgresDB {
             return true;
         }
         catch (SQLException e) {
-            e.printStackTrace();
+            log.debug(e);
         }
         finally {
             try {
                 st.close();
             } catch (SQLException e) {
-                e.printStackTrace();
+                log.debug(e);
             }
         }
 

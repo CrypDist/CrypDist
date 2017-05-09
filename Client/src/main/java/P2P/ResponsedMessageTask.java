@@ -51,15 +51,15 @@ public class ResponsedMessageTask implements Callable<String> {
                 messagedClient.close();
 
             } catch (IOException e) {
-                log.error("EXCEPTIOON\n\n\n");
-                log.error(e);
+                log.warn("EXCEPTIOON\n\n\n");
+                log.warn(e);
                 trials++;
                 continue;
             }
             trials++;
         }
-        log.error("Message cannot be sent after " + Config.MESSAGE_MAX_TRIALS + " trials");
-        log.error(msg);
+        log.warn("Message cannot be sent after " + Config.MESSAGE_MAX_TRIALS + " trials");
+        log.warn(msg);
         return null;
     }
 }

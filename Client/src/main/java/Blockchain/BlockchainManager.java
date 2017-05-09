@@ -164,7 +164,7 @@ public class BlockchainManager
         try {
             serverAccessor.download(fileName,path);
         } catch (IOException e) {
-            e.printStackTrace();
+            log.debug(e);
         }
     }
 
@@ -220,13 +220,13 @@ public class BlockchainManager
                 }
             }
         } catch (NoSuchAlgorithmException | UnsupportedEncodingException e) {
-            e.printStackTrace();
+            log.debug(e);
         }
 
     try {
             addBlockToBlockchain(block);
         } catch (Exception e) {
-            e.printStackTrace();
+            log.debug(e);
         }
     }
 
@@ -248,9 +248,9 @@ public class BlockchainManager
             timeL = timeInfo.getMessage().getTransmitTimeStamp().getTime();
 
         } catch (UnknownHostException e) {
-            e.printStackTrace();
+            log.debug(e);
         } catch (IOException e) {
-            e.printStackTrace();
+            log.debug(e);
         }
         return timeL;
     }
@@ -322,7 +322,7 @@ public class BlockchainManager
                 transactionPendingBucket.remove(transaction);
                 if (!tr.getFileName().equals("merhaba"))
                     tr.execute(serverAccessor);
-                log.info("VALIDATED");
+                log.error("Transaction is validated.");
             }
         }
     }
@@ -405,7 +405,7 @@ public class BlockchainManager
             try {
                 Thread.sleep(rnd.nextInt(100));
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                log.debug(e);
             }
 
             long timeStamp = broadcast(new String(hash), Config.FLAG_BROADCAST_HASH, blockId);
@@ -423,7 +423,7 @@ public class BlockchainManager
                 try {
                     Thread.sleep(200);
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
+                    log.debug(e);
                 }
             }
             long minTime = Long.MAX_VALUE;
@@ -504,7 +504,7 @@ public class BlockchainManager
 //                    try {
 //                        Thread.sleep(100);
 //                    } catch (InterruptedException e) {
-//                        e.printStackTrace();
+//                        log.debug(e);
 //                    }
 //                }
 //            }
@@ -583,7 +583,7 @@ public class BlockchainManager
                     try {
                         boolean added = addBlockToBlockchain(block);
                     } catch (Exception e) {
-                        e.printStackTrace();
+                        log.debug(e);
                     }
                     break;
                 }

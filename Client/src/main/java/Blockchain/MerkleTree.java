@@ -155,7 +155,6 @@ public class MerkleTree implements Serializable
         }
         catch (NoSuchAlgorithmException | UnsupportedEncodingException e)
         {
-            e.printStackTrace();
         }
         return signature;
     }

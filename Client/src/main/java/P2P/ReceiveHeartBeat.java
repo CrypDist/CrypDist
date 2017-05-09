@@ -68,11 +68,11 @@ public class ReceiveHeartBeat extends Thread {
                 hb.close();
             }
             catch (SocketTimeoutException s) {
-                log.error("Server socket timed out!");
-                log.error(s);
+                log.warn("Server socket timed out!");
+                log.warn(s);
             } catch (IOException e) {
-                log.error("IOException while receiving server request!");
-                log.error(e);
+                log.warn("IOException while receiving server request!");
+                log.warn(e);
             }
         }
     }

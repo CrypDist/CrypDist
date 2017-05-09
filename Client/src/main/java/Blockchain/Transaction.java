@@ -61,9 +61,9 @@ public class Transaction implements Comparable<Transaction>
 
             this.timeStamp = time.getTime();
         } catch (UnknownHostException e) {
-            e.printStackTrace();
+            log.debug(e);
         } catch (IOException e) {
-            e.printStackTrace();
+            log.debug(e);
         }
         version = 1;
     }
@@ -91,9 +91,9 @@ public class Transaction implements Comparable<Transaction>
 
             this.timeStamp = time.getTime();
         } catch (UnknownHostException e) {
-            e.printStackTrace();
+            log.debug(e);
         } catch (IOException e) {
-            e.printStackTrace();
+            log.debug(e);
         }
     }
 
@@ -112,7 +112,7 @@ public class Transaction implements Comparable<Transaction>
         try {
             serverAccessor.upload(url, filePath, fileName + version);
         } catch (Exception e) {
-            e.printStackTrace();
+            log.debug(e);
         }
     }
 

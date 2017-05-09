@@ -32,9 +32,9 @@ public class ReceiveServerRequest extends Thread {
         try {
              serverSocket = new ServerSocket(client.getServerPort());
         } catch (IOException e) {
-            log.error("Cannot open the server socket.");
-            e.printStackTrace();
-            log.error(client.getServerPort());
+            log.warn("Cannot open the server socket.");
+            log.debug(e);
+            log.warn(client.getServerPort());
             return;
         }
 
@@ -82,7 +82,7 @@ public class ReceiveServerRequest extends Thread {
                             server.close();
                         }
                     } catch (IOException e) {
-                        e.printStackTrace();
+                        log.debug(e);
                     } finally {
                         if(server != null && !server.isClosed())
                             try {
@@ -96,11 +96,11 @@ public class ReceiveServerRequest extends Thread {
 
             }
             catch (SocketTimeoutException s) {
-                log.error("Server socket timed out!");
+                log.warn("Server socket timed out!");
                 s.printStackTrace();
             } catch (IOException e) {
-                log.error("IOException while receiving server request!");
-                e.printStackTrace();
+                log.warn("IOException while receiving server request!");
+                log.debug(e);
             }
         }
     }

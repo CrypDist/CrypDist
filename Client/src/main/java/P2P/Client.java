@@ -88,6 +88,7 @@ public class Client extends Observable implements Runnable{
 
             boolean authenticated = in.readBoolean();
             active = in.readBoolean();
+            crypDist.setActive(active);
             int size = in.readInt();
             byte[] key_array = new byte[size];
             in.read(key_array);
@@ -99,8 +100,8 @@ public class Client extends Observable implements Runnable{
         }
         catch(IOException e)
         {
-            log.error("Cannot connect to the server, terminated.");
-            log.error(e);
+            log.warn("Cannot connect to the server, terminated.");
+            log.warn(e);
         }
     }
 
@@ -117,8 +118,8 @@ public class Client extends Observable implements Runnable{
                     //new Peer8Notifier(p,heartBeatPort,serverPort).start();
                 }
                 catch (ClassNotFoundException classException) {
-                    log.error("A peer cannot be resolved to an object.");
-                    log.error(classException);
+                    log.warn("A peer cannot be resolved to an object.");
+                    log.warn(classException);
                 }
             }
         } catch (IOException e) {
@@ -144,7 +145,7 @@ public class Client extends Observable implements Runnable{
                 t.join();
             }
         } catch (InterruptedException e) {
-            log.error("Message interrupted.");
+            log.warn("Message interrupted.");
         }
 
     }
@@ -159,12 +160,12 @@ public class Client extends Observable implements Runnable{
             }
         }
         if(t == null){
-            log.error("Peer cannot found.");
+            log.warn("Peer cannot found.");
         } else {
             try {
                 t.join();
             } catch (InterruptedException e) {
-                log.error("Message sending is interrupted before success.");
+                log.warn("Message sending is interrupted before success.");
             }
         }
     }
@@ -192,10 +193,10 @@ public class Client extends Observable implements Runnable{
                     result.add(res);
                 }
                 else
-                    log.error("KEYSET CANNOT BE RECEIVED.");
+                    log.warn("KEYSET CANNOT BE RECEIVED.");
             }
         } catch (Exception e) {
-            log.error("KEYSET CANNOT BE RECEIVED.");
+            log.warn("KEYSET CANNOT BE RECEIVED.");
         }
 
         return result;

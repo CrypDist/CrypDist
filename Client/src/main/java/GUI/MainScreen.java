@@ -43,7 +43,7 @@ public class MainScreen extends JPanel {
         try {
             blocklist = controller.getBlockList();
         } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
+            log.debug(e);
         }
         setSize(new Dimension(1000,600));
 

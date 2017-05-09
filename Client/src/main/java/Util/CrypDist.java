@@ -20,6 +20,7 @@ public class CrypDist {
     private static transient  Logger log = Logger.getLogger("CrypDist");
     private byte[] sessionKey;
     private boolean authenticated;
+    private boolean active;
     private ScreenManager screenManager;
     // Flag 1 = Transaction data
     // Flag 2 = Hash
@@ -33,7 +34,7 @@ public class CrypDist {
     {
         this.screenManager = screenManager;
         if(!Decryption.initialization())
-            log.error("Decryption service cannot be created.");
+            log.warn("Decryption service cannot be created.");
         client = new Client(this);
         blockchainManager = new BlockchainManager(this, sessionKey);
         updateBlockchain();
@@ -44,11 +45,21 @@ public class CrypDist {
     public CrypDist()
     {
         if(!Decryption.initialization())
-            log.error("Decryption service cannot be created.");
+            log.warn("Decryption service cannot be created.");
         client = new Client(this);
         blockchainManager = new BlockchainManager(this, sessionKey);
         updateBlockchain();
         Thread t = new Thread(client);
+
+        if(isAuthenticated() && isActive())
+            log.error("CrypDist is started successfully, authenticated and active.");
+        else if(isAuthenticated() && !isActive())
+            log.error("CrypDist is started successfully, authenticated and passive.");
+        else if(!isAuthenticated() && isActive())
+            log.error("CrypDist is started successfully, NOT authenticated and active.");
+        else
+            log.error("CrypDist is started successfully, NOT authenticated and passive.");
+
         t.start();
     }
 
@@ -58,7 +69,11 @@ public class CrypDist {
     }
 
     public String updateByClient(String arg) {
+        if (blockchainManager == null || blockchainManager.getBlockchain() == null){
+            return "";
+        }
         Gson gson = new Gson();
+
         String lastHash = blockchainManager.getBlockchain().getLastBlock();
 
         String strToBeSplitted = arg;
@@ -100,7 +115,7 @@ public class CrypDist {
         String[] credentials = Decryption.decryptGet(key);
         String messageIp;
         if(credentials == null){
-            log.error("The incoming message includes false key");
+            log.warn("The incoming message includes false key");
             messageIp = "";
         }
         else {
@@ -137,7 +152,7 @@ public class CrypDist {
 
             } else {
                 toReturn.addProperty("response", Config.MESSAGE_RESPONSE_INVALIDHASH);
-                log.error("Incoming message has invalid hash.");
+                log.warn("Incoming message has invalid hash.");
             }
         }
         else  {
@@ -191,7 +206,7 @@ public class CrypDist {
                     if (response == Config.MESSAGE_RESPONSE_VALID) {
 
                         if(transaction != null && !transaction.equals(result.get("transaction").getAsString()))
-                            log.error("WRONG RESPONSE");
+                            log.warn("WRONG RESPONSE");
 
                         transaction = result.get("transaction").getAsString();
                         totalValidations++;
@@ -224,7 +239,7 @@ public class CrypDist {
             updateBlockchain();
         }
         else
-            log.error("Invalid flag");
+            log.warn("Invalid flag");
 
         return "";
     }
@@ -292,5 +307,11 @@ public class CrypDist {
         return authenticated;
     }
 
+    public boolean isActive() {
+        return active;
+    }
 
+    public void setActive(boolean active) {
+        this.active = active;
+    }
 }

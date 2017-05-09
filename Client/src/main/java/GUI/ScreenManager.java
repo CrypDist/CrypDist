@@ -170,7 +170,6 @@ public class ScreenManager extends JFrame implements WindowListener{
         try {
             crypDist.getBlockchainManager().uploadFile(filePath, dataSummary);
         } catch (Exception e) {
-            e.printStackTrace();
         }
     }
 
@@ -178,7 +177,6 @@ public class ScreenManager extends JFrame implements WindowListener{
         try {
             crypDist.getBlockchainManager().updateFile(transaction, path, fileName);
         } catch (Exception e) {
-            e.printStackTrace();
         }
     }
 

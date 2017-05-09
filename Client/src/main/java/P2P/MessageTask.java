@@ -51,7 +51,7 @@ public class MessageTask implements Runnable {
             }
             trials++;
         }
-        log.error("Message cannot be sent after " + Config.MESSAGE_MAX_TRIALS + " trials");
-        log.error(msg);
+        log.warn("Message cannot be sent after " + Config.MESSAGE_MAX_TRIALS + " trials");
+        log.warn(msg);
     }
 }
