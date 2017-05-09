@@ -101,7 +101,7 @@ public class DataUploadScreen extends JPanel implements ActionListener{
         bottom.add(back);
         bottom.add(cancel);
 
-        JPanel browsePanel = new JPanel(new FlowLayout(FlowLayout.LEFT,20,0));
+        JPanel browsePanel = new JPanel(new FlowLayout(FlowLayout.LEFT,20,-5));
         browsePanel.setBackground(Color.white);
         dataPath.add(pathField);
         dataPath.add(dataSummary);
