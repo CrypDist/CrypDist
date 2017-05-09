@@ -30,10 +30,12 @@ public class MainClass {
                 String x = inputSplitted[0];
                 String name = null;
                 String path = null;
+                String summary = null;
                 if (inputSplitted.length > 1) {
                     name = inputSplitted[1];
-                    if (inputSplitted.length > 2)
+                    if (inputSplitted.length > 2) {
                         path = inputSplitted[2];
+                    }
                 }
                 switch (x) {
                     case "upload":
@@ -46,7 +48,7 @@ public class MainClass {
                             }
                         } else {
                             try {
-                                c.getBlockchainManager().uploadFile(name, "Summary");
+                                c.getBlockchainManager().uploadFile(name, path);
                             } catch (Exception e) {
                                 e.printStackTrace();
                             }
