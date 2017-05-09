@@ -57,7 +57,7 @@ public class MainScreen extends JPanel {
         if(controller.isAuthenticated())
             upload.setEnabled(true);
         else
-            upload.setEnabled(true);
+            upload.setEnabled(false);
 
         ButtonListener listener = new ButtonListener();
         upload.addActionListener(listener);
