@@ -194,6 +194,7 @@ public class ScreenManager extends JFrame implements WindowListener{
         dlg.setLayout(new GridLayout(3,0));
 
         final JLabel label = new JLabel("Downloading...");
+        label.setHorizontalTextPosition(JLabel.CENTER);
         dlg.add(label);
 
         final JProgressBar progressBar = new JProgressBar();
@@ -231,14 +232,14 @@ public class ScreenManager extends JFrame implements WindowListener{
             public void actionPerformed(ActionEvent e) {
                 download.interrupt();
                 t.interrupt();
-
+                dlg.dispose();
             }
         } );
         bottomP.add(cancel);
         cancel.setSize(100,80);
         dlg.add(bottomP);
         dlg.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-        dlg.setSize(600, 100);
+        dlg.setSize(600, 140);
         dlg.setLocationRelativeTo(this);
 
         t.start();
