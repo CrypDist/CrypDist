@@ -121,16 +121,6 @@ public class MainScreen extends JPanel {
 
         public void actionPerformed(ActionEvent e) {
 
-//            if (e.getSource() == update) {
-//                if(blockTable.getSelectionModel().isSelectionEmpty()) {
-//                    JOptionPane.showMessageDialog(MainScreen.this, "Please choose a block from the list", "Warning",
-//                            JOptionPane.WARNING_MESSAGE);
-//                }
-//                else {
-//                    controller.setCurrentView(new DataUpdateScreen(controller, blockTable.getValueAt(blockTable.getSelectedRow(), 0).toString()));
-//                    controller.setSize((new Dimension(600, 300)));
-//                }
-//            }
             if(e.getSource() == upload) {
                 controller.setCurrentView(new DataUploadScreen(controller));
                 controller.setSize((new Dimension(600,300)));
