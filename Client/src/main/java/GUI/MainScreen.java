@@ -9,6 +9,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.security.NoSuchAlgorithmException;
 import java.util.Vector;
+
+import Util.Config;
 import org.apache.log4j.Logger;
 /**
  * Created by gizem on 06.04.2017.
@@ -39,6 +41,11 @@ public class MainScreen extends JPanel {
         upload = new GlossyButton("Upload");
         query = new GlossyButton("Query");
         refresh = new GlossyButton("Refresh");
+
+        if(Config.USER_NAME == "")
+            upload.setEnabled(false);
+        else
+            upload.setEnabled(true);
 
         ButtonListener listener = new ButtonListener();
         upload.addActionListener(listener);
