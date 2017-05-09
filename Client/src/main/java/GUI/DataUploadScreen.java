@@ -45,6 +45,7 @@ public class DataUploadScreen extends JPanel implements ActionListener{
 
         Border border = BorderFactory.createLineBorder(Color.GRAY, 1);
         label.setBorder(new EmptyBorder(10, 40, 10, 10));
+        JPanel dataPath = new JPanel(new GridLayout(2,0,0,3));
         pathField.setFont(new Font("Arial", Font.LAYOUT_LEFT_TO_RIGHT,14));
         dataSummary.setFont(new Font("Arial", Font.LAYOUT_LEFT_TO_RIGHT,14));
         pathField.setBorder(border);
@@ -96,9 +97,10 @@ public class DataUploadScreen extends JPanel implements ActionListener{
 
         JPanel browsePanel = new JPanel(new FlowLayout(FlowLayout.LEFT,20,0));
         browsePanel.setBackground(Color.white);
-        browsePanel.add(pathField);
+        dataPath.add(pathField);
+        dataPath.add(dataSummary);
+        browsePanel.add(dataPath);
         browsePanel.add(browse);
-        browsePanel.add(dataSummary);
         browsePanel.setBorder(BorderFactory.createEmptyBorder(10, 30, 10, 10));
 
         JPanel layer3 = new JPanel();
