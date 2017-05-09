@@ -54,8 +54,8 @@ public class MainScreen extends JPanel {
 
         currTransactions = new ArrayList<>();
         currTransactions.add(null);
-        if(Config.USER_NAME == "")
-            upload.setEnabled(false);
+        if(controller.isAuthenticated())
+            upload.setEnabled(true);
         else
             upload.setEnabled(true);
 

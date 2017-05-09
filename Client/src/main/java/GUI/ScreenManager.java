@@ -312,4 +312,8 @@ public class ScreenManager extends JFrame implements WindowListener{
     public void windowDeactivated(WindowEvent e) {
 
     }
+
+    public boolean isAuthenticated(){
+        return crypDist.isAuthenticated();
+    }
 }
