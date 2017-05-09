@@ -18,7 +18,6 @@ public class DataUploadScreen extends JPanel implements ActionListener{
     JLabel label;
     GlossyButton upload;
     GlossyButton back;
-    GlossyButton cancel;
     GlossyButton browse;
     JTextField pathField;
     JTextField dataSummary;
@@ -33,7 +32,6 @@ public class DataUploadScreen extends JPanel implements ActionListener{
         label = new JLabel("Select the file to be added:");
         upload = new GlossyButton("Upload");
         back = new GlossyButton("Back");
-        cancel = new GlossyButton("Cancel");
         browse = new GlossyButton("Browse");
         pathField = new JTextField(30);
         dataSummary = new JTextField(30);
@@ -41,10 +39,8 @@ public class DataUploadScreen extends JPanel implements ActionListener{
 
         upload.addActionListener(this);
         back.addActionListener(this);
-        cancel.addActionListener(this);
         browse.addActionListener(this);
 
-        cancel.setEnabled(false);
         progressBar.setVisible(false);
 
         Border border = BorderFactory.createLineBorder(Color.GRAY, 1);
@@ -99,7 +95,6 @@ public class DataUploadScreen extends JPanel implements ActionListener{
         JPanel bottom = new JPanel();
         bottom.setBackground(Color.white);
         bottom.add(back);
-        bottom.add(cancel);
 
         JPanel browsePanel = new JPanel(new FlowLayout(FlowLayout.LEFT,20,-5));
         browsePanel.setBackground(Color.white);
@@ -147,7 +142,6 @@ public class DataUploadScreen extends JPanel implements ActionListener{
                         pathField.setEditable(false);
                         browse.setEnabled(false);
                         back.setEnabled(false);
-                        cancel.setEnabled(true);
                         progressBar.setVisible(true);
                         progressBar.setIndeterminate(true);
 
@@ -158,7 +152,6 @@ public class DataUploadScreen extends JPanel implements ActionListener{
                                 pathField.setEditable(true);
                                 browse.setEnabled(true);
                                 back.setEnabled(true);
-                                cancel.setEnabled(false);
                                 progressBar.setVisible(false);
                                 progressBar.setIndeterminate(false);
                                 pathField.setText("");
@@ -179,15 +172,6 @@ public class DataUploadScreen extends JPanel implements ActionListener{
         else if(e.getSource() == back) {
             controller.setCurrentView(new MainScreen(controller));
             controller.setSize((new Dimension(1000,600)));
-        }
-        else if(e.getSource() == cancel) {
-            progressBar.setVisible(false);
-            progressBar.setIndeterminate(false);
-            cancel.setEnabled(false);
-            pathField.setEditable(true);
-            browse.setEnabled(true);
-            back.setEnabled(true);
-            pathField.setText("");
         }
         else {  // Browse
             final JFileChooser fc = new JFileChooser();
