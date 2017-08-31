@@ -5,8 +5,8 @@ Data sharing is crucial for genomics research as it facilitates discovery of rec
 Maven - Dependency Management
 
 # Authors
-Gizem Çaylak
-Oğuz Demir
-Turan Kaan Elgin
-Mehmet Furkan Şahin
+Gizem Çaylak <br />
+Oğuz Demir <br />
+Turan Kaan Elgin <br />
+Mehmet Furkan Şahin <br />
 Onur Uygur
